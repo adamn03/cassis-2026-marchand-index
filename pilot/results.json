@@ -1,0 +1,43 @@
+{
+  "P1": {
+    "description": "Marchand and Reaves appear in top 5 by Marchand Index",
+    "top5": [
+      "Connor Bedard",
+      "Sidney Crosby",
+      "Jack Hughes",
+      "Nikita Kucherov",
+      "Brady Tkachuk"
+    ],
+    "matches_found": 0,
+    "verdict": "disconfirmed"
+  },
+  "P2": {
+    "description": "Marner |OAQ_observed - OAQ_portable| gap >= 1.5x Reaves'",
+    "marner_gap": 0.8215700385703653,
+    "reaves_gap": 2.8284163832475815,
+    "verdict": "disconfirmed"
+  },
+  "P3": {
+    "description": "At least 2 top-5 rank flips between engagement_raw and marchand_index",
+    "engagement_raw_top5": [
+      "Brad Marchand",
+      "Connor Bedard",
+      "Connor McDavid",
+      "Jack Hughes",
+      "Sidney Crosby"
+    ],
+    "marchand_index_top5": [
+      "Brady Tkachuk",
+      "Connor Bedard",
+      "Jack Hughes",
+      "Nikita Kucherov",
+      "Sidney Crosby"
+    ],
+    "rank_flips": 2,
+    "verdict": "confirmed"
+  },
+  "_summary": {
+    "disconfirmed_count": 2,
+    "use_schematic": true
+  }
+}

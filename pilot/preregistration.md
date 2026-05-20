@@ -163,4 +163,31 @@ After the pilot completes:
 
 Any change to this document after the initial commit must be appended below with date + reason. Do not edit prior sections silently.
 
-*No amendments yet.*
+### A1 — 2026-05-20: Jack Hughes Wikipedia slug corrected
+
+**Section affected:** §2 player table (row 13).
+**Original slug:** `Jack_Hughes_(ice_hockey,_born_2001)`
+**Updated slug:** `Jack_Hughes`
+**Reason:** The original parenthetical-disambiguated article returns only ~3,000 pageviews/year, which is orders of magnitude too low for a top-tier NHL star. Empirical check shows the bare `Jack_Hughes` slug is now the primary-topic article on English Wikipedia and returns ~2.56M pageviews/year — consistent with the player's actual public salience. This is an identifier-mapping correction, not a change to the locked method, weights, peer-matching procedure, or expected-pattern hypotheses. Verified by direct Wikimedia API check before the players.csv edit was committed.
+
+### A2 — 2026-05-20: NHL player IDs pre-populated; player search disambiguation
+
+**Section affected:** §2 player table (new column `nhl_player_id`).
+**Change:** Added the canonical NHL player ID for each of the 14 players to `players.csv`. Reason: the NHL search endpoint returns weakly-ranked results (e.g. "Mitch Marner" → first hit "Mitch Holmberg"; "Jack Hughes" → first hit a 1957-born retired defenseman). Pre-populating the IDs makes the pipeline deterministic instead of search-rank-dependent. IDs were verified by inspecting each `/v1/player/{id}/landing` response and confirming name + position + team match the intended player. This is identifier mapping, not a method change.
+
+### A4 — 2026-05-20: Instagram follower counts unavailable; component falls through sentinel handling
+
+**Section affected:** §3 (stable-core data sources), §4 (composite formula).
+**Change:** `instagram_followers` is reported as NULL for all 14 players in the pilot. Reason: Meta has restricted anonymous access to Instagram's GraphQL profile-metadata endpoint (HTTP 403 Forbidden on instaloader without authentication). Authenticated scraping was rejected because (a) the project promises owner-time-zero manual data work, (b) authenticated scraping risks the owner's personal Instagram account.
+**Effect on composite:** Per pre-reg §4 sentinel rule, when a component is NULL the weight for that component drops from the player's personal composite and the remaining weights renormalize. With Instagram NULL across all 14 players, the effective composite for every player is:
+  - `wiki_12mo`: 0.306 / 0.861 = 0.355
+  - `reddit_mentions_12mo`: 0.250 / 0.861 = 0.290
+  - `reddit_upvotes_12mo`: 0.167 / 0.861 = 0.194
+  - `trends_12mo`: 0.139 / 0.861 = 0.161
+This is the locked sentinel behavior, not a method change. Instagram remains in the abstract §2 method description as a full-build component (different access paths are available with budget); the pilot section discloses that the pilot composite is Wikipedia + Trends + Reddit only.
+
+### A3 — 2026-05-20: Mitch Marner team changed from TOR to VGK
+
+**Section affected:** §2 player table (row 12 `team_code`), §10 expected pattern P2.
+**Change:** Marner has been traded from Toronto to the Vegas Golden Knights since the conceptual draft of this project. The pre-reg locked his archetype axis as "Toronto-market test"; in execution, his team is VGK.
+**Methodological note for P2:** The pre-registered test ("Marner |OAQ_observed − OAQ_portable| ≥ 1.5× Reaves' equivalent gap") was motivated by the *premise* that Marner is on a high-amplification market (Toronto). With Marner now on Vegas — a lower-amplification market for hockey attention — the predicted gap may be smaller than originally anticipated. This is reportable as-is: a disconfirmed P2 in this configuration would be a sensitivity finding, not a methodological failure. The 12-month attention window straddles his Toronto and Vegas tenures, so neither team baseline is a clean match. The archetype label has been amended to `toronto_market_test_post_trade` to reflect this.

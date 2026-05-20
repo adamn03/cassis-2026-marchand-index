@@ -129,7 +129,13 @@ def main() -> None:
     skill_rows = []
     seen_teams: set[str] = set()
     for p in players:
-        pid = find_player_id(s, p["full_name"])
+        # Prefer the pre-populated nhl_player_id (amendment A2) over the
+        # search endpoint, which mis-ranks for common names.
+        pid_field = (p.get("nhl_player_id") or "").strip()
+        if pid_field.isdigit():
+            pid = int(pid_field)
+        else:
+            pid = find_player_id(s, p["full_name"])
         landing = player_landing(s, pid) if pid else None
         info = extract_skill(landing)
         # If players.csv had team_code=VERIFY (Reaves), trust the API value.
