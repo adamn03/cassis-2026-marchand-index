@@ -1,0 +1,95 @@
+@page {
+  size: Letter;
+  margin: 0.5in 0.6in 0.55in 0.6in;
+}
+
+html, body {
+  font-family: "Charter", "Cambria", "Times New Roman", "Georgia", serif;
+  font-size: 8.6pt;
+  line-height: 1.20;
+  color: #111;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  font-size: 12pt;
+  font-weight: bold;
+  margin: 0 0 0.15em 0;
+  text-align: center;
+  line-height: 1.10;
+}
+
+h2 {
+  font-size: 9.5pt;
+  font-weight: bold;
+  margin: 0.45em 0 0.12em 0;
+  page-break-after: avoid;
+}
+
+h3 { font-size: 9pt; margin: 0.35em 0 0.1em 0; }
+
+p {
+  margin: 0.18em 0 0.3em 0;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7.6pt;
+  margin: 0.25em 0;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 1.5px 4px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: #f4f4f4;
+  font-weight: bold;
+}
+
+code {
+  font-family: "Consolas", "Menlo", monospace;
+  font-size: 0.88em;
+  background: #f4f4f4;
+  padding: 0px 2px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #999;
+  margin: 0.4em 0 0.2em 0;
+}
+
+sub { font-size: 7pt; color: #555; }
+em { color: #222; font-style: italic; }
+strong { font-weight: bold; }
+
+img { display: block; margin: 0.25em auto; max-width: 60%; }
+
+body > p:first-of-type {
+  text-align: center;
+  font-size: 8pt;
+  color: #555;
+  margin: 0 0 0.3em 0;
+}
+
+body > p:last-of-type {
+  text-align: center;
+  font-size: 7pt;
+  color: #555;
+  margin-top: 0.4em;
+}
+
+ul {
+  margin: 0.15em 0;
+  padding-left: 1.2em;
+}
+li { margin: 0; }

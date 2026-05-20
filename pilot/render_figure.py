@@ -101,12 +101,12 @@ def render_schematic() -> None:
     re-order raw popularity into cap-adjusted Marchand Index.
     """
     schematic = pd.DataFrame([
-        {"full_name": "Star_A",      "engagement_raw": 2.5, "marchand_index": 0.10, "cap": 12.0},
-        {"full_name": "Star_B",      "engagement_raw": 2.0, "marchand_index": 0.18, "cap": 9.0},
+        {"full_name": "Star_A",      "engagement_raw": 2.5, "marchand_index": 0.21, "cap": 12.0},
+        {"full_name": "Star_B",      "engagement_raw": 2.0, "marchand_index": 0.27, "cap": 9.0},
         {"full_name": "Polariz_C",   "engagement_raw": 1.0, "marchand_index": 0.95, "cap": 1.5},
         {"full_name": "Role_D",      "engagement_raw": 0.5, "marchand_index": 0.80, "cap": 0.9},
-        {"full_name": "MidStar_E",   "engagement_raw": 0.2, "marchand_index": 0.40, "cap": 3.0},
-        {"full_name": "Veteran_F",   "engagement_raw": 0.0, "marchand_index": 0.10, "cap": 4.5},
+        {"full_name": "MidStar_E",   "engagement_raw": 0.2, "marchand_index": 0.45, "cap": 3.0},
+        {"full_name": "Veteran_F",   "engagement_raw": 0.0, "marchand_index": 0.12, "cap": 4.5},
         {"full_name": "Quiet_G",     "engagement_raw": -0.5, "marchand_index": 0.05, "cap": 2.0},
         {"full_name": "Bottom_H",    "engagement_raw": -1.0, "marchand_index": -0.30, "cap": 6.0},
     ])
