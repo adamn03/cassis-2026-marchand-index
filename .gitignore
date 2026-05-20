@@ -1,0 +1,34 @@
+# Secrets — never commit
+.env
+*.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# HTTP cache (regenerable)
+pilot/cache/
+**/requests_cache.sqlite
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local Claude Code settings (user-specific permissions/hooks)
+.claude/
+
+# Logs
+*.log
+
+# PDF build artifacts (the final abstract_final.pdf IS committed)
+*.aux
+*.out
+*.toc
+*.synctex.gz
