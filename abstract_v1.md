@@ -45,7 +45,7 @@ Four independent rigor gates, each with a target and a ship-floor:
 
 ## 4. Preliminary result (worked-example pilot)
 
-*[Figure — finalized May 27–28, N=14 named NHLers, restricted peer candidates K=5 within the pilot set. This is a worked example illustrating the method, NOT validation of the full leaguewide K=10 model. Pre-registered before fetch code: `pilot/preregistration.md` (commit hash to be inserted at submission).]*
+*[Figure — finalized May 27–28, N=14 named NHLers, restricted peer candidates K=5 within the pilot set. This is a worked example illustrating the method, NOT validation of the full leaguewide K=10 model. Pre-registered before fetch code: `pilot/preregistration.md`, commit `9774a68` (2026-05-20).]*
 
 A pilot run on a pre-registered set of 14 NHLers — spanning skill (McDavid, MacKinnon, Makar, Draisaitl), legacy (Crosby), star scoring (Matthews, Kucherov), polarization (Marchand, M. Tkachuk, B. Tkachuk), the role-player archetype (Reaves), market (Marner), and rising salience (Bedard, Hughes) — uses Wikipedia pageviews + Google Trends + Reddit (mentions + upvotes) + Instagram follower counts as a volume-only engagement proxy.
 
