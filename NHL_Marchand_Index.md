@@ -32,7 +32,7 @@ We are building a free, data-driven model that quantifies **off-ice fan attentio
 3. **Control for market amplification.** Report both `OAQ_observed` (raw, market-included) and `OAQ_portable` (market-stripped via team-baseline subtraction). Headline metric for the poster is the harder claim (`OAQ_portable`).
 4. Cap-adjust → **Marchand Index = OAQ ÷ cap_hit_M**. Reported with bootstrap 95% CI per player.
 5. **Decompose attention into 8 themes** via LLM classification of Reddit comments. **Hand-validate the classifier** on 300 stratified comments (F1 + Cohen's kappa) before reporting results.
-6. Validate the composite against three independent proofs: NHL annual jersey list, All-Star vote shares (available seasons), event-study deltas around major signings.
+6. Validate the composite against four independent proofs: NHL annual jersey list, All-Star vote shares (available seasons), event-study deltas around major signings, and a stratified generalization test against held-out YouTube view-count residuals (proves the index works outside the star tier, not just on famous players).
 7. Pre-register 4 testable hypotheses BEFORE running the model. Report confirmed / disconfirmed / inconclusive.
 8. Produce 8 named player case studies with photos, theme breakdowns, both OAQ flavors, and error bars.
 9. Ship a live demo (acquisition recommender, trade-return CLI, FA pipeline planner) at the booth.
@@ -52,7 +52,7 @@ We are building a free, data-driven model that quantifies **off-ice fan attentio
 
 ## Pre-registered hypotheses
 
-Locked **before** any modeling on production data. Stored in `docs/preregistration.md`, committed at start of Week 3.
+Locked **before** any modeling on production data. Stored in `docs/preregistration.md`, **committed 2026-05-22** alongside Gate 4 (stratified generalization) band rules, sampling frame, snapshot rule, deduplication, coverage floor, null-result triggers, and bootstrap procedure.
 
 | ID | Hypothesis | Test |
 |---|---|---|
@@ -72,6 +72,10 @@ Findings (confirmed / disconfirmed / inconclusive) become Section 4 of the poste
 | Spearman ρ between OAQ_portable top-50 and NHL annual top-20 jersey list | ≥ 0.50 | ≥ 0.40 |
 | Spearman ρ between OAQ_portable and All-Star fan-vote share (available seasons: 2022, 2023, 2024) | ≥ 0.55 | ≥ 0.45 |
 | Historical signing backtest: avg 60-day team-account follower delta for top-50 signings since 2020 | clearly positive, p < 0.05 | directionally positive |
+| **Stratified generalization (Gate 4) — Spearman ρ between `OAQ_portable` and held-out YouTube view-count residuals, outside-star pooled cohort** | **≥ 0.35** | **≥ 0.25** |
+| **Stratified generalization (Gate 4) — top-quartile vs. bottom-half residual ratio, outside-star cohort** | **≥ 1.50×** | **≥ 1.25×** |
+| **Stratified generalization (Gate 4) — depth-band Spearman ρ (sub-test)** | **≥ 0.25** | **positive point estimate, bootstrap CI not entirely below zero** |
+| **Stratified generalization (Gate 4) — outside-star coverage (players with ≥3 primary events)** | **≥ 125 players / 500 events** | **≥ 75 players / 250 events** |
 | **LLM theme classifier — macro-F1 across 8 themes (hand-labeled 300 sample)** | **≥ 0.70** | **≥ 0.60** |
 | **LLM theme classifier — Cohen's kappa vs. hand labels** | **≥ 0.65** | **≥ 0.55** |
 | Coverage — % of current ~700 NHLers with non-null OAQ AND match_quality ≥ threshold | ≥ 90% | ≥ 80% |
@@ -84,7 +88,7 @@ If any ship gate fails: do not print the poster. Iterate on weights / sentiment 
 | Criterion | Target |
 |---|---|
 | Headline finding (one quoted number, computed from data) | ✓ |
-| Three independent validation proofs | ✓ |
+| Four independent validation proofs (incl. stratified generalization outside star tier) | ✓ |
 | Pre-registered hypotheses doc committed before model run | ✓ |
 | LLM theme classifier validation reported (F1 + kappa) | ✓ |
 | ≥8 named case studies with photos, theme breakdowns, error bars, both OAQ flavors | ✓ |
@@ -102,7 +106,7 @@ If any ship gate fails: do not print the poster. Iterate on weights / sentiment 
 | Theme decomposition | 8 themes via OpenRouter LLM, **hand-validated on 300 stratified comments** | Theme drift over time; theme prediction from new viral events |
 | Cap data | PuckPedia / CapWages | Historical contracts |
 | Market control | **Team-baseline-subtracted (portable) + raw (observed), both reported** | Multi-year market drift |
-| Validation | 3 proofs: jersey list + All-Star + event study | Direct revenue correlation (if surfaceable) |
+| Validation | 4 proofs: jersey list + All-Star + event study + stratified generalization (held-out YouTube residuals outside star tier) | Direct revenue correlation (if surfaceable) |
 | Demo | Acquisition recommender, trade-return CLI, FA pipeline | Web dashboard; rebuild-archetype classifier |
 
 ## Poster composition
@@ -112,7 +116,7 @@ If any ship gate fails: do not print the poster. Iterate on weights / sentiment 
 | Header | 10% | Title: **The Marchand Index** + subtitle + author. ONE quoted headline number. |
 | 1. The honest reframe | 7% | "We do not measure revenue. We measure attention as a proxy for fan demand. Here is the precise limit of our claim." |
 | 2. Method | 20% | Data sources (icons) → composite CES + BDS (volume-only) → **K=10 peer matching** + **market baseline control** → OAQ (observed + portable) → cap-adjust → Marchand Index. Worked example: Marchand vs. his K=10 peer group. |
-| 3. Validation | 16% | Three side-by-side plots: OAQ_portable vs. jersey list rank, OAQ_portable vs. All-Star vote share (available seasons), event-study delta around top-50 signings. **Classifier validation: F1 + κ for theme labels.** Pre-registration doc citation. |
+| 3. Validation | 16% | Four validation panels: jersey list ρ, All-Star vote ρ (available seasons), signing event-study delta, **stratified generalization (Gate 4) — Spearman ρ on outside-star YouTube view-count residuals, with star / regular / depth bands shown side-by-side so judges can see the index is not just a star detector**. **Classifier validation: F1 + κ for theme labels.** Pre-registration doc citation. |
 | 4. Pre-registered findings | 13% | H1–H4 results: confirmed / disconfirmed / inconclusive. Effect size + 95% CI per hypothesis. |
 | 5. Theme decomposition | 13% | Stacked-bar visualization of theme shares for 8 case study players, with F1-per-theme footnote so judges can see classifier quality. |
 | 6. Case studies + demo callout | 14% | 8 player cards: photo, OAQ_observed ± CI, OAQ_portable ± CI, Marchand Index, theme breakdown, named closest peer (for story), cap context. "Live demo at booth" footer. |
@@ -234,6 +238,7 @@ Marchand Index/
 | NHL official | Top-engaged @NHL + team-account posts; player-tag count | Monthly |
 | NHL jersey rankings | Annual top-10 + top-20 (validation only) | Once per season |
 | **All-Star vote totals (AVAILABLE seasons only)** | Per-season fan vote shares. **NOTE: 2024-25 had no ASG (4 Nations Face-Off instead) — use 2022, 2023, 2024 and 2026 if it happens.** | Once per available season |
+| **YouTube Data API (validation-only — never in CES)** | Player-named video metadata + view counts on the channel allow-list. **Used exclusively as held-out outcome for Gate 4 (stratified generalization).** Sampling frame, channel allow-list, dedup, snapshot rule and minimum-view threshold all pre-registered in `docs/preregistration.md` §6–§7. | One-time snapshot at start of Wk 8 fetch |
 
 ### Per-team signal sources (for market control + demo + event study)
 
@@ -409,7 +414,7 @@ NOT on the poster body. Per-team composite for the demo's team classifier: team-
 **Output:** K=10 peer set per player, named K=1 peer for storytelling, OAQ_observed + OAQ_portable.
 **Diagnostics:** match quality distribution, peer coverage rate, OAQ distribution, sanity-check player → named-peer table.
 
-### Three validations (poster Section 3)
+### Four validations (poster Section 3)
 
 **Validation 1 — Jersey list ρ.** Spearman ρ between OAQ_portable top-50 and NHL annual top-20 jersey list (sentinel-encoded for non-listed). Aim ≥ 0.50, floor ≥ 0.40.
 
@@ -421,7 +426,22 @@ NOT on the poster body. Per-team composite for the demo's team classifier: team-
 - Pre-registered direction: high-OAQ_portable signings should generate larger team-account follower deltas.
 - Effect size + 95% CI reported.
 
-Outputs: `validation_report.md` + 3 figures.
+**Validation 4 — Stratified generalization (the "is this just a fame detector?" gate).** Designed specifically to defeat the most predictable judge attack: that any composite of Wikipedia + Reddit + Trends + Instagram + cap-adjustment is just rediscovering who is already famous. Players are pre-sorted into **star / regular / depth** bands using non-OAQ variables only (cap percentile, TOI/G percentile by position, points/60 percentile by position, recent All-Star and jersey-list history). Held-out attention events are drawn from a channel allow-list (NHL.com + 32 team channels + Sportsnet / TSN / ESPN / TNT Sports / NHL Network); fan-uploaded videos are sensitivity-only with a coverage-driven escalation rule.
+
+The regression:
+
+```
+log1p(view_count) ~ OAQ_portable
+                  + clip_type + log(upload_age+1) + team_market_size
+                  + channel_id + opponent + playoff_flag + log(clip_length+1)
+                  + position + TOI/G + points/60 + cap_hit_M + years_since_NHL_debut
+```
+
+Test statistic = Spearman ρ between `OAQ_portable` and the residual `log1p(view_count) − [all-controls-fit-without-OAQ]`, computed on the outside-star pooled cohort and reported separately for each sub-band (star, regular, depth). Floors and pass logic are pre-registered in `docs/preregistration.md` §8 — headline gate is outside-star ρ ≥ 0.25, with a depth-band sub-test that determines whether the Reaves-archetype claim is published as validated or downgraded to exploratory.
+
+Coverage requirement: ≥75 outside-star players × ≥3 primary events each (floor) / ≥125 × ≥3 (target). Snapshot date D locked at start of Gate 4 fetch; videos must be ≥30 days old at D and have ≥500 views to count as an event. Deduplication by `(channel_id, video_id)` and by `(title-hash similarity ≥ 0.8, duration ±60s, upload date ±7 days)`. Full sampling frame: `docs/preregistration.md` §6–§7.
+
+Outputs: `validation_report.md` + 4 figures (jersey list, All-Star, signing event-study, stratified-generalization panel with star / regular / depth bars side by side).
 
 ### Pre-registered hypothesis tests (poster Section 4)
 
@@ -512,7 +532,7 @@ Booth setup: laptop pre-loaded, results pre-cached, demo response <2 sec.
 | 5 | **LLM theme classifier validation** | Stratified hand-label 300 comments. Compute F1 per theme + macro-F1 + Cohen's kappa. Iterate prompt / model if F1 < 0.60. **Hard gate: don't proceed to scoring until macro-F1 ≥ floor.** |
 | 6 | Peer matching + OAQ + market baseline | K=10 NN peer matching. Compute team_market_baseline. Compute OAQ_observed + OAQ_portable. Match-quality diagnostics. |
 | 7 | Marchand Index + Validations 1 & 2 | Marchand Index = OAQ_portable / cap. Jersey list ρ. All-Star vote ρ (available seasons). **Mid-build gate: ρ floors met?** |
-| 8 | Validation 3 + Pre-reg tests | Event-study DID. H1–H4 with bootstrap CIs. |
+| 8 | Validations 3 & 4 + Pre-reg tests | Event-study DID. **Gate 4 (stratified generalization):** assign star / regular / depth bands per `docs/preregistration.md` §5; YouTube Data API fetch under the §6 sampling frame; deduplication + snapshot lock; residual regression; Spearman ρ on outside-star pool + per-band reporting; sensitivity re-run with fan-uploaded channel set. H1–H4 with bootstrap CIs. |
 | 9 | Bootstrap CI + confidence formalization | Per-player bootstrap CI on OAQ_portable and Marchand Index. Match-quality flags. Confidence column shipped. |
 | 10 | Demo layer | Team classifier, acquisition recommender, trade-return CLI, FA pipeline. Pre-cache demo examples. |
 | 11 | Case study cards | Render 8 featured players with both OAQ flavors, error bars, theme breakdowns, named K=1 peer. Pull photos. |
@@ -523,17 +543,18 @@ Booth setup: laptop pre-loaded, results pre-cached, demo response <2 sec.
 **Mid-build gates:**
 - End Wk 5: macro-F1 ≥ 0.60 on theme classifier. If not, no theme decomposition appears on poster.
 - End Wk 7: Validations 1 + 2 pass the floor. If not, halt and revisit composite weights / peer matching.
-- End Wk 8: Pre-reg test outputs known → drives headline finding.
+- End Wk 8: Validation 3 directionally positive AND Gate 4 outside-star Spearman ρ ≥ 0.25. If Gate 4 fails on the pooled outside-star cohort, the depth-player framing is removed from the manuscript per `docs/preregistration.md` §8; the model is reported as star-population-validated only. If Gate 4 passes but the depth sub-band fails (ρ < 0 or CI entirely below zero), the Reaves-archetype framing in poster §5 is downgraded to exploratory. Pre-reg test outputs known → drives headline finding.
 - End Wk 12: All figures rendered. Lock content; only formatting changes after.
 
 **Conference timing flexibility:** If the conference is sooner than 14 weeks out, cut in this order — Week 10 (demo) first, then trim Week 11 case studies from 8 to 5, then condense Week 9 confidence formalization. **Never cut Weeks 5 (classifier validation), 6 (peer matching + market control), or 7–8 (validations + pre-reg). Those are the rigor backbone.**
 
-## Validation summary (three independent proofs + classifier audit)
+## Validation summary (four independent proofs + classifier audit)
 
 1. **Composite-is-real gate (Validation 1):** Spearman ρ between OAQ_portable top-50 and NHL annual jersey list. Aim ρ ≥ 0.50, floor ρ ≥ 0.40.
 2. **Fan-preference gate (Validation 2):** Spearman ρ between OAQ_portable and All-Star fan vote share, available seasons. Aim ρ ≥ 0.55, floor ρ ≥ 0.45.
 3. **Premise-is-real gate (Validation 3):** Historical signing event study. Avg 60-day follower delta for top-50 FA signings since 2020 positive, p < 0.05 (aim) or directionally positive (floor).
-4. **Classifier-is-real gate (Theme audit):** Macro-F1 ≥ 0.70 (aim) / ≥ 0.60 (floor), κ ≥ 0.65 (aim) / ≥ 0.55 (floor).
+4. **Outside-stars-still-work gate (Validation 4 — stratified generalization):** Residual regression of held-out YouTube view counts on `OAQ_portable` with on-ice, channel, market, clip, and career-length controls, on the outside-star pooled cohort. Aim Spearman ρ ≥ 0.35, floor ρ ≥ 0.25. Depth-band sub-test reported alongside; if depth-band ρ < 0 or bootstrap CI entirely below zero, depth-player framing is removed from the published manuscript per `docs/preregistration.md` §8.
+5. **Classifier-is-real gate (Theme audit):** Macro-F1 ≥ 0.70 (aim) / ≥ 0.60 (floor), κ ≥ 0.65 (aim) / ≥ 0.55 (floor).
 
 Failing any single gate: identify cause, iterate, re-validate. Failing two or more: do not ship.
 
@@ -597,6 +618,7 @@ Manual sanity checks before printing:
 - **Reddit cross-sub mentions** can have name collisions. Disambiguated with team + position + recent-context filter.
 - **Prospect OAQ is shaky.** Pre-NHL engagement volumes are inherently lower. Top-100 only; high-uncertainty cases flagged.
 - **Goalies excluded from the main analysis.** Goalie skill features differ enough that peer-matching is unreliable; goalies are in the supplementary Excel only, with the static caveat that team-need-driven drafting and small sample make goalie attention modeling its own future-work problem.
+- **Gate 4 depth-band may be statistically thin.** Depth players generate fewer YouTube events at lower view counts, so the depth-band ρ estimate is noisier than the regular- or star-band estimates. The pre-registered pass logic deliberately uses the outside-star *pooled* cohort as the headline test, with the depth-band as a sub-test that only triggers a manuscript downgrade when its point estimate is non-positive or its bootstrap CI is entirely below zero. Both estimates are reported in `validation_report.md` regardless of direction.
 
 ## What we explicitly chose NOT to add (and why)
 
@@ -646,7 +668,7 @@ nltk                  # tokenization for stratified label sampling
   - Volume separated from sentiment (no punishment of polarizing players)
   - LLM classifier validated against hand labels (macro-F1 + κ)
   - Bootstrap CIs and match-quality flags per player
-- **Three independent validation proofs:** jersey list, All-Star vote, event study. Triangulated.
+- **Four independent validation proofs:** jersey list, All-Star vote, signing event study, **plus a stratified generalization gate** (held-out YouTube view-count residuals, regressed against `OAQ_portable` with controls, on a pre-declared outside-star cohort). Triangulated; the stratified gate is specifically designed to defeat the "is this just a fame detector?" attack.
 - **Pre-registered hypotheses:** rigor signal at publication-quality bar.
 - **Novel analytical contribution:** validated LLM theme decomposition into 8 themes. Nobody in the public hockey-analytics community has shipped this.
 - **Memorable cases:** 8 named players with photos, theme breakdowns, both OAQ flavors, error bars.
