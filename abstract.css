@@ -5,8 +5,8 @@
 
 html, body {
   font-family: "Charter", "Cambria", "Times New Roman", "Georgia", serif;
-  font-size: 8.6pt;
-  line-height: 1.20;
+  font-size: 8.5pt;
+  line-height: 1.17;
   color: #111;
   margin: 0;
   padding: 0;
@@ -30,7 +30,7 @@ h2 {
 h3 { font-size: 9pt; margin: 0.35em 0 0.1em 0; }
 
 p {
-  margin: 0.18em 0 0.3em 0;
+  margin: 0.15em 0 0.25em 0;
   text-align: justify;
   text-justify: inter-word;
   hyphens: auto;
@@ -48,6 +48,10 @@ th, td {
   padding: 1.5px 4px;
   text-align: left;
   vertical-align: top;
+}
+
+tr {
+  page-break-inside: avoid;
 }
 
 th {
