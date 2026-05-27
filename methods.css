@@ -1,0 +1,97 @@
+@page {
+  size: Letter;
+  margin: 0.65in 0.7in 0.65in 0.7in;
+}
+
+html, body {
+  font-family: "Charter", "Cambria", "Times New Roman", "Georgia", serif;
+  font-size: 10pt;
+  line-height: 1.30;
+  color: #111;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  font-size: 13pt;
+  font-weight: bold;
+  margin: 0 0 0.2em 0;
+  text-align: center;
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: 11pt;
+  font-weight: bold;
+  margin: 0.7em 0 0.15em 0;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.1em;
+  page-break-after: avoid;
+}
+
+h3 {
+  font-size: 10.5pt;
+  font-weight: bold;
+  margin: 0.5em 0 0.1em 0;
+  page-break-after: avoid;
+}
+
+p {
+  margin: 0.2em 0 0.35em 0;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+  margin: 0.4em 0;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 3px 6px;
+  text-align: left;
+  vertical-align: top;
+}
+
+tr {
+  page-break-inside: avoid;
+}
+
+th {
+  background: #f4f4f4;
+  font-weight: bold;
+}
+
+code {
+  font-family: "Consolas", "Menlo", monospace;
+  font-size: 0.88em;
+  background: #f4f4f4;
+  padding: 0px 2px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #bbb;
+  margin: 0.6em 0 0.3em 0;
+}
+
+sub { font-size: 8pt; color: #555; }
+em { color: #222; font-style: italic; }
+strong { font-weight: bold; }
+
+ul {
+  margin: 0.2em 0;
+  padding-left: 1.4em;
+}
+li { margin: 0.1em 0; }
+
+body > p:last-of-type {
+  text-align: center;
+  font-size: 8.5pt;
+  color: #555;
+  margin-top: 0.6em;
+}

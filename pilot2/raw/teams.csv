@@ -1,0 +1,33 @@
+team_code,team_slug,city,division
+ANA,anaheim-ducks,Anaheim,Pacific
+BOS,boston-bruins,Boston,Atlantic
+BUF,buffalo-sabres,Buffalo,Atlantic
+CGY,calgary-flames,Calgary,Pacific
+CAR,carolina-hurricanes,Carolina,Metropolitan
+CHI,chicago-blackhawks,Chicago,Central
+COL,colorado-avalanche,Colorado,Central
+CBJ,columbus-blue-jackets,Columbus,Metropolitan
+DAL,dallas-stars,Dallas,Central
+DET,detroit-red-wings,Detroit,Atlantic
+EDM,edmonton-oilers,Edmonton,Pacific
+FLA,florida-panthers,Florida,Atlantic
+LA,los-angeles-kings,Los Angeles,Pacific
+MIN,minnesota-wild,Minnesota,Central
+MON,montreal-canadiens,Montreal,Atlantic
+NAS,nashville-predators,Nashville,Central
+NJ,new-jersey-devils,New Jersey,Metropolitan
+NYI,new-york-islanders,New York Islanders,Metropolitan
+NYR,new-york-rangers,New York Rangers,Metropolitan
+OTT,ottawa-senators,Ottawa,Atlantic
+PHI,philadelphia-flyers,Philadelphia,Metropolitan
+PIT,pittsburgh-penguins,Pittsburgh,Metropolitan
+SJ,san-jose-sharks,San Jose,Pacific
+SEA,seattle-kraken,Seattle,Pacific
+STL,st-louis-blues,St. Louis,Central
+TB,tampa-bay-lightning,Tampa Bay,Atlantic
+TOR,toronto-maple-leafs,Toronto,Atlantic
+UTA,utah-mammoth,Utah,Central
+VAN,vancouver-canucks,Vancouver,Pacific
+VEG,vegas-golden-knights,Vegas,Pacific
+WAS,washington-capitals,Washington,Metropolitan
+WPG,winnipeg-jets,Winnipeg,Central

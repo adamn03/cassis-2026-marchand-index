@@ -46,7 +46,8 @@ def main() -> None:
 
     left_names = top5_eng["full_name"].tolist()
     right_names = top5_mi["full_name"].tolist()
-    caps_all = dict(zip(df["full_name"], df["cap_hit_M"]))
+    caps = pd.read_csv(PILOT_DIR / "raw" / "cap_hits.csv")
+    caps_all = dict(zip(caps["full_name"], caps["cap_hit_M"]))
 
     left_rank = {name: i + 1 for i, name in enumerate(left_names)}
     right_rank = {name: i + 1 for i, name in enumerate(right_names)}

@@ -13,7 +13,15 @@ venv/
 
 # HTTP cache (regenerable)
 pilot/cache/
+pilot2/cache/
 **/requests_cache.sqlite
+**/http_cache*
+
+# Atomic-write leftovers
+*.tmp
+
+# Pandoc HTML intermediates (final PDFs ARE committed)
+*.html
 
 # OS / editor
 .DS_Store

@@ -1,0 +1,124 @@
+{
+  "config": {
+    "K_peers": 10,
+    "bootstrap_draws": 1000,
+    "seed": 20260526,
+    "market_components_used": [
+      "metro_population",
+      "arena_attendance"
+    ],
+    "reddit_availability": "160/160 players had non-NULL Reddit data"
+  },
+  "external_validation": {
+    "V1a": {
+      "test": "Spearman rho(OAQ_portable, jersey_rank) over rank overlap",
+      "metric": "spearman_rho",
+      "value": 0.7999999999999999,
+      "ci95": [
+        -1.0,
+        1.0
+      ],
+      "n": 4,
+      "floor": 0.4,
+      "target": 0.5,
+      "underpowered": true,
+      "convention": "jersey_rank is 1=best, so a NEGATIVE rho indicates AGREEMENT (high OAQ_portable -> low/better rank number)."
+    },
+    "V1b": {
+      "test": "AUC OAQ_portable discriminating jersey_list_member (1/0)",
+      "metric": "auc",
+      "value": 0.662828947368421,
+      "ci95": [
+        0.43344793245291185,
+        0.8594359097805788
+      ],
+      "n_total": 160,
+      "n_members": 8,
+      "underpowered": true
+    },
+    "V2": {
+      "test": "AUC OAQ_portable discriminating asg2024_member (1/0)",
+      "metric": "auc",
+      "value": 0.5288461538461539,
+      "ci95": [
+        0.1634786204361676,
+        0.8278541869522881
+      ],
+      "n_total": 160,
+      "n_members": 4,
+      "floor": 0.45,
+      "target": 0.55,
+      "underpowered": true,
+      "note": "asg2024 published as membership only (no fan-vote share available), so V2 is AUC; no Spearman computed."
+    }
+  },
+  "patterns": {
+    "PA": {
+      "description": "OAQ_portable aligns with independent jersey demand (V1 Spearman >= 0.40)",
+      "metric": "spearman_rho (signed; negative = agreement)",
+      "value": 0.7999999999999999,
+      "ci95": [
+        -1.0,
+        1.0
+      ],
+      "n": 4,
+      "floor": 0.4,
+      "underpowered": true,
+      "verdict": "inconclusive"
+    },
+    "PB": {
+      "description": "OAQ_portable aligns with independent fan voting (V2 Spearman >= 0.45)",
+      "metric": "spearman_rho (unavailable: asg2024 membership-only)",
+      "value": null,
+      "auc_proxy": 0.5288461538461539,
+      "auc_ci95": [
+        0.1634786204361676,
+        0.8278541869522881
+      ],
+      "n_members": 4,
+      "floor": 0.45,
+      "underpowered": true,
+      "verdict": "inconclusive"
+    },
+    "PC": {
+      "description": ">=3 of top-10 by engagement_raw displaced out of top-10 by marchand_index",
+      "top10_engagement_raw": [
+        "Sidney Crosby",
+        "Macklin Celebrini",
+        "Connor McDavid",
+        "Quinn Hughes",
+        "Alex Ovechkin",
+        "Matthew Tkachuk",
+        "Nick Suzuki",
+        "Connor Bedard",
+        "Will Smith",
+        "Leon Draisaitl"
+      ],
+      "top10_marchand_index": [
+        "Macklin Celebrini",
+        "Will Smith",
+        "Shakir Mukhamadullin",
+        "Igor Chernyshov",
+        "Zach Benson",
+        "Parker Wotherspoon",
+        "Linus Karlsson",
+        "Zayne Parekh",
+        "Adam Fantilli",
+        "Jordan Spence"
+      ],
+      "n_displaced": 8,
+      "displaced_names": [
+        "Sidney Crosby",
+        "Connor McDavid",
+        "Quinn Hughes",
+        "Alex Ovechkin",
+        "Matthew Tkachuk",
+        "Nick Suzuki",
+        "Connor Bedard",
+        "Leon Draisaitl"
+      ],
+      "floor": 3,
+      "verdict": "confirmed"
+    }
+  }
+}
