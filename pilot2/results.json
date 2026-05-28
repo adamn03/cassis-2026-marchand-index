@@ -27,10 +27,10 @@
     "V1b": {
       "test": "AUC OAQ_portable discriminating jersey_list_member (1/0)",
       "metric": "auc",
-      "value": 0.662828947368421,
+      "value": 0.8182565789473685,
       "ci95": [
-        0.43344793245291185,
-        0.8594359097805788
+        0.596123417721519,
+        0.9615530303030303
       ],
       "n_total": 160,
       "n_members": 8,
@@ -39,10 +39,10 @@
     "V2": {
       "test": "AUC OAQ_portable discriminating asg2024_member (1/0)",
       "metric": "auc",
-      "value": 0.5288461538461539,
+      "value": 0.6987179487179487,
       "ci95": [
-        0.1634786204361676,
-        0.8278541869522881
+        0.2524878592468753,
+        0.9488567695574065
       ],
       "n_total": 160,
       "n_members": 4,
@@ -70,10 +70,10 @@
       "description": "OAQ_portable aligns with independent fan voting (V2 Spearman >= 0.45)",
       "metric": "spearman_rho (unavailable: asg2024 membership-only)",
       "value": null,
-      "auc_proxy": 0.5288461538461539,
+      "auc_proxy": 0.6987179487179487,
       "auc_ci95": [
-        0.1634786204361676,
-        0.8278541869522881
+        0.2524878592468753,
+        0.9488567695574065
       ],
       "n_members": 4,
       "floor": 0.45,
@@ -95,24 +95,20 @@
         "Leon Draisaitl"
       ],
       "top10_marchand_index": [
-        "Macklin Celebrini",
-        "Will Smith",
-        "Shakir Mukhamadullin",
-        "Igor Chernyshov",
-        "Zach Benson",
-        "Parker Wotherspoon",
         "Linus Karlsson",
-        "Zayne Parekh",
-        "Adam Fantilli",
-        "Jordan Spence"
-      ],
-      "n_displaced": 8,
-      "displaced_names": [
         "Sidney Crosby",
-        "Connor McDavid",
-        "Quinn Hughes",
         "Alex Ovechkin",
-        "Matthew Tkachuk",
+        "Quinn Hughes",
+        "Will Smith",
+        "Kasperi Kapanen",
+        "Easton Cowan",
+        "Macklin Celebrini",
+        "Zayne Parekh",
+        "Matthew Tkachuk"
+      ],
+      "n_displaced": 4,
+      "displaced_names": [
+        "Connor McDavid",
         "Nick Suzuki",
         "Connor Bedard",
         "Leon Draisaitl"

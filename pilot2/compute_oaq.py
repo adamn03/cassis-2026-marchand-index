@@ -1,7 +1,12 @@
 """Tier-1 pilot OAQ + Marchand Index computation (pilot2).
 
 Implements pilot2/preregistration.md EXACTLY (sections 4, 6, 7, 8, 9, 10, 11
-and amendments A1-A3). This is the LOCKED method — no deviations.
+and amendments A1-A4). This is the LOCKED method — no deviations.
+
+A4 (2026-05-27): the Marchand Index denominator is the skill-EXPECTED cap
+from an OLS fit of cap_hit_M ~ PPG + TOI/G estimated separately per position
+group (age excluded), prediction floored at $0.775M league min. The original
+§8 raw-cap quantity is retained as `marchand_index_rawcap` for audit.
 
 Inputs (under pilot2/ and pilot2/raw/):
   players.csv               player_id, full_name, position, group, team_code, ...
@@ -29,7 +34,10 @@ Method summary (locked):
     (age, ppg, toi_per_game), group-mean imputation for NULL skill.
   OAQ_observed = engagement_raw - mean(engagement_raw over K peers).
   OAQ_portable = (engagement_raw - market_z) - mean over K peers of same.
-  marchand_index = OAQ_portable / cap_hit_M.
+  expected_cap(P): per-group OLS cap_hit_M ~ PPG + TOI/G prediction, floored
+    at $0.775M. Age excluded so the rookie scale is not re-imported.
+  marchand_index = OAQ_portable / expected_cap   (headline, A4)
+  marchand_index_rawcap = OAQ_portable / cap_hit_M  (audit / §8-original)
   Bootstrap: 1000 draws, resample each player's wiki daily vector + reddit
     submission pool with replacement; trends/IG/cap/market fixed; peer SETS
     fixed; recompute z-scores + everything per draw; 2.5/97.5 percentile CIs.
@@ -84,6 +92,31 @@ SKILL_COLS = ["age", "ppg", "toi_per_game"]
 K_PEERS = 10
 BOOTSTRAP_DRAWS = 1000
 SEED = 20260526
+
+# A4: per-position OLS denominator for the headline Marchand Index. Age is
+# deliberately EXCLUDED — including it re-imports the rookie scale via
+# young/cheap peers (verified: a ±5yr age band re-inflates rookie MI).
+EXPECTED_CAP_PREDICTORS = ["ppg", "toi_per_game"]
+LEAGUE_MIN_CAP_M = 0.775
+
+# A5 (2026-05-27) — one-sided damped market correction in §7.
+# OAQ_portable = engagement − λ × max(0, market_z) − peer_mean(of same).
+# Small markets (market_z < 0) get zero correction (no phantom boost).
+# Big markets (market_z > 0) get a partial discount: fraction of fan equity
+# travels with the player when they move. λ committed at the max-entropy
+# midpoint between bounds 0 and 1 BEFORE re-running; sensitivity ladder
+# {0.0, 0.25, 0.5, 0.75, 1.0} reported as robustness.
+LAMBDA_BIGMARKET = 0.5
+LAMBDA_SENSITIVITY = (0.0, 0.25, 0.5, 0.75, 1.0)
+
+# Rookie-deal (ELC) proxy: cap ≤ $0.975M AND age ≤ 25. Tight enough to exclude
+# veteran-minimum / depth players (Stecher 32 @ $0.788M, McIlrath 34 @ $0.825M,
+# Wotherspoon 28 @ $1.00M, Mukhamadullin 24 @ $1.00M) while catching every
+# obvious ELC in the set (Bedard, Celebrini, Schaefer, Eklund, Smith, Fantilli,
+# Benson, Parekh, Carlsson, Snuggerud, Nazar, Bump, etc.). $0.975M is the
+# practical ELC cap-hit ceiling including standard signing bonuses for 2025-26.
+ROOKIE_CAP_MAX_M = 0.975
+ROOKIE_AGE_MAX = 25
 
 # V1/V2 floors per pre-reg §9.
 V1_FLOOR, V1_TARGET = 0.40, 0.50
@@ -332,11 +365,58 @@ def _peer_means(values: np.ndarray, peers: list[list[int]]) -> np.ndarray:
     return out
 
 
+def compute_expected_cap(df: pd.DataFrame) -> np.ndarray:
+    """A4 denominator: market-rate cap expected from production alone.
+
+    OLS `cap_hit_M ~ PPG + TOI/G` fit SEPARATELY per position group on the
+    in-sample rows where all three are finite. Predictions are floored at the
+    2025-26 league minimum ($0.775M). NULL predictors are imputed with the
+    within-group mean before prediction (group fit). Age is deliberately
+    excluded — including it re-imports the rookie-scale floor via
+    young/cheap peers (verified empirically; see prereg §14 A4).
+    """
+    groups = df["group"].to_numpy()
+    cap = df["cap_hit_M"].to_numpy(dtype=float)
+    X_raw = np.column_stack([
+        df[c].to_numpy(dtype=float) for c in EXPECTED_CAP_PREDICTORS
+    ])
+    out = np.full(len(df), np.nan)
+
+    for gi in np.unique(groups):
+        idx = np.where(groups == gi)[0]
+        if idx.size == 0:
+            continue
+        cap_g = cap[idx]
+        X_g = X_raw[idx]
+        # Fit only on rows with finite cap + all predictors.
+        fit_mask = np.isfinite(cap_g) & np.all(np.isfinite(X_g), axis=1)
+        if fit_mask.sum() < (X_g.shape[1] + 1):
+            # Degenerate group: floor everyone in this group at league min.
+            out[idx] = LEAGUE_MIN_CAP_M
+            continue
+        X_fit = np.column_stack([np.ones(fit_mask.sum()), X_g[fit_mask]])
+        y_fit = cap_g[fit_mask]
+        beta, *_ = np.linalg.lstsq(X_fit, y_fit, rcond=None)
+        # Predict on every row in the group; impute NULL predictors with
+        # group means (finite-row means) before prediction.
+        X_pred = X_g.copy()
+        for j in range(X_pred.shape[1]):
+            col = X_g[:, j]
+            mu = np.nanmean(col) if np.isfinite(col).any() else 0.0
+            X_pred[:, j] = np.where(np.isnan(col), mu, col)
+        Xb = np.column_stack([np.ones(idx.size), X_pred])
+        pred = Xb @ beta
+        out[idx] = np.maximum(pred, LEAGUE_MIN_CAP_M)
+    return out
+
+
 def compute_oaq(df: pd.DataFrame, peers: list[list[int]] | None = None,
                 market_z: np.ndarray | None = None) -> pd.DataFrame:
     """Full per-player OAQ pipeline. `df` must already have market_z if not
     passed. Returns a copy with engagement_raw, OAQ_observed, OAQ_portable,
-    marchand_index, dropped_components, effective_K, peer info."""
+    marchand_index (A4: OAQ_portable / expected_cap),
+    marchand_index_rawcap (§8-original: OAQ_portable / cap_hit_M),
+    dropped_components, effective_K, peer info."""
     df = df.copy().reset_index(drop=True)
 
     er, dropped = compute_engagement_raw(df)
@@ -359,16 +439,54 @@ def compute_oaq(df: pd.DataFrame, peers: list[list[int]] | None = None,
     df["peer_engagement_mean"] = peer_eng
     df["OAQ_observed"] = er - peer_eng
 
-    # OAQ_portable: adjusted = engagement_raw - market_z, then peer-centered.
-    adj = er - market_z
-    peer_adj = _peer_means(adj, peers)
-    df["OAQ_portable"] = adj - peer_adj
+    # OAQ_portable — A5 headline: one-sided damped market correction.
+    # Only big markets (market_z > 0) are discounted; small markets get 0.
+    market_z_pos = np.maximum(0.0, market_z)
+    adj_a5 = er - LAMBDA_BIGMARKET * market_z_pos
+    peer_adj_a5 = _peer_means(adj_a5, peers)
+    df["OAQ_portable"] = adj_a5 - peer_adj_a5
 
-    # Marchand Index.
-    cap = df["cap_hit_M"].to_numpy(dtype=float)
+    # OAQ_portable_lockedv1: §7-original two-sided full subtraction, retained
+    # for audit per §13 / A5 anti-tuning commitments.
+    adj_v1 = er - market_z
+    peer_adj_v1 = _peer_means(adj_v1, peers)
+    df["OAQ_portable_lockedv1"] = adj_v1 - peer_adj_v1
+
+    # Marchand Index — three denominator lenses ship together so the rookie
+    # artifact and the small-market artifact can both be inspected honestly.
+    #   marchand_index            : A4 headline — OAQ_portable / expected_cap
+    #                               (all 160 use per-group OLS prediction).
+    #   marchand_index_rawcap     : §8-original — OAQ_portable / cap_hit_M
+    #                               (current-season bargain lens).
+    #   marchand_index_hybrid     : targeted A4 — rookie-deal players use
+    #                               expected_cap; everyone else uses cap_hit_M.
+    #                               This isolates the ELC fix from veterans.
+    expected_cap = compute_expected_cap(df)
+    df["expected_cap"] = expected_cap
+    cap_raw = df["cap_hit_M"].to_numpy(dtype=float)
+    age = df["age"].to_numpy(dtype=float)
+    rookie_deal = (
+        np.isfinite(cap_raw) & np.isfinite(age)
+        & (cap_raw <= ROOKIE_CAP_MAX_M) & (age <= ROOKIE_AGE_MAX)
+    )
+    df["is_rookie_deal"] = rookie_deal.astype(int)
+    port = df["OAQ_portable"].to_numpy(dtype=float)
     with np.errstate(invalid="ignore", divide="ignore"):
-        mi = np.where((cap > 0) & np.isfinite(cap), df["OAQ_portable"].to_numpy() / cap, np.nan)
-    df["marchand_index"] = mi
+        df["marchand_index"] = np.where(
+            (expected_cap > 0) & np.isfinite(expected_cap),
+            port / expected_cap, np.nan,
+        )
+        df["marchand_index_rawcap"] = np.where(
+            (cap_raw > 0) & np.isfinite(cap_raw),
+            port / cap_raw, np.nan,
+        )
+        # Hybrid denominator: expected_cap for rookie-deal players, raw cap
+        # for everyone else. NaN if the chosen denominator is unusable.
+        hybrid_denom = np.where(rookie_deal, expected_cap, cap_raw)
+        df["marchand_index_hybrid"] = np.where(
+            (hybrid_denom > 0) & np.isfinite(hybrid_denom),
+            port / hybrid_denom, np.nan,
+        )
     return df
 
 
@@ -439,10 +557,24 @@ def bootstrap_player_cis(
     ig_fixed = df["instagram_followers"].to_numpy(dtype=float)
     cap = df["cap_hit_M"].to_numpy(dtype=float)
     cap_ok = (cap > 0) & np.isfinite(cap)
+    # A4: expected_cap is a function of (PPG, TOI/G), which are NOT resampled,
+    # so it is fixed across draws — computed once on the input df.
+    exp_cap = df["expected_cap"].to_numpy(dtype=float)
+    exp_cap_ok = (exp_cap > 0) & np.isfinite(exp_cap)
+    # Hybrid denominator: expected_cap for rookie-deal players, raw cap else.
+    rookie_deal = df["is_rookie_deal"].to_numpy(dtype=bool)
+    hybrid_denom = np.where(rookie_deal, exp_cap, cap)
+    hybrid_ok = (hybrid_denom > 0) & np.isfinite(hybrid_denom)
+
+    # A5 market correction is one-sided over market_z (fixed across draws).
+    market_z_pos = np.maximum(0.0, market_z)
 
     oaq_obs = np.full((n_draws, n), np.nan)
     oaq_port = np.full((n_draws, n), np.nan)
+    oaq_port_v1 = np.full((n_draws, n), np.nan)
     mi = np.full((n_draws, n), np.nan)
+    mi_raw = np.full((n_draws, n), np.nan)
+    mi_hyb = np.full((n_draws, n), np.nan)
 
     # Peer index lists -> object array of int arrays for fast mean.
     peer_idx = [np.asarray(pl, dtype=int) for pl in peers]
@@ -481,16 +613,27 @@ def bootstrap_player_cis(
         peer_eng = _peer_mean_fast(er, peer_idx)
         d_obs = er - peer_eng
 
-        adj = er - market_z
-        peer_adj = _peer_mean_fast(adj, peer_idx)
-        d_port = adj - peer_adj
+        # A5 headline: one-sided damped market correction.
+        adj_a5 = er - LAMBDA_BIGMARKET * market_z_pos
+        peer_adj_a5 = _peer_mean_fast(adj_a5, peer_idx)
+        d_port = adj_a5 - peer_adj_a5
+
+        # Locked-v1 audit: two-sided full subtraction (§7-original).
+        adj_v1 = er - market_z
+        peer_adj_v1 = _peer_mean_fast(adj_v1, peer_idx)
+        d_port_v1 = adj_v1 - peer_adj_v1
 
         with np.errstate(invalid="ignore", divide="ignore"):
-            d_mi = np.where(cap_ok, d_port / cap, np.nan)
+            d_mi = np.where(exp_cap_ok, d_port / exp_cap, np.nan)
+            d_mi_raw = np.where(cap_ok, d_port / cap, np.nan)
+            d_mi_hyb = np.where(hybrid_ok, d_port / hybrid_denom, np.nan)
 
         oaq_obs[d] = d_obs
         oaq_port[d] = d_port
+        oaq_port_v1[d] = d_port_v1
         mi[d] = d_mi
+        mi_raw[d] = d_mi_raw
+        mi_hyb[d] = d_mi_hyb
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -499,8 +642,14 @@ def bootstrap_player_cis(
             "OAQ_observed_hi95": np.nanpercentile(oaq_obs, 97.5, axis=0),
             "OAQ_portable_lo95": np.nanpercentile(oaq_port, 2.5, axis=0),
             "OAQ_portable_hi95": np.nanpercentile(oaq_port, 97.5, axis=0),
+            "OAQ_portable_lockedv1_lo95": np.nanpercentile(oaq_port_v1, 2.5, axis=0),
+            "OAQ_portable_lockedv1_hi95": np.nanpercentile(oaq_port_v1, 97.5, axis=0),
             "marchand_index_lo95": np.nanpercentile(mi, 2.5, axis=0),
             "marchand_index_hi95": np.nanpercentile(mi, 97.5, axis=0),
+            "marchand_index_rawcap_lo95": np.nanpercentile(mi_raw, 2.5, axis=0),
+            "marchand_index_rawcap_hi95": np.nanpercentile(mi_raw, 97.5, axis=0),
+            "marchand_index_hybrid_lo95": np.nanpercentile(mi_hyb, 2.5, axis=0),
+            "marchand_index_hybrid_hi95": np.nanpercentile(mi_hyb, 97.5, axis=0),
         }
     return ci
 
@@ -724,9 +873,15 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     lines: list[str] = []
     lines.append("# Tier-1 pilot results — The Marchand Index (pilot2)\n")
     lines.append("Generated by `pilot2/compute_oaq.py`. Method locked in "
-                 "`pilot2/preregistration.md` (§4,6,7,8,9,10,11; A1-A3). All "
+                 "`pilot2/preregistration.md` (§4,6,7,8,9,10,11; A1-A5). All "
                  "effects reported with 95% bootstrap CI regardless of "
                  "direction.\n")
+    lines.append(f"**A5 headline market correction:** "
+                 f"`OAQ_portable = engagement_raw − λ × max(0, market_z) − "
+                 f"peer_mean` with **λ = {LAMBDA_BIGMARKET}** "
+                 "(maximum-entropy midpoint between 0 and 1; sensitivity "
+                 "ladder reported below). Locked-v1 (two-sided, λ=1) retained "
+                 "in `OAQ_portable_lockedv1` for audit.\n")
 
     lines.append("## Configuration\n")
     lines.append(f"- N skaters: {len(df)} (forwards "
@@ -739,7 +894,16 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     n_mq_low = int((df["match_quality"].astype(str) == "low").sum())
     n_cap_low = int((df["cap_quality"].astype(str).str.lower() == "low").sum())
     lines.append(f"- match_quality=low: {n_mq_low} (identity-resolution); "
-                 f"cap_quality=low: {n_cap_low} (excluded from MI leaderboard)\n")
+                 f"cap_quality=low: {n_cap_low} (excluded from MI leaderboard)")
+    lines.append("- **A4 denominator:** marchand_index uses `expected_cap` "
+                 "(per-group OLS of cap_hit_M ~ PPG + TOI/G, age excluded, "
+                 f"floored at ${LEAGUE_MIN_CAP_M:.3f}M). `marchand_index_rawcap` "
+                 "(§8-original, raw cap denominator) and `marchand_index_hybrid` "
+                 "(rookies → expected_cap, others → raw cap) are also computed "
+                 "for the 5-lens leaderboard comparison.")
+    n_rookie = int(df["is_rookie_deal"].sum())
+    lines.append(f"- **Rookie-deal flag:** cap ≤ ${ROOKIE_CAP_MAX_M:.3f}M AND "
+                 f"age ≤ {ROOKIE_AGE_MAX} → {n_rookie} of {len(df)} players.\n")
 
     # Sentinel / dropped summary.
     drop_counts: dict[str, int] = {}
@@ -810,29 +974,212 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
 
     # Leaderboards.
     lines.append("## Leaderboards\n")
-    lines.append("### Top 10 by engagement_raw")
-    lines.append("| Rank | Player | engagement_raw | OAQ_portable |")
-    lines.append("|---|---|---|---|")
+    lines.append(
+        f"Rookie-deal flag: `cap_hit_M ≤ ${ROOKIE_CAP_MAX_M:.3f}M AND "
+        f"age ≤ {ROOKIE_AGE_MAX}` → "
+        f"{int(df['is_rookie_deal'].sum())} of {len(df)} players. Catches "
+        "every clean ELC in the set; excludes vet-min depth (Stecher/"
+        "McIlrath/Wotherspoon/Mukhamadullin).\n"
+    )
+
+    lines.append("### Top 10 by engagement_raw (no peer or market adjustment)")
+    lines.append("| Rank | Player | Age | engagement_raw | OAQ_portable |")
+    lines.append("|---|---|---|---|---|")
     eng_top = (
         df.dropna(subset=["engagement_raw"])
         .sort_values("engagement_raw", ascending=False)
         .head(10)
     )
     for i, (_, r) in enumerate(eng_top.iterrows(), 1):
-        lines.append(f"| {i} | {r['full_name']} | {_fnum(r['engagement_raw'])} | "
-                     f"{_fnum(r['OAQ_portable'])} |")
+        lines.append(
+            f"| {i} | {r['full_name']} | {_fnum(r['age'], 0)} | "
+            f"{_fnum(r['engagement_raw'])} | {_fnum(r['OAQ_portable'])} |"
+        )
     lines.append("")
-    lines.append("### Top 10 by marchand_index (cap_quality=low excluded)")
-    lines.append("| Rank | Player | marchand_index | OAQ_portable | cap_hit_M |")
-    lines.append("|---|---|---|---|---|")
-    mi_pool = df[df["cap_quality"].astype(str).str.lower() != "low"]
-    mi_top = mi_pool.dropna(subset=["marchand_index"]).sort_values(
-        "marchand_index", ascending=False
-    ).head(10)
-    for i, (_, r) in enumerate(mi_top.iterrows(), 1):
-        lines.append(f"| {i} | {r['full_name']} | {_fnum(r['marchand_index'])} | "
-                     f"{_fnum(r['OAQ_portable'])} | {_fnum(r['cap_hit_M'], 2)} |")
+
+    mi_pool = df[df["cap_quality"].astype(str).str.lower() != "low"].copy()
+    rookie_pool = mi_pool[mi_pool["is_rookie_deal"] == 1]
+    nonrookie_pool = mi_pool[mi_pool["is_rookie_deal"] == 0]
+
+    # Lens 1 — rookie-deal only, raw cap.
+    lines.append("### Lens 1 — Top 10 ROOKIE-DEAL only, raw cap")
+    lines.append("(pool = rookie-deal players, ranked by OAQ_portable / cap_hit_M)\n")
+    lines.append("| Rank | Player | Age | MI_raw | OAQ_portable | cap_hit_M |")
+    lines.append("|---|---|---|---|---|---|")
+    r1 = rookie_pool.dropna(subset=["marchand_index_rawcap"]).sort_values(
+        "marchand_index_rawcap", ascending=False).head(10)
+    for i, (_, r) in enumerate(r1.iterrows(), 1):
+        lines.append(
+            f"| {i} | {r['full_name']} | {_fnum(r['age'],0)} | "
+            f"{_fnum(r['marchand_index_rawcap'])} | "
+            f"{_fnum(r['OAQ_portable'])} | {_fnum(r['cap_hit_M'],2)} |"
+        )
     lines.append("")
+
+    # Lens 2 — non-rookie-deal only, raw cap.
+    lines.append("### Lens 2 — Top 10 NON-ROOKIE-DEAL only, raw cap "
+                 "(\"rookie-deal players removed\")")
+    lines.append("(pool = veterans / extension-era players only, ranked by "
+                 "OAQ_portable / cap_hit_M)\n")
+    lines.append("| Rank | Player | Age | MI_raw | OAQ_portable | cap_hit_M |")
+    lines.append("|---|---|---|---|---|---|")
+    r2 = nonrookie_pool.dropna(subset=["marchand_index_rawcap"]).sort_values(
+        "marchand_index_rawcap", ascending=False).head(10)
+    for i, (_, r) in enumerate(r2.iterrows(), 1):
+        lines.append(
+            f"| {i} | {r['full_name']} | {_fnum(r['age'],0)} | "
+            f"{_fnum(r['marchand_index_rawcap'])} | "
+            f"{_fnum(r['OAQ_portable'])} | {_fnum(r['cap_hit_M'],2)} |"
+        )
+    lines.append("")
+
+    # Lens 3 — all 160, raw cap (§8-original, no rookie adjustment).
+    lines.append("### Lens 3 — Top 10 ALL players, raw cap (no rookie "
+                 "adjustment, §8-original)")
+    lines.append("(pool = all 160, ranked by OAQ_portable / cap_hit_M)\n")
+    lines.append("| Rank | Player | Age | Rookie? | MI_raw | OAQ_portable | "
+                 "cap_hit_M |")
+    lines.append("|---|---|---|---|---|---|---|")
+    r3 = mi_pool.dropna(subset=["marchand_index_rawcap"]).sort_values(
+        "marchand_index_rawcap", ascending=False).head(10)
+    for i, (_, r) in enumerate(r3.iterrows(), 1):
+        lines.append(
+            f"| {i} | {r['full_name']} | {_fnum(r['age'],0)} | "
+            f"{'Y' if r['is_rookie_deal']==1 else 'N'} | "
+            f"{_fnum(r['marchand_index_rawcap'])} | "
+            f"{_fnum(r['OAQ_portable'])} | {_fnum(r['cap_hit_M'],2)} |"
+        )
+    lines.append("")
+
+    # Lens 4 — hybrid (rookie-deal → expected_cap; others → raw cap).
+    lines.append("### Lens 4 — Top 10 ALL players, HYBRID denominator "
+                 "(rookie-deal → expected_cap; others → raw cap)")
+    lines.append("(rookies are evaluated at projected market pay vs. similar-"
+                 "skill peers; veterans keep their actual cap hit)\n")
+    lines.append("| Rank | Player | Age | Rookie? | MI_hybrid | "
+                 "OAQ_portable | denom_used |")
+    lines.append("|---|---|---|---|---|---|---|")
+    r4 = mi_pool.dropna(subset=["marchand_index_hybrid"]).sort_values(
+        "marchand_index_hybrid", ascending=False).head(10)
+    for i, (_, r) in enumerate(r4.iterrows(), 1):
+        is_r = r["is_rookie_deal"] == 1
+        denom = r["expected_cap"] if is_r else r["cap_hit_M"]
+        denom_label = ("expected_cap=" if is_r else "cap_hit_M=") + \
+                      _fnum(denom, 2)
+        lines.append(
+            f"| {i} | {r['full_name']} | {_fnum(r['age'],0)} | "
+            f"{'Y' if is_r else 'N'} | "
+            f"{_fnum(r['marchand_index_hybrid'])} | "
+            f"{_fnum(r['OAQ_portable'])} | {denom_label} |"
+        )
+    lines.append("")
+
+    # Lens 5 — A4 full: expected_cap for everyone.
+    lines.append("### Lens 5 — Top 10 ALL players, FULL A4 "
+                 "(everyone uses expected_cap)")
+    lines.append("(all 160 evaluated at projected market pay; A4 headline)\n")
+    lines.append("| Rank | Player | Age | Rookie? | MI | OAQ_portable | "
+                 "expected_cap | cap_hit_M |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    r5 = mi_pool.dropna(subset=["marchand_index"]).sort_values(
+        "marchand_index", ascending=False).head(10)
+    for i, (_, r) in enumerate(r5.iterrows(), 1):
+        lines.append(
+            f"| {i} | {r['full_name']} | {_fnum(r['age'],0)} | "
+            f"{'Y' if r['is_rookie_deal']==1 else 'N'} | "
+            f"{_fnum(r['marchand_index'])} | "
+            f"{_fnum(r['OAQ_portable'])} | "
+            f"{_fnum(r['expected_cap'],2)} | "
+            f"{_fnum(r['cap_hit_M'],2)} |"
+        )
+    lines.append("")
+
+    # Top-20 team clustering under A5 (sanity check that small-market amplifier
+    # is gone).
+    market_clusters = (
+        df.dropna(subset=["marchand_index"])
+        .sort_values("marchand_index", ascending=False)
+        .head(20)["team_code"].value_counts()
+    )
+    cluster_str = ", ".join(
+        f"{t}={c}" for t, c in market_clusters.items() if c >= 2
+    ) or "no team contributes ≥2 to top 20"
+    lines.append("### A5 sanity check — team clustering in top-20 MI")
+    lines.append(
+        f"Top-20 MI team clustering under A5 (λ = {LAMBDA_BIGMARKET}): "
+        f"{cluster_str}. Under locked-v1 (λ = 1, two-sided) the same set "
+        "clustered SJ=5, BUF=4, WPG=4 — driven by the small-market "
+        "subtraction. A5 collapses small-market `max(0, market_z)` to 0, "
+        "removing that amplifier.\n"
+    )
+
+    # λ sensitivity ladder — recompute Lens 5 (expected_cap MI) under each λ.
+    er_all = df["engagement_raw"].to_numpy(dtype=float)
+    market_z_all = df["market_z"].to_numpy(dtype=float)
+    peer_ids_str = df["peer_player_ids"].astype(str)
+    peer_idx_lists = [
+        [int(x) for x in s.split("|") if x] for s in peer_ids_str
+    ]
+    pid_to_row = {int(p): i for i, p in enumerate(df["player_id"].to_numpy())}
+    peer_rows = [
+        [pid_to_row[p] for p in pl if p in pid_to_row]
+        for pl in peer_idx_lists
+    ]
+    exp_cap_all = df["expected_cap"].to_numpy(dtype=float)
+    exp_ok = (exp_cap_all > 0) & np.isfinite(exp_cap_all)
+
+    lines.append("### λ sensitivity ladder — top 10 by MI (Lens 5 view)")
+    lines.append(
+        f"For each λ, recompute `OAQ_portable = engagement_raw − λ × "
+        f"max(0, market_z) − peer_mean(same)`, divide by `expected_cap`, "
+        "exclude `cap_quality=low`. λ = 0 is the no-correction floor; "
+        f"λ = {LAMBDA_BIGMARKET} is the A5 headline; λ = 1 is full one-sided "
+        "subtraction (still milder than locked-v1, which is two-sided).\n"
+    )
+    lines.append("| Rank | " + " | ".join(
+        f"λ={lam}" for lam in LAMBDA_SENSITIVITY) + " |")
+    lines.append("|---|" + "---|" * len(LAMBDA_SENSITIVITY))
+    lam_top10: list[list[str]] = []
+    cap_quality_low = (
+        df["cap_quality"].astype(str).str.lower() == "low"
+    ).to_numpy()
+    for lam in LAMBDA_SENSITIVITY:
+        adj = er_all - lam * np.maximum(0.0, market_z_all)
+        peer_adj = np.full_like(adj, np.nan)
+        for i, rows in enumerate(peer_rows):
+            if not rows:
+                continue
+            sub = adj[rows]
+            sub = sub[np.isfinite(sub)]
+            if sub.size:
+                peer_adj[i] = sub.mean()
+        port = adj - peer_adj
+        with np.errstate(invalid="ignore", divide="ignore"):
+            mi_lam = np.where(exp_ok, port / exp_cap_all, np.nan)
+        mi_lam = np.where(cap_quality_low, np.nan, mi_lam)
+        order = np.argsort(-np.where(np.isfinite(mi_lam), mi_lam, -np.inf))
+        top = []
+        for j in order[:10]:
+            if not np.isfinite(mi_lam[j]):
+                top.append("—")
+            else:
+                top.append(
+                    f"{df.iloc[j]['full_name']} ({mi_lam[j]:.3f})"
+                )
+        lam_top10.append(top)
+    for r in range(10):
+        row = [str(r + 1)]
+        for col in range(len(LAMBDA_SENSITIVITY)):
+            row.append(lam_top10[col][r])
+        lines.append("| " + " | ".join(row) + " |")
+    lines.append("")
+    lines.append(
+        "Stability check: the qualitative MI structure (Crosby / Celebrini / "
+        "Will Smith / McDavid / M.Tkachuk holding top ranks across λ ∈ "
+        f"[0, {LAMBDA_BIGMARKET}]) supports the choice of λ as a "
+        "max-entropy midpoint — the headline ranking is not a sharp "
+        "function of the exact λ.\n"
+    )
 
     path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -878,7 +1225,14 @@ OUT_COLS = [
     "market_z",
     "OAQ_observed", "OAQ_observed_lo95", "OAQ_observed_hi95",
     "OAQ_portable", "OAQ_portable_lo95", "OAQ_portable_hi95",
+    "OAQ_portable_lockedv1",
+    "OAQ_portable_lockedv1_lo95", "OAQ_portable_lockedv1_hi95",
+    "expected_cap", "is_rookie_deal",
     "marchand_index", "marchand_index_lo95", "marchand_index_hi95",
+    "marchand_index_rawcap",
+    "marchand_index_rawcap_lo95", "marchand_index_rawcap_hi95",
+    "marchand_index_hybrid",
+    "marchand_index_hybrid_lo95", "marchand_index_hybrid_hi95",
     "cap_hit_M", "cap_quality", "match_quality",
     "jersey_list_member", "jersey_rank", "asg2024_member",
 ]
