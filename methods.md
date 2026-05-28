@@ -261,4 +261,17 @@ Separately from the gates above, we locked in four specific predictions before r
 
 ---
 
+## Amendments to the locked Tier-1 pilot pre-registration (`pilot2/preregistration.md` §14)
+
+Every method change after the original lock is logged with a date, a reason, and a "before re-running" timestamp. The original columns are preserved for audit.
+
+- **A1 (2026-05-27)** — Wikipedia slug resolver hardened: redirects resolved through Wikidata occupation = ice-hockey player (Q11774891) to avoid redirect under-counts and wrong-entity matches. Mechanical data-collection fix; no method change.
+- **A2 (2026-05-27)** — Reddit transport switched from PRAW to public JSON endpoint (`reddit.com/r/<sub>/search.json`). Same source, subreddits, query, window, dedup, and 1,000-result cap; transport only.
+- **A3 (2026-05-27)** — V1 jersey-list operationalization split into V1a (rank Spearman, small overlap) and V1b (membership AUC, larger overlap). Both reported regardless of direction; both currently underpowered.
+- **A4 (2026-05-27)** — Marchand-Index denominator switched from raw `cap_hit_M` to `expected_cap` from per-position OLS `cap_hit_M ~ PPG + TOI/G`, prediction floored at $0.775M, age excluded to avoid re-importing the rookie scale. Headline metric becomes intrinsic attention efficiency stable across the ELC→extension transition. Raw-cap quantity retained as `marchand_index_rawcap`.
+- **A5 (2026-05-27)** — §7 market correction switched from full two-sided subtraction to **one-sided damped**: `OAQ_portable = engagement − λ × max(0, market_z) − peer_mean`, with λ = 0.5 as the maximum-entropy midpoint between λ = 0 (no correction) and λ = 1 (no portability). λ committed before the re-run; sensitivity ladder λ ∈ {0, 0.25, 0.5, 0.75, 1.0} reported as robustness. Locked-v1 retained as `OAQ_portable_lockedv1`. **Honest disclosure of asymmetric peer subtraction:** the peer mean is computed over each peer's own adjusted engagement, so a small-market player whose peers include big-market opponents has the comparison baseline pulled down. This is an explicit modeling choice that rewards above-replacement attention in low-amplification environments, not a bug.
+- **A6 (2026-05-28)** — V3 team-level triangulation gate added at n = 32 teams. Outcome = team Wikipedia 12-mo pageviews (Reddit subreddit-subscriber endpoint blanket-blocked at $0; pre-fetch availability check documented, graceful-degradation per §3.5/§7). Predictor = sum of `OAQ_observed` across each team's five pilot players. Floor ρ ≥ 0.40 mirrors V1. **Result: ρ = 0.418, 95% CI [0.073, 0.682], n = 32 teams, PD confirmed.** Mechanical baseline (sum of `engagement_raw`): ρ = 0.410, CI [0.045, 0.682] — reported openly; peer-skill control does not significantly enhance the team-aggregate signal beyond raw attention.
+
+---
+
 <sub>Companion to: *The Marchand Index: A Peer-Matched, Cap-Adjusted Model of NHL Fan Attention* — CASSIS 2026 submission · Adam Noakes · ana178@sfu.ca</sub>
