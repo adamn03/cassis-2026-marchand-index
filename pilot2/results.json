@@ -50,6 +50,63 @@
       "target": 0.55,
       "underpowered": true,
       "note": "asg2024 published as membership only (no fan-vote share available), so V2 is AUC; no Spearman computed."
+    },
+    "V3": {
+      "test": "Spearman rho(sum_OAQ_observed_per_team, team_wiki_12mo) across n teams",
+      "metric": "spearman_rho",
+      "value": 0.4175219941348973,
+      "ci95": [
+        0.07309101057313595,
+        0.6823959828782085
+      ],
+      "n": 32,
+      "floor": 0.4,
+      "target": 0.5,
+      "underpowered": false,
+      "outcome_signal": "team Wikipedia 12-mo pageviews (A6 graceful-degradation: Reddit subscriber 403)",
+      "predictor": "sum of OAQ_observed across each team's 5 pilot players",
+      "robustness_eng_raw": {
+        "rho": 0.40945747800586507,
+        "ci95": [
+          0.04472710176542933,
+          0.6822686451360646
+        ],
+        "note": "mechanical baseline: sum of engagement_raw (no peer-skill control)"
+      },
+      "teams_used": [
+        "ANA",
+        "BOS",
+        "BUF",
+        "CAR",
+        "CBJ",
+        "CGY",
+        "CHI",
+        "COL",
+        "DAL",
+        "DET",
+        "EDM",
+        "FLA",
+        "LA",
+        "MIN",
+        "MON",
+        "NAS",
+        "NJ",
+        "NYI",
+        "NYR",
+        "OTT",
+        "PHI",
+        "PIT",
+        "SEA",
+        "SJ",
+        "STL",
+        "TB",
+        "TOR",
+        "UTA",
+        "VAN",
+        "VEG",
+        "WAS",
+        "WPG"
+      ]
     }
   },
   "patterns": {
@@ -79,6 +136,27 @@
       "floor": 0.45,
       "underpowered": true,
       "verdict": "inconclusive"
+    },
+    "PD": {
+      "description": "Sum of OAQ_observed per team aligns with independent team Wikipedia pageviews (V3 Spearman >= 0.40)",
+      "metric": "spearman_rho",
+      "value": 0.4175219941348973,
+      "ci95": [
+        0.07309101057313595,
+        0.6823959828782085
+      ],
+      "n": 32,
+      "floor": 0.4,
+      "underpowered": false,
+      "verdict": "confirmed",
+      "robustness_eng_raw": {
+        "rho": 0.40945747800586507,
+        "ci95": [
+          0.04472710176542933,
+          0.6822686451360646
+        ],
+        "note": "mechanical baseline: sum of engagement_raw (no peer-skill control)"
+      }
     },
     "PC": {
       "description": ">=3 of top-10 by engagement_raw displaced out of top-10 by marchand_index",

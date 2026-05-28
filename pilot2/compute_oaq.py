@@ -125,6 +125,11 @@ PA_FLOOR = 0.40   # PA uses V1 Spearman >= 0.40
 PB_FLOOR = 0.45   # PB uses V2 Spearman >= 0.45
 UNDERPOWERED_N = 10
 
+# A6: V3 team-level triangulation gate. n=32 teams. Floor mirrors V1.
+V3_FLOOR, V3_TARGET = 0.40, 0.50
+PD_FLOOR = 0.40
+V3_N_TEAMS = 32
+
 
 # --------------------------------------------------------------------------- #
 # Loading                                                                      #
@@ -783,6 +788,87 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
         "note": ("asg2024 published as membership only (no fan-vote share "
                  "available), so V2 is AUC; no Spearman computed."),
     }
+
+    # ---- V3 (A6): team-level triangulation. n=32 teams. ---- #
+    v3_path = PILOT_DIR / "team_outcomes.csv"
+    if v3_path.exists():
+        to_df = pd.read_csv(v3_path)
+        wiki_team = pd.to_numeric(
+            to_df["wiki_12mo"], errors="coerce"
+        ).to_numpy(dtype=float)
+        team_codes_v3 = to_df["team_code"].astype(str).to_numpy()
+        # Sum OAQ_observed across each team's 5 pilot players (held-out test:
+        # peer-matched residual aggregated to team level vs. independent
+        # team-account popularity signal).
+        oaq_obs_all = df["OAQ_observed"].to_numpy(dtype=float)
+        team_codes_p = df["team_code"].astype(str).to_numpy()
+        team_sum_oaq = []
+        team_sum_eng = []
+        eng_all = df["engagement_raw"].to_numpy(dtype=float)
+        wiki_aligned = []
+        team_used = []
+        for tc, w in zip(team_codes_v3, wiki_team):
+            if not np.isfinite(w):
+                continue
+            mask = team_codes_p == tc
+            if mask.sum() == 0:
+                continue
+            obs_sum = np.nansum(oaq_obs_all[mask])
+            eng_sum = np.nansum(eng_all[mask])
+            team_sum_oaq.append(obs_sum)
+            team_sum_eng.append(eng_sum)
+            wiki_aligned.append(w)
+            team_used.append(tc)
+        team_sum_oaq = np.array(team_sum_oaq, dtype=float)
+        team_sum_eng = np.array(team_sum_eng, dtype=float)
+        wiki_aligned = np.array(wiki_aligned, dtype=float)
+        n_v3 = int(len(team_sum_oaq))
+        if n_v3 >= 2:
+            rho_v3 = spearman_rho(team_sum_oaq, wiki_aligned)
+            rho_v3_eng = spearman_rho(team_sum_eng, wiki_aligned)
+
+            def stat_v3(idx):
+                return spearman_rho(team_sum_oaq[idx], wiki_aligned[idx])
+
+            def stat_v3_eng(idx):
+                return spearman_rho(team_sum_eng[idx], wiki_aligned[idx])
+
+            ci_v3 = _bootstrap_stat_ci(stat_v3, n_v3, n_draws, seed)
+            ci_v3_eng = _bootstrap_stat_ci(stat_v3_eng, n_v3, n_draws, seed)
+        else:
+            rho_v3, ci_v3 = float("nan"), (float("nan"), float("nan"))
+            rho_v3_eng, ci_v3_eng = float("nan"), (float("nan"), float("nan"))
+        results["V3"] = {
+            "test": ("Spearman rho(sum_OAQ_observed_per_team, "
+                     "team_wiki_12mo) across n teams"),
+            "metric": "spearman_rho",
+            "value": rho_v3,
+            "ci95": list(ci_v3),
+            "n": n_v3,
+            "floor": V3_FLOOR,
+            "target": V3_TARGET,
+            "underpowered": n_v3 < UNDERPOWERED_N,
+            "outcome_signal": ("team Wikipedia 12-mo pageviews (A6 "
+                               "graceful-degradation: Reddit subscriber 403)"),
+            "predictor": "sum of OAQ_observed across each team's 5 pilot players",
+            "robustness_eng_raw": {
+                "rho": rho_v3_eng,
+                "ci95": list(ci_v3_eng),
+                "note": ("mechanical baseline: sum of engagement_raw "
+                         "(no peer-skill control)"),
+            },
+            "teams_used": team_used,
+        }
+    else:
+        results["V3"] = {
+            "test": "team-level triangulation (A6)",
+            "value": float("nan"),
+            "ci95": [float("nan"), float("nan")],
+            "n": 0,
+            "floor": V3_FLOOR,
+            "underpowered": True,
+            "note": "team_outcomes.csv not found",
+        }
     return results
 
 
@@ -825,6 +911,26 @@ def evaluate_patterns(df: pd.DataFrame, external: dict) -> dict:
         "floor": PB_FLOOR,
         "underpowered": v2["underpowered"],
         "verdict": "inconclusive",
+    }
+
+    # PD (A6): V3 team-level triangulation — Spearman rho >= 0.40.
+    v3 = external.get("V3", {})
+    rho_v3 = v3.get("value", float("nan"))
+    if v3.get("underpowered", True) or not np.isfinite(rho_v3):
+        pd_verdict = "inconclusive"
+    else:
+        pd_verdict = "confirmed" if rho_v3 >= PD_FLOOR else "disconfirmed"
+    out["PD"] = {
+        "description": ("Sum of OAQ_observed per team aligns with independent "
+                        "team Wikipedia pageviews (V3 Spearman >= 0.40)"),
+        "metric": "spearman_rho",
+        "value": rho_v3,
+        "ci95": v3.get("ci95", [float("nan"), float("nan")]),
+        "n": v3.get("n", 0),
+        "floor": PD_FLOOR,
+        "underpowered": v3.get("underpowered", True),
+        "verdict": pd_verdict,
+        "robustness_eng_raw": v3.get("robustness_eng_raw", {}),
     }
 
     # PC: >=3 of top-10 by engagement_raw are displaced OUT of top-10 by MI.
@@ -945,9 +1051,29 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
         f"{v2['n_members']}/{v2['n_total']} | "
         f"{'underpowered' if v2['underpowered'] else 'powered'} |"
     )
+    v3 = external.get("V3", {})
+    if v3:
+        lines.append(
+            f"| V3 | {v3.get('test','')} | rho | {_fnum(v3.get('value'))} | "
+            f"[{_fnum(v3.get('ci95',[float('nan'),float('nan')])[0])}, "
+            f"{_fnum(v3.get('ci95',[float('nan'),float('nan')])[1])}] | "
+            f"{v3.get('n', 0)} (teams) | "
+            f"{'underpowered' if v3.get('underpowered', True) else 'powered'} |"
+        )
     lines.append("")
     lines.append(f"- V1a convention: {v1a['convention']}")
     lines.append(f"- V2 note: {v2['note']}")
+    if v3:
+        rob = v3.get("robustness_eng_raw", {})
+        lines.append(
+            f"- V3 (A6): outcome = {v3.get('outcome_signal','')}; "
+            f"predictor = {v3.get('predictor','')}. "
+            f"Mechanical baseline (sum of engagement_raw, no peer-skill "
+            f"control): rho = {_fnum(rob.get('rho'))}, 95% CI "
+            f"[{_fnum(rob.get('ci95',[float('nan'),float('nan')])[0])}, "
+            f"{_fnum(rob.get('ci95',[float('nan'),float('nan')])[1])}]. "
+            "Headline V3 uses peer-matched OAQ_observed."
+        )
     lines.append("")
 
     # Patterns.
@@ -966,6 +1092,28 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
                  f"members={pb['n_members']}")
     lines.append(f"- **Verdict: {pb['verdict']}**"
                  f"{' (underpowered)' if pb['underpowered'] else ''}\n")
+    pd_ = patterns.get("PD", {})
+    if pd_:
+        lines.append(f"### PD — {pd_['description']}")
+        lines.append(
+            f"- Spearman rho = {_fnum(pd_['value'])}, 95% CI "
+            f"[{_fnum(pd_['ci95'][0])}, {_fnum(pd_['ci95'][1])}], n={pd_['n']} teams"
+        )
+        rob = pd_.get("robustness_eng_raw", {})
+        if rob:
+            lines.append(
+                f"- Mechanical baseline (sum of engagement_raw): rho = "
+                f"{_fnum(rob.get('rho'))}, 95% CI "
+                f"[{_fnum(rob.get('ci95',[float('nan'),float('nan')])[0])}, "
+                f"{_fnum(rob.get('ci95',[float('nan'),float('nan')])[1])}] — "
+                "comparison shows whether peer-skill control adds signal "
+                "beyond raw aggregate attention."
+            )
+        lines.append(
+            f"- **Verdict: {pd_['verdict']}**"
+            f"{' (underpowered)' if pd_['underpowered'] else ''}\n"
+        )
+
     pc = patterns["PC"]
     lines.append(f"### PC — {pc['description']}")
     lines.append(f"- Displaced out of top-10 by MI: {pc['n_displaced']} "
