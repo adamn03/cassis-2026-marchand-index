@@ -175,3 +175,27 @@ The §8 definition `marchand_index = OAQ_portable / cap_hit_M` is dominated by a
 `marchand_index(P) = OAQ_portable(P) / expected_cap(P)`
 
 The original raw-cap quantity is **retained** as `marchand_index_rawcap` (the §8-original) for audit and as a secondary "current-season bargain" lens. This is a principled de-biasing of a known, a-priori-obvious structural artifact decided on reasoning grounds — not a post-hoc adjustment chasing any player's rank — and the original column is preserved per §13. It does **not** alter the composite weights (§4), the peer features or `OAQ_observed`/`OAQ_portable` (§6/§7), or the external-validation outcomes and floors (§9); only the Marchand Index denominator changes. Interpretation: because for players already on market contracts the fitted `expected_cap` ≈ `cap_hit_M` (the metric moves them little), while for ELCs it substitutes the player's market-rate value, `marchand_index` now measures intrinsic attention efficiency that is stable across the ELC→extension transition rather than rewarding temporary contract timing.
+
+**A5 (2026-05-27) — §7 market correction: one-sided damped subtraction with λ = 0.5. Logged BEFORE re-running compute with the amended OAQ_portable.**
+The §7 formula `OAQ_portable(P) = engagement_raw(P) − z(MarketSize_team(P)) − peer_mean(of same)` implicitly assumes that 100% of market-driven attention is non-portable — that a player who moves teams loses all of the engagement boost their team's market provided. Two structural failure modes emerged in the initial pilot2 run:
+
+1. **Small-market amplification.** For players on teams with deeply negative `market_z` (SJS = −2.27, BUF ≈ −1.5, WPG ≈ −2.0), the locked formula subtracts a large negative number, *adding* the absolute value back to engagement regardless of whether the player has any above-replacement attention. Empirically: Mukhamadullin (SJS, `OAQ_observed` = −0.07) and Orlov (SJS, `OAQ_observed` = −0.19) rank in the MI top-10 driven *entirely* by the +2.27 SJS market subtraction; their measured attention is at or below their peer mean.
+2. **Big-market under-credit.** For players on teams with positive `market_z` (TOR, MTL, NYR), the full subtraction discounts attention that empirically follows the player when they move (the Marner/Tavares "fans travel with the player" phenomenon).
+
+The locked assumption is asymmetric in its damage: it bonuses small-market players with no genuine attention surplus and over-penalizes big-market players whose fan equity does partially travel.
+
+**Corrected formula (applied identically to all 160):**
+
+`OAQ_portable(P) = engagement_raw(P) − λ × max(0, market_z(P)) − peer_mean(of same)`
+
+with **λ = 0.5**.
+
+Two structural properties:
+- **One-sided (`max(0, ·)`):** small-market players (`market_z < 0`) receive zero correction. Their measured engagement *is* their portable engagement — they had no market boost to discount.
+- **Damped (λ < 1):** big-market players (`market_z > 0`) receive a partial discount of `λ × market_z`, not the full subtraction. This reflects the empirical reality that a fraction of market-driven attention is portable (fans travel with stars).
+
+**λ justification (audience-defensible):** with no empirical anchor for the share of market-driven attention that is portable, we adopt the **maximum-entropy midpoint** λ = 0.5 — the unique unbiased prior between the bounds λ = 0 (no market correction at all) and λ = 1 (locked-method assumption that no attention travels). λ is committed *before* the re-run and is not grid-searched against any external metric. The full sensitivity ladder λ ∈ {0, 0.25, 0.5, 0.75, 1.0} is reported in `results.md` as a robustness check; the headline λ = 0.5 is the only number used in the abstract and figure.
+
+**Locked-v1 retained:** the original two-sided full subtraction `OAQ_portable` is preserved as `OAQ_portable_lockedv1` in `oaq_pilot.csv` for audit, per §13. All three Marchand Index variants (`marchand_index`, `marchand_index_rawcap`, `marchand_index_hybrid`) are recomputed off the new A5 `OAQ_portable`.
+
+**Anti-tuning compliance (§13):** A5 is decided on reasoning grounds about market mechanics (asymmetric damage of the locked assumption); λ = 0.5 is the maximum-entropy midpoint, not chosen after inspecting any player's rank; the original column is preserved; external-validation floors (§9) and the PA/PB tests are unchanged. PC's "≥3 displaced" verdict is recomputed off the A5 leaderboard. This does **not** alter §4 composite weights, §6 peer features, or §8/A4 denominator construction.
