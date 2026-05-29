@@ -4,11 +4,19 @@ Composite weights 0.250 (mentions) + 0.167 (upvotes). Searches r/hockey + the
 team subreddit for the player's last name over the trailing 365 days, dedups by
 submission id, counts matches and sums their `score`.
 
-Mechanism (pre-reg §14 A2, 2026-05-27): the unauthenticated public search JSON
-endpoint, not PRAW (which needs OAuth creds unavailable at $0). Same source,
-subreddits, query, window, dedup, and 1,000-result cap. A sub that rate-limits
-or 404s contributes 0 and sets reddit_status=partial; if every request fails the
-row is NULL (reddit_status=null) and the §4 sentinel renormalizes.
+Mechanism (pre-reg §14 A2, 2026-05-27; transport amended A9, 2026-05-28):
+authenticated Reddit OAuth search (`oauth.reddit.com/r/<sub>/search` with an
+app-only bearer token), after the unauthenticated `www.reddit.com/.../search.json`
+endpoint hard-403'd this IP. Transport only: same source, subreddits, query,
+window, dedup, and 1,000-result cap as A2. A sub that rate-limits or 404s
+contributes 0 and sets reddit_status=partial; if every request fails the row is
+NULL (reddit_status=null) and the §4 sentinel renormalizes.
+
+Credentials: a free Reddit "script" app's client_id + client_secret, read from
+env (REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET) or pilot2/.env (gitignored). App-only
+`client_credentials` grant is used by default (id + secret only, no account
+password); if REDDIT_USERNAME + REDDIT_PASSWORD are also present the more-permissive
+`password` grant is used instead.
 
 Robustness (2026-05-27, not a pre-reg change — transport hardening only):
   * Both CSVs are SNAPSHOT-written after every player, so a killed/detached run
@@ -27,6 +35,7 @@ Writes: pilot2/raw/reddit_counts.csv
 from __future__ import annotations
 
 import datetime as dt
+import os
 import sys
 import time
 from pathlib import Path
@@ -35,12 +44,15 @@ sys.path.insert(0, str(Path(__file__).parent))
 from _common import RAW_DIR, atomic_write_csv, load_csv, load_players  # noqa: E402
 
 import requests  # noqa: E402
+from requests.auth import HTTPBasicAuth  # noqa: E402
 
-UA = "marchand-index-pilot2/0.1 (research; contact ana178@sfu.ca)"
+UA = "marchand-index-pilot2/0.2 (research; contact ana178@sfu.ca)"
+OAUTH_BASE = "https://oauth.reddit.com"           # authenticated host (A9)
+TOKEN_URL = "https://www.reddit.com/api/v1/access_token"
 WINDOW_DAYS = 365
 MAX_RESULTS = 1000          # pre-registered search cap
 PAGE = 100
-SLEEP = 2.0                 # unauthenticated Reddit tolerates ~1 req / 2s
+SLEEP = 2.0                 # OAuth allows ~100 req/min; 2s spacing (~30/min) is polite and safe
 RETRIES = 4                 # attempts per page before a sub is declared failed
 BACKOFF = [5.0, 10.0, 20.0, 40.0]  # escalating sleep on 429 / transient 5xx
 
@@ -71,6 +83,64 @@ def last_name(full_name: str) -> str:
     return full_name.split()[-1]
 
 
+_ENV_MAP = {
+    "REDDIT_CLIENT_ID": "client_id", "REDDIT_CLIENT_SECRET": "client_secret",
+    "REDDIT_USERNAME": "username", "REDDIT_PASSWORD": "password",
+}
+
+
+def load_creds() -> dict:
+    """Reddit OAuth creds from env, falling back to pilot2/.env (gitignored).
+
+    Requires client_id + client_secret. username + password are optional (enable
+    the password grant); absent them the app-only client_credentials grant is used.
+    """
+    creds = {"client_id": "", "client_secret": "", "username": "", "password": ""}
+    for env_key, field in _ENV_MAP.items():
+        if os.environ.get(env_key):
+            creds[field] = os.environ[env_key].strip()
+    env_file = Path(__file__).parent / ".env"
+    if env_file.exists():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, val = line.split("=", 1)
+            field = _ENV_MAP.get(key.strip())
+            if field and not creds[field]:
+                creds[field] = val.strip().strip('"').strip("'")
+    if not creds["client_id"] or not creds["client_secret"]:
+        sys.exit("Reddit OAuth creds missing. Set REDDIT_CLIENT_ID and "
+                 "REDDIT_CLIENT_SECRET in env or pilot2/.env (see module header).")
+    return creds
+
+
+# Mutable token cache shared across pages; refreshed on expiry or 401.
+_TOKEN = {"value": None, "expires_at": 0.0}
+_CREDS: dict = {}
+
+
+def ensure_token(sess, force: bool = False) -> str:
+    """Return a valid app-only/user bearer token, fetching/refreshing as needed."""
+    if not force and _TOKEN["value"] and time.time() < _TOKEN["expires_at"] - 60:
+        return _TOKEN["value"]
+    auth = HTTPBasicAuth(_CREDS["client_id"], _CREDS["client_secret"])
+    if _CREDS.get("username") and _CREDS.get("password"):
+        data = {"grant_type": "password",
+                "username": _CREDS["username"], "password": _CREDS["password"]}
+    else:
+        data = {"grant_type": "client_credentials"}
+    r = sess.post(TOKEN_URL, auth=auth, data=data,
+                  headers={"User-Agent": UA}, timeout=25)
+    r.raise_for_status()
+    j = r.json()
+    if "access_token" not in j:
+        sys.exit(f"Reddit token request returned no access_token: {j}")
+    _TOKEN["value"] = j["access_token"]
+    _TOKEN["expires_at"] = time.time() + int(j.get("expires_in", 3600))
+    return _TOKEN["value"]
+
+
 def get_page(sess, sub: str, query: str, after: str | None) -> tuple[list, str | None, bool]:
     """One search page. Returns (children, next_after, ok)."""
     params = {"q": query, "restrict_sr": 1, "sort": "new",
@@ -79,8 +149,18 @@ def get_page(sess, sub: str, query: str, after: str | None) -> tuple[list, str |
         params["after"] = after
     for attempt in range(RETRIES):
         try:
-            r = sess.get(f"https://www.reddit.com/r/{sub}/search.json",
-                         params=params, headers={"User-Agent": UA}, timeout=25)
+            tok = ensure_token(sess)
+            r = sess.get(f"{OAUTH_BASE}/r/{sub}/search",
+                         params=params,
+                         headers={"User-Agent": UA, "Authorization": f"bearer {tok}"},
+                         timeout=25)
+            # 401 => token expired/revoked: refresh once and retry this attempt.
+            if r.status_code == 401:
+                print(f"  r/{sub} '{query}': HTTP 401, refreshing token "
+                      f"(attempt {attempt + 1}/{RETRIES})", file=sys.stderr)
+                ensure_token(sess, force=True)
+                time.sleep(1.0)
+                continue
             # 429 (throttle) and transient 5xx are worth a longer wait + retry;
             # any other non-200 (404 dead sub, 403) is permanent for this sub.
             if r.status_code == 429 or 500 <= r.status_code < 600:
@@ -165,9 +245,15 @@ def snapshot(order: list[str], counts_by_pid: dict[str, dict],
 
 
 def main() -> None:
+    global _CREDS
     fetch_date = dt.date.today().isoformat()
     cutoff = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=WINDOW_DAYS)).timestamp()
     sess = requests.Session()
+
+    _CREDS = load_creds()
+    grant = "password" if (_CREDS.get("username") and _CREDS.get("password")) else "client_credentials"
+    ensure_token(sess)  # validate creds up-front; exits clearly if they are wrong
+    print(f"Reddit OAuth token acquired ({grant} grant).")
 
     players = load_players()
     order = [p["player_id"] for p in players]
