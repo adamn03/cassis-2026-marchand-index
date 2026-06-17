@@ -1,161 +1,789 @@
-player_id,full_name,position,group,line_slot,team_code,nhl_team_code,team_slug,team_city,nhl_player_id,wikipedia_slug,capwages_slug,roster_source,fetch_date
-1,Cutter Gauthier,L,f1,f1:L,ANA,ANA,anaheim-ducks,Anaheim,8483445,Cutter_Gauthier,cutter-gauthier,nhl_toi_position,2026-05-28
-2,Mikael Granlund,C,f1,f1:C,ANA,ANA,anaheim-ducks,Anaheim,8475798,Mikael_Granlund,mikael-granlund,nhl_toi_position,2026-05-28
-3,Troy Terry,R,f1,f1:R,ANA,ANA,anaheim-ducks,Anaheim,8478873,Troy_Terry,troy-terry,nhl_toi_position,2026-05-28
-4,Jackson LaCombe,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8481605,Jackson_LaCombe,jackson-lacombe,nhl_toi_position,2026-05-28
-5,John Carlson,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8474590,John_Carlson,john-carlson,nhl_toi_position,2026-05-28
-6,Viktor Arvidsson,L,f1,f1:L,BOS,BOS,boston-bruins,Boston,8478042,Viktor_Arvidsson,viktor-arvidsson,nhl_toi_position,2026-05-28
-7,Elias Lindholm,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8477496,Elias_Lindholm,elias-lindholm,nhl_toi_position,2026-05-28
-8,David Pastrnak,R,f1,f1:R,BOS,BOS,boston-bruins,Boston,8477956,David_Pastrnak,david-pastrnak,nhl_toi_position,2026-05-28
-9,Charlie McAvoy,D,d1,d1:D,BOS,BOS,boston-bruins,Boston,8479325,Charlie_McAvoy,charlie-mcavoy,nhl_toi_position,2026-05-28
-10,Hampus Lindholm,D,d1,d1:D,BOS,BOS,boston-bruins,Boston,8476854,Hampus_Lindholm,hampus-lindholm,nhl_toi_position,2026-05-28
-11,Zach Benson,L,f1,f1:L,BUF,BUF,buffalo-sabres,Buffalo,8484145,Zach_Benson,zach-benson,nhl_toi_position,2026-05-28
-12,Tage Thompson,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8479420,Tage_Thompson,tage-thompson,nhl_toi_position,2026-05-28
-13,Alex Tuch,R,f1,f1:R,BUF,BUF,buffalo-sabres,Buffalo,8477949,Alex_Tuch,alex-tuch,nhl_toi_position,2026-05-28
-14,Rasmus Dahlin,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8480839,Rasmus_Dahlin,rasmus-dahlin,nhl_toi_position,2026-05-28
-15,Mattias Samuelsson,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8480807,Mattias_Samuelsson,mattias-samuelsson,nhl_toi_position,2026-05-28
-16,Jonathan Huberdeau,L,f1,f1:L,CGY,CGY,calgary-flames,Calgary,8476456,Jonathan_Huberdeau,jonathan-huberdeau,nhl_toi_position,2026-05-28
-17,Mikael Backlund,C,f1,f1:C,CGY,CGY,calgary-flames,Calgary,8474150,Mikael_Backlund,mikael-backlund,nhl_toi_position,2026-05-28
-18,Matt Coronato,R,f1,f1:R,CGY,CGY,calgary-flames,Calgary,8482679,Matt_Coronato,matt-coronato,nhl_toi_position,2026-05-28
-19,Kevin Bahl,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8480860,Kevin_Bahl,kevin-bahl,nhl_toi_position,2026-05-28
-20,Zach Whitecloud,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8480727,Zach_Whitecloud,zach-whitecloud,nhl_toi_position,2026-05-28
-21,Nikolaj Ehlers,L,f1,f1:L,CAR,CAR,carolina-hurricanes,Carolina,8477940,Nikolaj_Ehlers,nikolaj-ehlers,nhl_toi_position,2026-05-28
-22,Sebastian Aho,C,f1,f1:C,CAR,CAR,carolina-hurricanes,Carolina,8478427,Sebastian_Aho,sebastian-aho,nhl_toi_position,2026-05-28
-23,Andrei Svechnikov,R,f1,f1:R,CAR,CAR,carolina-hurricanes,Carolina,8480830,Andrei_Svechnikov,andrei-svechnikov,nhl_toi_position,2026-05-28
-24,K'Andre Miller,D,d1,d1:D,CAR,CAR,carolina-hurricanes,Carolina,8480817,K'Andre_Miller,kandre-miller,nhl_toi_position,2026-05-28
-25,Sean Walker,D,d1,d1:D,CAR,CAR,carolina-hurricanes,Carolina,8480336,Sean_Walker,sean-walker,nhl_toi_position,2026-05-28
-26,Tyler Bertuzzi,L,f1,f1:L,CHI,CHI,chicago-blackhawks,Chicago,8477479,Tyler_Bertuzzi,tyler-bertuzzi,nhl_toi_position,2026-05-28
-27,Connor Bedard,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8484144,Connor_Bedard,connor-bedard,nhl_toi_position,2026-05-28
-28,Ilya Mikheyev,R,f1,f1:R,CHI,CHI,chicago-blackhawks,Chicago,8481624,Ilya_Mikheyev,ilya-mikheyev,nhl_toi_position,2026-05-28
-29,Alex Vlasic,D,d1,d1:D,CHI,CHI,chicago-blackhawks,Chicago,8481568,Alex_Vlasic,alex-vlasic,nhl_toi_position,2026-05-28
-30,Wyatt Kaiser,D,d1,d1:D,CHI,CHI,chicago-blackhawks,Chicago,8482176,Wyatt_Kaiser,wyatt-kaiser,nhl_toi_position,2026-05-28
-31,Artturi Lehkonen,L,f1,f1:L,COL,COL,colorado-avalanche,Colorado,8477476,Artturi_Lehkonen,artturi-lehkonen,nhl_toi_position,2026-05-28
-32,Nathan MacKinnon,C,f1,f1:C,COL,COL,colorado-avalanche,Colorado,8477492,Nathan_MacKinnon,nathan-mackinnon,nhl_toi_position,2026-05-28
-33,Valeri Nichushkin,R,f1,f1:R,COL,COL,colorado-avalanche,Colorado,8477501,Valeri_Nichushkin,valeri-nichushkin,nhl_toi_position,2026-05-28
-34,Cale Makar,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8480069,Cale_Makar,cale-makar,nhl_toi_position,2026-05-28
-35,Devon Toews,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8478038,Devon_Toews,devon-toews,nhl_toi_position,2026-05-28
-36,Mason Marchment,L,f1,f1:L,CBJ,CBJ,columbus-blue-jackets,Columbus,8478975,Mason_Marchment,mason-marchment,nhl_toi_position,2026-05-28
-37,Adam Fantilli,C,f1,f1:C,CBJ,CBJ,columbus-blue-jackets,Columbus,8484166,Adam_Fantilli,adam-fantilli,nhl_toi_position,2026-05-28
-38,Kirill Marchenko,R,f1,f1:R,CBJ,CBJ,columbus-blue-jackets,Columbus,8480893,Kirill_Marchenko,kirill-marchenko,nhl_toi_position,2026-05-28
-39,Zach Werenski,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8478460,Zach_Werenski,zach-werenski,nhl_toi_position,2026-05-28
-40,Ivan Provorov,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8478500,Ivan_Provorov,ivan-provorov,nhl_toi_position,2026-05-28
-41,Jason Robertson,L,f1,f1:L,DAL,DAL,dallas-stars,Dallas,8480027,Jason_Robertson,jason-robertson,nhl_toi_position,2026-05-28
-42,Wyatt Johnston,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8482740,Wyatt_Johnston,wyatt-johnston,nhl_toi_position,2026-05-28
-43,Mikko Rantanen,R,f1,f1:R,DAL,DAL,dallas-stars,Dallas,8478420,Mikko_Rantanen,mikko-rantanen,nhl_toi_position,2026-05-28
-44,Miro Heiskanen,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8480036,Miro_Heiskanen,miro-heiskanen,nhl_toi_position,2026-05-28
-45,Esa Lindell,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8476902,Esa_Lindell,esa-lindell,nhl_toi_position,2026-05-28
-46,Lucas Raymond,L,f1,f1:L,DET,DET,detroit-red-wings,Detroit,8482078,Lucas_Raymond,lucas-raymond,nhl_toi_position,2026-05-28
-47,Dylan Larkin,C,f1,f1:C,DET,DET,detroit-red-wings,Detroit,8477946,Dylan_Larkin,dylan-larkin,nhl_toi_position,2026-05-28
-48,Alex DeBrincat,R,f1,f1:R,DET,DET,detroit-red-wings,Detroit,8479337,Alex_DeBrincat,alex-debrincat,nhl_toi_position,2026-05-28
-49,Moritz Seider,D,d1,d1:D,DET,DET,detroit-red-wings,Detroit,8481542,Moritz_Seider,moritz-seider,nhl_toi_position,2026-05-28
-50,Simon Edvinsson,D,d1,d1:D,DET,DET,detroit-red-wings,Detroit,8482762,Simon_Edvinsson,simon-edvinsson,nhl_toi_position,2026-05-28
-51,Zach Hyman,L,f1,f1:L,EDM,EDM,edmonton-oilers,Edmonton,8475786,Zach_Hyman,zach-hyman,nhl_toi_position,2026-05-28
-52,Connor McDavid,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8478402,Connor_McDavid,connor-mcdavid,nhl_toi_position,2026-05-28
-53,Vasily Podkolzin,R,f1,f1:R,EDM,EDM,edmonton-oilers,Edmonton,8481617,Vasily_Podkolzin,vasily-podkolzin,nhl_toi_position,2026-05-28
-54,Evan Bouchard,D,d1,d1:D,EDM,EDM,edmonton-oilers,Edmonton,8480803,Evan_Bouchard,evan-bouchard,nhl_toi_position,2026-05-28
-55,Darnell Nurse,D,d1,d1:D,EDM,EDM,edmonton-oilers,Edmonton,8477498,Darnell_Nurse,darnell-nurse,nhl_toi_position,2026-05-28
-56,Brad Marchand,L,f1,f1:L,FLA,FLA,florida-panthers,Florida,8473419,Brad_Marchand,brad-marchand,nhl_toi_position,2026-05-28
-57,Sam Reinhart,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8477933,Sam_Reinhart,sam-reinhart,nhl_toi_position,2026-05-28
-58,Mackie Samoskevich,R,f1,f1:R,FLA,FLA,florida-panthers,Florida,8482713,Mackie_Samoskevich,mackie-samoskevich,nhl_toi_position,2026-05-28
-59,Seth Jones,D,d1,d1:D,FLA,FLA,florida-panthers,Florida,8477495,Seth_Jones,seth-jones,nhl_toi_position,2026-05-28
-60,Gustav Forsling,D,d1,d1:D,FLA,FLA,florida-panthers,Florida,8478055,Gustav_Forsling,gustav-forsling,nhl_toi_position,2026-05-28
-61,Artemi Panarin,L,f1,f1:L,LA,LAK,los-angeles-kings,Los Angeles,8478550,Artemi_Panarin,artemi-panarin,nhl_toi_position,2026-05-28
-62,Anze Kopitar,C,f1,f1:C,LA,LAK,los-angeles-kings,Los Angeles,8471685,Anze_Kopitar,anze-kopitar,nhl_toi_position,2026-05-28
-63,Quinton Byfield,R,f1,f1:R,LA,LAK,los-angeles-kings,Los Angeles,8482124,Quinton_Byfield,quinton-byfield,nhl_toi_position,2026-05-28
-64,Drew Doughty,D,d1,d1:D,LA,LAK,los-angeles-kings,Los Angeles,8474563,Drew_Doughty,drew-doughty,nhl_toi_position,2026-05-28
-65,Mikey Anderson,D,d1,d1:D,LA,LAK,los-angeles-kings,Los Angeles,8479998,Mikey_Anderson,mikey-anderson,nhl_toi_position,2026-05-28
-66,Kirill Kaprizov,L,f1,f1:L,MIN,MIN,minnesota-wild,Minnesota,8478864,Kirill_Kaprizov,kirill-kaprizov,nhl_toi_position,2026-05-28
-67,Joel Eriksson Ek,C,f1,f1:C,MIN,MIN,minnesota-wild,Minnesota,8478493,Joel_Eriksson_Ek,joel-eriksson-ek,nhl_toi_position,2026-05-28
-68,Mats Zuccarello,R,f1,f1:R,MIN,MIN,minnesota-wild,Minnesota,8475692,Mats_Zuccarello,mats-zuccarello,nhl_toi_position,2026-05-28
-69,Quinn Hughes,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8480800,Quinn_Hughes,quinn-hughes,nhl_toi_position,2026-05-28
-70,Brock Faber,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8482122,Brock_Faber,brock-faber,nhl_toi_position,2026-05-28
-71,Juraj Slafkovský,L,f1,f1:L,MON,MTL,montreal-canadiens,Montreal,8483515,Juraj_Slafkovský,juraj-slafkovský,nhl_toi_position,2026-05-28
-72,Nick Suzuki,C,f1,f1:C,MON,MTL,montreal-canadiens,Montreal,8480018,Nick_Suzuki,nick-suzuki,nhl_toi_position,2026-05-28
-73,Cole Caufield,R,f1,f1:R,MON,MTL,montreal-canadiens,Montreal,8481540,Cole_Caufield,cole-caufield,nhl_toi_position,2026-05-28
-74,Mike Matheson,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8476875,Mike_Matheson,mike-matheson,nhl_toi_position,2026-05-28
-75,Lane Hutson,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8483457,Lane_Hutson,lane-hutson,nhl_toi_position,2026-05-28
-76,Filip Forsberg,L,f1,f1:L,NAS,NSH,nashville-predators,Nashville,8476887,Filip_Forsberg,filip-forsberg,nhl_toi_position,2026-05-28
-77,Ryan O'Reilly,C,f1,f1:C,NAS,NSH,nashville-predators,Nashville,8475158,Ryan_O'Reilly,ryan-oreilly,nhl_toi_position,2026-05-28
-78,Luke Evangelista,R,f1,f1:R,NAS,NSH,nashville-predators,Nashville,8482146,Luke_Evangelista,luke-evangelista,nhl_toi_position,2026-05-28
-79,Roman Josi,D,d1,d1:D,NAS,NSH,nashville-predators,Nashville,8474600,Roman_Josi,roman-josi,nhl_toi_position,2026-05-28
-80,Brady Skjei,D,d1,d1:D,NAS,NSH,nashville-predators,Nashville,8476869,Brady_Skjei,brady-skjei,nhl_toi_position,2026-05-28
-81,Jesper Bratt,L,f1,f1:L,NJ,NJD,new-jersey-devils,New Jersey,8479407,Jesper_Bratt,jesper-bratt,nhl_toi_position,2026-05-28
-82,Jack Hughes,C,f1,f1:C,NJ,NJD,new-jersey-devils,New Jersey,8481559,Jack_Hughes,jack-hughes,nhl_toi_position,2026-05-28
-83,Timo Meier,R,f1,f1:R,NJ,NJD,new-jersey-devils,New Jersey,8478414,Timo_Meier,timo-meier,nhl_toi_position,2026-05-28
-84,Luke Hughes,D,d1,d1:D,NJ,NJD,new-jersey-devils,New Jersey,8482684,Luke_Hughes,luke-hughes,nhl_toi_position,2026-05-28
-85,Dougie Hamilton,D,d1,d1:D,NJ,NJD,new-jersey-devils,New Jersey,8476462,Dougie_Hamilton,dougie-hamilton,nhl_toi_position,2026-05-28
-86,Emil Heineman,L,f1,f1:L,NYI,NYI,new-york-islanders,New York Islanders,8482476,Emil_Heineman,emil-heineman,nhl_toi_position,2026-05-28
-87,Bo Horvat,C,f1,f1:C,NYI,NYI,new-york-islanders,New York Islanders,8477500,Bo_Horvat,bo-horvat,nhl_toi_position,2026-05-28
-88,Simon Holmstrom,R,f1,f1:R,NYI,NYI,new-york-islanders,New York Islanders,8481601,Simon_Holmstrom,simon-holmstrom,nhl_toi_position,2026-05-28
-89,Matthew Schaefer,D,d1,d1:D,NYI,NYI,new-york-islanders,New York Islanders,8485366,Matthew_Schaefer,matthew-schaefer,nhl_toi_position,2026-05-28
-90,Adam Pelech,D,d1,d1:D,NYI,NYI,new-york-islanders,New York Islanders,8476917,Adam_Pelech,adam-pelech,nhl_toi_position,2026-05-28
-91,Alexis Lafrenière,L,f1,f1:L,NYR,NYR,new-york-rangers,New York Rangers,8482109,Alexis_Lafrenière,alexis-lafrenière,nhl_toi_position,2026-05-28
-92,Mika Zibanejad,C,f1,f1:C,NYR,NYR,new-york-rangers,New York Rangers,8476459,Mika_Zibanejad,mika-zibanejad,nhl_toi_position,2026-05-28
-93,Gabe Perreault,R,f1,f1:R,NYR,NYR,new-york-rangers,New York Rangers,8484210,Gabe_Perreault,gabe-perreault,nhl_toi_position,2026-05-28
-94,Vladislav Gavrikov,D,d1,d1:D,NYR,NYR,new-york-rangers,New York Rangers,8478882,Vladislav_Gavrikov,vladislav-gavrikov,nhl_toi_position,2026-05-28
-95,Adam Fox,D,d1,d1:D,NYR,NYR,new-york-rangers,New York Rangers,8479323,Adam_Fox,adam-fox,nhl_toi_position,2026-05-28
-96,Brady Tkachuk,L,f1,f1:L,OTT,OTT,ottawa-senators,Ottawa,8480801,Brady_Tkachuk,brady-tkachuk,nhl_toi_position,2026-05-28
-97,Tim Stützle,C,f1,f1:C,OTT,OTT,ottawa-senators,Ottawa,8482116,Tim_Stützle,tim-stützle,nhl_toi_position,2026-05-28
-98,Drake Batherson,R,f1,f1:R,OTT,OTT,ottawa-senators,Ottawa,8480208,Drake_Batherson,drake-batherson,nhl_toi_position,2026-05-28
-99,Jake Sanderson,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8482105,Jake_Sanderson,jake-sanderson,nhl_toi_position,2026-05-28
-100,Thomas Chabot,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8478469,Thomas_Chabot,thomas-chabot,nhl_toi_position,2026-05-28
-101,Noah Cates,L,f1,f1:L,PHI,PHI,philadelphia-flyers,Philadelphia,8480220,Noah_Cates,noah-cates,nhl_toi_position,2026-05-28
-102,Trevor Zegras,C,f1,f1:C,PHI,PHI,philadelphia-flyers,Philadelphia,8481533,Trevor_Zegras,trevor-zegras,nhl_toi_position,2026-05-28
-103,Travis Konecny,R,f1,f1:R,PHI,PHI,philadelphia-flyers,Philadelphia,8478439,Travis_Konecny,travis-konecny,nhl_toi_position,2026-05-28
-104,Travis Sanheim,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8477948,Travis_Sanheim,travis-sanheim,nhl_toi_position,2026-05-28
-105,Cam York,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8481546,Cam_York,cam-york,nhl_toi_position,2026-05-28
-106,Elmer Soderblom,L,f1,f1:L,PIT,PIT,pittsburgh-penguins,Pittsburgh,8481725,Elmer_Soderblom,elmer-soderblom,nhl_toi_position,2026-05-28
-107,Sidney Crosby,C,f1,f1:C,PIT,PIT,pittsburgh-penguins,Pittsburgh,8471675,Sidney_Crosby,sidney-crosby,nhl_toi_position,2026-05-28
-108,Bryan Rust,R,f1,f1:R,PIT,PIT,pittsburgh-penguins,Pittsburgh,8475810,Bryan_Rust,bryan-rust,nhl_toi_position,2026-05-28
-109,Erik Karlsson,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8474578,Erik_Karlsson,erik-karlsson,nhl_toi_position,2026-05-28
-110,Kris Letang,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8471724,Kris_Letang,kris-letang,nhl_toi_position,2026-05-28
-111,William Eklund,L,f1,f1:L,SJ,SJS,san-jose-sharks,San Jose,8482667,William_Eklund,william-eklund,nhl_toi_position,2026-05-28
-112,Macklin Celebrini,C,f1,f1:C,SJ,SJS,san-jose-sharks,San Jose,8484801,Macklin_Celebrini,macklin-celebrini,nhl_toi_position,2026-05-28
-113,Collin Graf,R,f1,f1:R,SJ,SJS,san-jose-sharks,San Jose,8484911,Collin_Graf,collin-graf,nhl_toi_position,2026-05-28
-114,Dmitry Orlov,D,d1,d1:D,SJ,SJS,san-jose-sharks,San Jose,8475200,Dmitry_Orlov,dmitry-orlov,nhl_toi_position,2026-05-28
-115,Mario Ferraro,D,d1,d1:D,SJ,SJS,san-jose-sharks,San Jose,8479983,Mario_Ferraro,mario-ferraro,nhl_toi_position,2026-05-28
-116,Jared McCann,L,f1,f1:L,SEA,SEA,seattle-kraken,Seattle,8477955,Jared_McCann,jared-mccann,nhl_toi_position,2026-05-28
-117,Chandler Stephenson,C,f1,f1:C,SEA,SEA,seattle-kraken,Seattle,8476905,Chandler_Stephenson,chandler-stephenson,nhl_toi_position,2026-05-28
-118,Jordan Eberle,R,f1,f1:R,SEA,SEA,seattle-kraken,Seattle,8474586,Jordan_Eberle,jordan-eberle,nhl_toi_position,2026-05-28
-119,Brandon Montour,D,d1,d1:D,SEA,SEA,seattle-kraken,Seattle,8477986,Brandon_Montour,brandon-montour,nhl_toi_position,2026-05-28
-120,Vince Dunn,D,d1,d1:D,SEA,SEA,seattle-kraken,Seattle,8478407,Vince_Dunn,vince-dunn,nhl_toi_position,2026-05-28
-121,Dylan Holloway,L,f1,f1:L,STL,STL,st-louis-blues,St. Louis,8482077,Dylan_Holloway,dylan-holloway,nhl_toi_position,2026-05-28
-122,Robert Thomas,C,f1,f1:C,STL,STL,st-louis-blues,St. Louis,8480023,Robert_Thomas,robert-thomas,nhl_toi_position,2026-05-28
-123,Jimmy Snuggerud,R,f1,f1:R,STL,STL,st-louis-blues,St. Louis,8483516,Jimmy_Snuggerud,jimmy-snuggerud,nhl_toi_position,2026-05-28
-124,Philip Broberg,D,d1,d1:D,STL,STL,st-louis-blues,St. Louis,8481598,Philip_Broberg,philip-broberg,nhl_toi_position,2026-05-28
-125,Colton Parayko,D,d1,d1:D,STL,STL,st-louis-blues,St. Louis,8476892,Colton_Parayko,colton-parayko,nhl_toi_position,2026-05-28
-126,Brandon Hagel,L,f1,f1:L,TB,TBL,tampa-bay-lightning,Tampa Bay,8479542,Brandon_Hagel,brandon-hagel,nhl_toi_position,2026-05-28
-127,Jake Guentzel,C,f1,f1:C,TB,TBL,tampa-bay-lightning,Tampa Bay,8477404,Jake_Guentzel,jake-guentzel,nhl_toi_position,2026-05-28
-128,Nikita Kucherov,R,f1,f1:R,TB,TBL,tampa-bay-lightning,Tampa Bay,8476453,Nikita_Kucherov,nikita-kucherov,nhl_toi_position,2026-05-28
-129,Darren Raddysh,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8478178,Darren_Raddysh,darren-raddysh,nhl_toi_position,2026-05-28
-130,J.J. Moser,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8482655,J.J._Moser,jj-moser,nhl_toi_position,2026-05-28
-131,Matthew Knies,L,f1,f1:L,TOR,TOR,toronto-maple-leafs,Toronto,8482720,Matthew_Knies,matthew-knies,nhl_toi_position,2026-05-28
-132,Auston Matthews,C,f1,f1:C,TOR,TOR,toronto-maple-leafs,Toronto,8479318,Auston_Matthews,auston-matthews,nhl_toi_position,2026-05-28
-133,William Nylander,R,f1,f1:R,TOR,TOR,toronto-maple-leafs,Toronto,8477939,William_Nylander,william-nylander,nhl_toi_position,2026-05-28
-134,Jake McCabe,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8476931,Jake_McCabe,jake-mccabe,nhl_toi_position,2026-05-28
-135,Morgan Rielly,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8476853,Morgan_Rielly,morgan-rielly,nhl_toi_position,2026-05-28
-136,Lawson Crouse,L,f1,f1:L,UTA,UTA,utah-mammoth,Utah,8478474,Lawson_Crouse,lawson-crouse,nhl_toi_position,2026-05-28
-137,Nick Schmaltz,C,f1,f1:C,UTA,UTA,utah-mammoth,Utah,8477951,Nick_Schmaltz,nick-schmaltz,nhl_toi_position,2026-05-28
-138,Clayton Keller,R,f1,f1:R,UTA,UTA,utah-mammoth,Utah,8479343,Clayton_Keller,clayton-keller,nhl_toi_position,2026-05-28
-139,Mikhail Sergachev,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8479410,Mikhail_Sergachev,mikhail-sergachev,nhl_toi_position,2026-05-28
-140,MacKenzie Weegar,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8477346,MacKenzie_Weegar,mackenzie-weegar,nhl_toi_position,2026-05-28
-141,Jake DeBrusk,L,f1,f1:L,VAN,VAN,vancouver-canucks,Vancouver,8478498,Jake_DeBrusk,jake-debrusk,nhl_toi_position,2026-05-28
-142,Elias Pettersson,C,f1,f1:C,VAN,VAN,vancouver-canucks,Vancouver,8480012,Elias_Pettersson,elias-pettersson,nhl_toi_position,2026-05-28
-143,Brock Boeser,R,f1,f1:R,VAN,VAN,vancouver-canucks,Vancouver,8478444,Brock_Boeser,brock-boeser,nhl_toi_position,2026-05-28
-144,Filip Hronek,D,d1,d1:D,VAN,VAN,vancouver-canucks,Vancouver,8479425,Filip_Hronek,filip-hronek,nhl_toi_position,2026-05-28
-145,Marcus Pettersson,D,d1,d1:D,VAN,VAN,vancouver-canucks,Vancouver,8477969,Marcus_Pettersson,marcus-pettersson,nhl_toi_position,2026-05-28
-146,Ivan Barbashev,L,f1,f1:L,VEG,VGK,vegas-golden-knights,Vegas,8477964,Ivan_Barbashev,ivan-barbashev,nhl_toi_position,2026-05-28
-147,Jack Eichel,C,f1,f1:C,VEG,VGK,vegas-golden-knights,Vegas,8478403,Jack_Eichel,jack-eichel,nhl_toi_position,2026-05-28
-148,Mitch Marner,R,f1,f1:R,VEG,VGK,vegas-golden-knights,Vegas,8478483,Mitch_Marner,mitch-marner,nhl_toi_position,2026-05-28
-149,Rasmus Andersson,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8478397,Rasmus_Andersson,rasmus-andersson,nhl_toi_position,2026-05-28
-150,Shea Theodore,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8477447,Shea_Theodore,shea-theodore,nhl_toi_position,2026-05-28
-151,Aliaksei Protas,L,f1,f1:L,WAS,WSH,washington-capitals,Washington,8481656,Aliaksei_Protas,aliaksei-protas,nhl_toi_position,2026-05-28
-152,Dylan Strome,C,f1,f1:C,WAS,WSH,washington-capitals,Washington,8478440,Dylan_Strome,dylan-strome,nhl_toi_position,2026-05-28
-153,Tom Wilson,R,f1,f1:R,WAS,WSH,washington-capitals,Washington,8476880,Tom_Wilson,tom-wilson,nhl_toi_position,2026-05-28
-154,Jakob Chychrun,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8479345,Jakob_Chychrun,jakob-chychrun,nhl_toi_position,2026-05-28
-155,Matt Roy,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8478911,Matt_Roy,matt-roy,nhl_toi_position,2026-05-28
-156,Kyle Connor,L,f1,f1:L,WPG,WPG,winnipeg-jets,Winnipeg,8478398,Kyle_Connor,kyle-connor,nhl_toi_position,2026-05-28
-157,Mark Scheifele,C,f1,f1:C,WPG,WPG,winnipeg-jets,Winnipeg,8476460,Mark_Scheifele,mark-scheifele,nhl_toi_position,2026-05-28
-158,Nino Niederreiter,R,f1,f1:R,WPG,WPG,winnipeg-jets,Winnipeg,8475799,Nino_Niederreiter,nino-niederreiter,nhl_toi_position,2026-05-28
-159,Josh Morrissey,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8477504,Josh_Morrissey,josh-morrissey,nhl_toi_position,2026-05-28
-160,Neal Pionk,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8480145,Neal_Pionk,neal-pionk,nhl_toi_position,2026-05-28
+player_id,full_name,position,group,line_slot,team_code,nhl_team_code,team_slug,team_city,nhl_player_id,wikipedia_slug,capwages_slug,roster_source,roster_snapshot_date,fetch_date
+1,Leo Carlsson,C,f1,f1:C,ANA,ANA,anaheim-ducks,Anaheim,8484153,Leo_Carlsson,leo-carlsson,nhl_roster_full,2026-06-17,2026-06-17
+2,Nathan Gaucher,C,f1,f1:C,ANA,ANA,anaheim-ducks,Anaheim,8483444,Nathan_Gaucher,nathan-gaucher,nhl_roster_full,2026-06-17,2026-06-17
+3,Cutter Gauthier,L,f1,f1:L,ANA,ANA,anaheim-ducks,Anaheim,8483445,Cutter_Gauthier,cutter-gauthier,nhl_roster_full,2026-06-17,2026-06-17
+4,Mikael Granlund,C,f1,f1:C,ANA,ANA,anaheim-ducks,Anaheim,8475798,Mikael_Granlund,mikael-granlund,nhl_roster_full,2026-06-17,2026-06-17
+5,Jansen Harkins,C,f1,f1:C,ANA,ANA,anaheim-ducks,Anaheim,8478424,Jansen_Harkins,jansen-harkins,nhl_roster_full,2026-06-17,2026-06-17
+6,Ross Johnston,L,f1,f1:L,ANA,ANA,anaheim-ducks,Anaheim,8477527,Ross_Johnston,ross-johnston,nhl_roster_full,2026-06-17,2026-06-17
+7,Alex Killorn,L,f1,f1:L,ANA,ANA,anaheim-ducks,Anaheim,8473986,Alex_Killorn,alex-killorn,nhl_roster_full,2026-06-17,2026-06-17
+8,Chris Kreider,L,f1,f1:L,ANA,ANA,anaheim-ducks,Anaheim,8475184,Chris_Kreider,chris-kreider,nhl_roster_full,2026-06-17,2026-06-17
+9,Mason McTavish,C,f1,f1:C,ANA,ANA,anaheim-ducks,Anaheim,8482745,Mason_McTavish,mason-mctavish,nhl_roster_full,2026-06-17,2026-06-17
+10,Nico Myatovic,L,f1,f1:L,ANA,ANA,anaheim-ducks,Anaheim,8484201,Nico_Myatovic,nico-myatovic,nhl_roster_full,2026-06-17,2026-06-17
+11,Ryan Poehling,C,f1,f1:C,ANA,ANA,anaheim-ducks,Anaheim,8480068,Ryan_Poehling,ryan-poehling,nhl_roster_full,2026-06-17,2026-06-17
+12,Beckett Sennecke,R,f1,f1:R,ANA,ANA,anaheim-ducks,Anaheim,8484762,Beckett_Sennecke,beckett-sennecke,nhl_roster_full,2026-06-17,2026-06-17
+13,Troy Terry,R,f1,f1:R,ANA,ANA,anaheim-ducks,Anaheim,8478873,Troy_Terry,troy-terry,nhl_roster_full,2026-06-17,2026-06-17
+14,Frank Vatrano,R,f1,f1:R,ANA,ANA,anaheim-ducks,Anaheim,8478366,Frank_Vatrano,frank-vatrano,nhl_roster_full,2026-06-17,2026-06-17
+15,Jeffrey Viel,L,f1,f1:L,ANA,ANA,anaheim-ducks,Anaheim,8479705,Jeffrey_Viel,jeffrey-viel,nhl_roster_full,2026-06-17,2026-06-17
+16,Tim Washe,C,f1,f1:C,ANA,ANA,anaheim-ducks,Anaheim,8485512,Tim_Washe,tim-washe,nhl_roster_full,2026-06-17,2026-06-17
+17,John Carlson,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8474590,John_Carlson,john-carlson,nhl_roster_full,2026-06-17,2026-06-17
+18,Radko Gudas,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8475462,Radko_Gudas,radko-gudas,nhl_roster_full,2026-06-17,2026-06-17
+19,Drew Helleson,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8481563,Drew_Helleson,drew-helleson,nhl_roster_full,2026-06-17,2026-06-17
+20,Tyson Hinds,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8482731,Tyson_Hinds,tyson-hinds,nhl_roster_full,2026-06-17,2026-06-17
+21,Jackson LaCombe,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8481605,Jackson_LaCombe,jackson-lacombe,nhl_roster_full,2026-06-17,2026-06-17
+22,Pavel Mintyukov,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8483490,Pavel_Mintyukov,pavel-mintyukov,nhl_roster_full,2026-06-17,2026-06-17
+23,Ian Moore,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8482178,Ian_Moore,ian-moore,nhl_roster_full,2026-06-17,2026-06-17
+24,Stian Solberg,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8484859,Stian_Solberg,stian-solberg,nhl_roster_full,2026-06-17,2026-06-17
+25,Jacob Trouba,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8476885,Jacob_Trouba,jacob-trouba,nhl_roster_full,2026-06-17,2026-06-17
+26,Noah Warren,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8483521,Noah_Warren,noah-warren,nhl_roster_full,2026-06-17,2026-06-17
+27,Olen Zellweger,D,d1,d1:D,ANA,ANA,anaheim-ducks,Anaheim,8482803,Olen_Zellweger,olen-zellweger,nhl_roster_full,2026-06-17,2026-06-17
+28,Viktor Arvidsson,L,f1,f1:L,BOS,BOS,boston-bruins,Boston,8478042,Viktor_Arvidsson,viktor-arvidsson,nhl_roster_full,2026-06-17,2026-06-17
+29,Michael Eyssimont,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8479591,Michael_Eyssimont,michael-eyssimont,nhl_roster_full,2026-06-17,2026-06-17
+30,Morgan Geekie,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8479987,Morgan_Geekie,morgan-geekie,nhl_roster_full,2026-06-17,2026-06-17
+31,James Hagens,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8485395,James_Hagens,james-hagens,nhl_roster_full,2026-06-17,2026-06-17
+32,Tanner Jeannot,L,f1,f1:L,BOS,BOS,boston-bruins,Boston,8479661,Tanner_Jeannot,tanner-jeannot,nhl_roster_full,2026-06-17,2026-06-17
+33,Mark Kastelic,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8480355,Mark_Kastelic,mark-kastelic,nhl_roster_full,2026-06-17,2026-06-17
+34,Marat Khusnutdinov,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8482177,Marat_Khusnutdinov,marat-khusnutdinov,nhl_roster_full,2026-06-17,2026-06-17
+35,Sean Kuraly,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8476374,Sean_Kuraly,sean-kuraly,nhl_roster_full,2026-06-17,2026-06-17
+36,Elias Lindholm,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8477496,Elias_Lindholm,elias-lindholm,nhl_roster_full,2026-06-17,2026-06-17
+37,Fraser Minten,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8483489,Fraser_Minten,fraser-minten,nhl_roster_full,2026-06-17,2026-06-17
+38,Casey Mittelstadt,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8479999,Casey_Mittelstadt,casey-mittelstadt,nhl_roster_full,2026-06-17,2026-06-17
+39,David Pastrnak,R,f1,f1:R,BOS,BOS,boston-bruins,Boston,8477956,David_Pastrnak,david-pastrnak,nhl_roster_full,2026-06-17,2026-06-17
+40,Lukas Reichel,L,f1,f1:L,BOS,BOS,boston-bruins,Boston,8482117,Lukas_Reichel,lukas-reichel,nhl_roster_full,2026-06-17,2026-06-17
+41,Alex Steeves,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8482634,Alex_Steeves,alex-steeves,nhl_roster_full,2026-06-17,2026-06-17
+42,Pavel Zacha,C,f1,f1:C,BOS,BOS,boston-bruins,Boston,8478401,Pavel_Zacha,pavel-zacha,nhl_roster_full,2026-06-17,2026-06-17
+43,Jonathan Aspirot,D,d1,d1:D,BOS,BOS,boston-bruins,Boston,8481219,Jonathan_Aspirot,jonathan-aspirot,nhl_roster_full,2026-06-17,2026-06-17
+44,Jordan Harris,D,d1,d1:D,BOS,BOS,boston-bruins,Boston,8480887,Jordan_Harris,jordan-harris,nhl_roster_full,2026-06-17,2026-06-17
+45,Henri Jokiharju,D,d1,d1:D,BOS,BOS,boston-bruins,Boston,8480035,Henri_Jokiharju,henri-jokiharju,nhl_roster_full,2026-06-17,2026-06-17
+46,Hampus Lindholm,D,d1,d1:D,BOS,BOS,boston-bruins,Boston,8476854,Hampus_Lindholm,hampus-lindholm,nhl_roster_full,2026-06-17,2026-06-17
+47,Mason Lohrei,D,d1,d1:D,BOS,BOS,boston-bruins,Boston,8482511,Mason_Lohrei,mason-lohrei,nhl_roster_full,2026-06-17,2026-06-17
+48,Charlie McAvoy,D,d1,d1:D,BOS,BOS,boston-bruins,Boston,8479325,Charlie_McAvoy,charlie-mcavoy,nhl_roster_full,2026-06-17,2026-06-17
+49,Andrew Peeke,D,d1,d1:D,BOS,BOS,boston-bruins,Boston,8479369,Andrew_Peeke,andrew-peeke,nhl_roster_full,2026-06-17,2026-06-17
+50,Nikita Zadorov,D,d1,d1:D,BOS,BOS,boston-bruins,Boston,8477507,Nikita_Zadorov,nikita-zadorov,nhl_roster_full,2026-06-17,2026-06-17
+51,Zach Benson,L,f1,f1:L,BUF,BUF,buffalo-sabres,Buffalo,8484145,Zach_Benson,zach-benson,nhl_roster_full,2026-06-17,2026-06-17
+52,Sam Carrick,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8475842,Sam_Carrick,sam-carrick,nhl_roster_full,2026-06-17,2026-06-17
+53,Justin Danforth,R,f1,f1:R,BUF,BUF,buffalo-sabres,Buffalo,8479941,Justin_Danforth,justin-danforth,nhl_roster_full,2026-06-17,2026-06-17
+54,Josh Doan,R,f1,f1:R,BUF,BUF,buffalo-sabres,Buffalo,8482659,Josh_Doan,josh-doan,nhl_roster_full,2026-06-17,2026-06-17
+55,Josh Dunne,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8482623,Josh_Dunne,josh-dunne,nhl_roster_full,2026-06-17,2026-06-17
+56,Riley Fiddler-Schultz,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8483090,Riley_Fiddler-Schultz,riley-fiddler-schultz,nhl_roster_full,2026-06-17,2026-06-17
+57,Jordan Greenway,L,f1,f1:L,BUF,BUF,buffalo-sabres,Buffalo,8478413,Jordan_Greenway,jordan-greenway,nhl_roster_full,2026-06-17,2026-06-17
+58,Konsta Helenius,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8484797,Konsta_Helenius,konsta-helenius,nhl_roster_full,2026-06-17,2026-06-17
+59,Tyson Kozak,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8482896,Tyson_Kozak,tyson-kozak,nhl_roster_full,2026-06-17,2026-06-17
+60,Peyton Krebs,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8481522,Peyton_Krebs,peyton-krebs,nhl_roster_full,2026-06-17,2026-06-17
+61,Jiri Kulich,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8483468,Jiri_Kulich,jiri-kulich,nhl_roster_full,2026-06-17,2026-06-17
+62,Beck Malenstyn,L,f1,f1:L,BUF,BUF,buffalo-sabres,Buffalo,8479359,Beck_Malenstyn,beck-malenstyn,nhl_roster_full,2026-06-17,2026-06-17
+63,Ryan McLeod,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8480802,Ryan_McLeod,ryan-mcleod,nhl_roster_full,2026-06-17,2026-06-17
+64,Josh Norris,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8480064,Josh_Norris,josh-norris,nhl_roster_full,2026-06-17,2026-06-17
+65,Noah Ostlund,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8483500,Noah_Ostlund,noah-ostlund,nhl_roster_full,2026-06-17,2026-06-17
+66,Tanner Pearson,L,f1,f1:L,BUF,BUF,buffalo-sabres,Buffalo,8476871,Tanner_Pearson,tanner-pearson,nhl_roster_full,2026-06-17,2026-06-17
+67,Jack Quinn,R,f1,f1:R,BUF,BUF,buffalo-sabres,Buffalo,8482097,Jack_Quinn,jack-quinn,nhl_roster_full,2026-06-17,2026-06-17
+68,Tage Thompson,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8479420,Tage_Thompson,tage-thompson,nhl_roster_full,2026-06-17,2026-06-17
+69,Alex Tuch,R,f1,f1:R,BUF,BUF,buffalo-sabres,Buffalo,8477949,Alex_Tuch,alex-tuch,nhl_roster_full,2026-06-17,2026-06-17
+70,Anton Wahlberg,C,f1,f1:C,BUF,BUF,buffalo-sabres,Buffalo,8484238,Anton_Wahlberg,anton-wahlberg,nhl_roster_full,2026-06-17,2026-06-17
+71,Jason Zucker,L,f1,f1:L,BUF,BUF,buffalo-sabres,Buffalo,8475722,Jason_Zucker,jason-zucker,nhl_roster_full,2026-06-17,2026-06-17
+72,Bowen Byram,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8481524,Bowen_Byram,bowen-byram,nhl_roster_full,2026-06-17,2026-06-17
+73,Rasmus Dahlin,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8480839,Rasmus_Dahlin,rasmus-dahlin,nhl_roster_full,2026-06-17,2026-06-17
+74,Ryan Johnson,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8481564,Ryan_Johnson,ryan-johnson,nhl_roster_full,2026-06-17,2026-06-17
+75,Michael Kesselring,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8480891,Michael_Kesselring,michael-kesselring,nhl_roster_full,2026-06-17,2026-06-17
+76,Vsevolod Komarov,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8483732,Vsevolod_Komarov,vsevolod-komarov,nhl_roster_full,2026-06-17,2026-06-17
+77,Zach Metsa,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8484305,Zach_Metsa,zach-metsa,nhl_roster_full,2026-06-17,2026-06-17
+78,Radim Mrtka,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8485404,Radim_Mrtka,radim-mrtka,nhl_roster_full,2026-06-17,2026-06-17
+79,Owen Power,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8482671,Owen_Power,owen-power,nhl_roster_full,2026-06-17,2026-06-17
+80,Mattias Samuelsson,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8480807,Mattias_Samuelsson,mattias-samuelsson,nhl_roster_full,2026-06-17,2026-06-17
+81,Luke Schenn,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8474568,Luke_Schenn,luke-schenn,nhl_roster_full,2026-06-17,2026-06-17
+82,Logan Stanley,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8479378,Logan_Stanley,logan-stanley,nhl_roster_full,2026-06-17,2026-06-17
+83,Conor Timmins,D,d1,d1:D,BUF,BUF,buffalo-sabres,Buffalo,8479982,Conor_Timmins,conor-timmins,nhl_roster_full,2026-06-17,2026-06-17
+84,Mikael Backlund,C,f1,f1:C,CGY,CGY,calgary-flames,Calgary,8474150,Mikael_Backlund,mikael-backlund,nhl_roster_full,2026-06-17,2026-06-17
+85,John Beecher,C,f1,f1:C,CGY,CGY,calgary-flames,Calgary,8481556,John_Beecher,john-beecher,nhl_roster_full,2026-06-17,2026-06-17
+86,Blake Coleman,L,f1,f1:L,CGY,CGY,calgary-flames,Calgary,8476399,Blake_Coleman,blake-coleman,nhl_roster_full,2026-06-17,2026-06-17
+87,Matt Coronato,R,f1,f1:R,CGY,CGY,calgary-flames,Calgary,8482679,Matt_Coronato,matt-coronato,nhl_roster_full,2026-06-17,2026-06-17
+88,Joel Farabee,L,f1,f1:L,CGY,CGY,calgary-flames,Calgary,8480797,Joel_Farabee,joel-farabee,nhl_roster_full,2026-06-17,2026-06-17
+89,Morgan Frost,C,f1,f1:C,CGY,CGY,calgary-flames,Calgary,8480028,Morgan_Frost,morgan-frost,nhl_roster_full,2026-06-17,2026-06-17
+90,Matvei Gridin,R,f1,f1:R,CGY,CGY,calgary-flames,Calgary,8484860,Matvei_Gridin,matvei-gridin,nhl_roster_full,2026-06-17,2026-06-17
+91,Tyson Gross,C,f1,f1:C,CGY,CGY,calgary-flames,Calgary,8486056,Tyson_Gross,tyson-gross,nhl_roster_full,2026-06-17,2026-06-17
+92,Samuel Honzek,L,f1,f1:L,CGY,CGY,calgary-flames,Calgary,8484180,Samuel_Honzek,samuel-honzek,nhl_roster_full,2026-06-17,2026-06-17
+93,Jonathan Huberdeau,L,f1,f1:L,CGY,CGY,calgary-flames,Calgary,8476456,Jonathan_Huberdeau,jonathan-huberdeau,nhl_roster_full,2026-06-17,2026-06-17
+94,Rory Kerins,C,f1,f1:C,CGY,CGY,calgary-flames,Calgary,8482209,Rory_Kerins,rory-kerins,nhl_roster_full,2026-06-17,2026-06-17
+95,Adam Klapka,R,f1,f1:R,CGY,CGY,calgary-flames,Calgary,8483609,Adam_Klapka,adam-klapka,nhl_roster_full,2026-06-17,2026-06-17
+96,Ryan Lomberg,L,f1,f1:L,CGY,CGY,calgary-flames,Calgary,8479066,Ryan_Lomberg,ryan-lomberg,nhl_roster_full,2026-06-17,2026-06-17
+97,Victor Olofsson,L,f1,f1:L,CGY,CGY,calgary-flames,Calgary,8478109,Victor_Olofsson,victor-olofsson,nhl_roster_full,2026-06-17,2026-06-17
+98,Martin Pospisil,C,f1,f1:C,CGY,CGY,calgary-flames,Calgary,8481028,Martin_Pospisil,martin-pospisil,nhl_roster_full,2026-06-17,2026-06-17
+99,Yegor Sharangovich,C,f1,f1:C,CGY,CGY,calgary-flames,Calgary,8481068,Yegor_Sharangovich,yegor-sharangovich,nhl_roster_full,2026-06-17,2026-06-17
+100,Ryan Strome,C,f1,f1:C,CGY,CGY,calgary-flames,Calgary,8476458,Ryan_Strome,ryan-strome,nhl_roster_full,2026-06-17,2026-06-17
+101,Aydar Suniev,L,f1,f1:L,CGY,CGY,calgary-flames,Calgary,8484234,Aydar_Suniev,aydar-suniev,nhl_roster_full,2026-06-17,2026-06-17
+102,Connor Zary,C,f1,f1:C,CGY,CGY,calgary-flames,Calgary,8482074,Connor_Zary,connor-zary,nhl_roster_full,2026-06-17,2026-06-17
+103,Kevin Bahl,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8480860,Kevin_Bahl,kevin-bahl,nhl_roster_full,2026-06-17,2026-06-17
+104,Jake Bean,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8479402,Jake_Bean,jake-bean,nhl_roster_full,2026-06-17,2026-06-17
+105,Hunter Brzustewicz,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8484150,Hunter_Brzustewicz,hunter-brzustewicz,nhl_roster_full,2026-06-17,2026-06-17
+106,Joel Hanley,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8477810,Joel_Hanley,joel-hanley,nhl_roster_full,2026-06-17,2026-06-17
+107,Yan Kuznetsov,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8482165,Yan_Kuznetsov,yan-kuznetsov,nhl_roster_full,2026-06-17,2026-06-17
+108,Olli Maatta,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8476874,Olli_Maatta,olli-maatta,nhl_roster_full,2026-06-17,2026-06-17
+109,Brayden Pachal,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8481167,Brayden_Pachal,brayden-pachal,nhl_roster_full,2026-06-17,2026-06-17
+110,Zayne Parekh,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8484768,Zayne_Parekh,zayne-parekh,nhl_roster_full,2026-06-17,2026-06-17
+111,Zach Whitecloud,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8480727,Zach_Whitecloud,zach-whitecloud,nhl_roster_full,2026-06-17,2026-06-17
+112,Abram Wiebe,D,d1,d1:D,CGY,CGY,calgary-flames,Calgary,8483709,Abram_Wiebe,abram-wiebe,nhl_roster_full,2026-06-17,2026-06-17
+113,Sebastian Aho,C,f1,f1:C,CAR,CAR,carolina-hurricanes,Carolina,8478427,Sebastian_Aho,sebastian-aho,nhl_roster_full,2026-06-17,2026-06-17
+114,Jackson Blake,R,f1,f1:R,CAR,CAR,carolina-hurricanes,Carolina,8482809,Jackson_Blake,jackson-blake,nhl_roster_full,2026-06-17,2026-06-17
+115,William Carrier,L,f1,f1:L,CAR,CAR,carolina-hurricanes,Carolina,8477478,William_Carrier,william-carrier,nhl_roster_full,2026-06-17,2026-06-17
+116,Nicolas Deslauriers,L,f1,f1:L,CAR,CAR,carolina-hurricanes,Carolina,8475235,Nicolas_Deslauriers,nicolas-deslauriers,nhl_roster_full,2026-06-17,2026-06-17
+117,Nikolaj Ehlers,L,f1,f1:L,CAR,CAR,carolina-hurricanes,Carolina,8477940,Nikolaj_Ehlers,nikolaj-ehlers,nhl_roster_full,2026-06-17,2026-06-17
+118,Taylor Hall,L,f1,f1:L,CAR,CAR,carolina-hurricanes,Carolina,8475791,Taylor_Hall,taylor-hall,nhl_roster_full,2026-06-17,2026-06-17
+119,Mark Jankowski,L,f1,f1:L,CAR,CAR,carolina-hurricanes,Carolina,8476873,Mark_Jankowski,mark-jankowski,nhl_roster_full,2026-06-17,2026-06-17
+120,Seth Jarvis,R,f1,f1:R,CAR,CAR,carolina-hurricanes,Carolina,8482093,Seth_Jarvis,seth-jarvis,nhl_roster_full,2026-06-17,2026-06-17
+121,Jesperi Kotkaniemi,C,f1,f1:C,CAR,CAR,carolina-hurricanes,Carolina,8480829,Jesperi_Kotkaniemi,jesperi-kotkaniemi,nhl_roster_full,2026-06-17,2026-06-17
+122,Jordan Martinook,L,f1,f1:L,CAR,CAR,carolina-hurricanes,Carolina,8476921,Jordan_Martinook,jordan-martinook,nhl_roster_full,2026-06-17,2026-06-17
+123,Eric Robinson,L,f1,f1:L,CAR,CAR,carolina-hurricanes,Carolina,8480762,Eric_Robinson,eric-robinson,nhl_roster_full,2026-06-17,2026-06-17
+124,Jordan Staal,C,f1,f1:C,CAR,CAR,carolina-hurricanes,Carolina,8473533,Jordan_Staal,jordan-staal,nhl_roster_full,2026-06-17,2026-06-17
+125,Logan Stankoven,C,f1,f1:C,CAR,CAR,carolina-hurricanes,Carolina,8482702,Logan_Stankoven,logan-stankoven,nhl_roster_full,2026-06-17,2026-06-17
+126,Andrei Svechnikov,R,f1,f1:R,CAR,CAR,carolina-hurricanes,Carolina,8480830,Andrei_Svechnikov,andrei-svechnikov,nhl_roster_full,2026-06-17,2026-06-17
+127,Jalen Chatfield,D,d1,d1:D,CAR,CAR,carolina-hurricanes,Carolina,8478970,Jalen_Chatfield,jalen-chatfield,nhl_roster_full,2026-06-17,2026-06-17
+128,Shayne Gostisbehere,D,d1,d1:D,CAR,CAR,carolina-hurricanes,Carolina,8476906,Shayne_Gostisbehere,shayne-gostisbehere,nhl_roster_full,2026-06-17,2026-06-17
+129,K'Andre Miller,D,d1,d1:D,CAR,CAR,carolina-hurricanes,Carolina,8480817,K'Andre_Miller,kandre-miller,nhl_roster_full,2026-06-17,2026-06-17
+130,Alexander Nikishin,D,d1,d1:D,CAR,CAR,carolina-hurricanes,Carolina,8482100,Alexander_Nikishin,alexander-nikishin,nhl_roster_full,2026-06-17,2026-06-17
+131,Mike Reilly,D,d1,d1:D,CAR,CAR,carolina-hurricanes,Carolina,8476422,Mike_Reilly,mike-reilly,nhl_roster_full,2026-06-17,2026-06-17
+132,Jaccob Slavin,D,d1,d1:D,CAR,CAR,carolina-hurricanes,Carolina,8476958,Jaccob_Slavin,jaccob-slavin,nhl_roster_full,2026-06-17,2026-06-17
+133,Sean Walker,D,d1,d1:D,CAR,CAR,carolina-hurricanes,Carolina,8480336,Sean_Walker,sean-walker,nhl_roster_full,2026-06-17,2026-06-17
+134,Connor Bedard,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8484144,Connor_Bedard,connor-bedard,nhl_roster_full,2026-06-17,2026-06-17
+135,Tyler Bertuzzi,L,f1,f1:L,CHI,CHI,chicago-blackhawks,Chicago,8477479,Tyler_Bertuzzi,tyler-bertuzzi,nhl_roster_full,2026-06-17,2026-06-17
+136,Sacha Boisvert,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8484793,Sacha_Boisvert,sacha-boisvert,nhl_roster_full,2026-06-17,2026-06-17
+137,Andre Burakovsky,L,f1,f1:L,CHI,CHI,chicago-blackhawks,Chicago,8477444,Andre_Burakovsky,andre-burakovsky,nhl_roster_full,2026-06-17,2026-06-17
+138,Ryan Donato,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8477987,Ryan_Donato,ryan-donato,nhl_roster_full,2026-06-17,2026-06-17
+139,Anton Frondell,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8485391,Anton_Frondell,anton-frondell,nhl_roster_full,2026-06-17,2026-06-17
+140,Ryan Greene,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8483450,Ryan_Greene,ryan-greene,nhl_roster_full,2026-06-17,2026-06-17
+141,Sam Lafferty,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8478043,Sam_Lafferty,sam-lafferty,nhl_roster_full,2026-06-17,2026-06-17
+142,Nick Lardis,L,f1,f1:L,CHI,CHI,chicago-blackhawks,Chicago,8484185,Nick_Lardis,nick-lardis,nhl_roster_full,2026-06-17,2026-06-17
+143,Andrew Mangiapane,L,f1,f1:L,CHI,CHI,chicago-blackhawks,Chicago,8478233,Andrew_Mangiapane,andrew-mangiapane,nhl_roster_full,2026-06-17,2026-06-17
+144,Ilya Mikheyev,R,f1,f1:R,CHI,CHI,chicago-blackhawks,Chicago,8481624,Ilya_Mikheyev,ilya-mikheyev,nhl_roster_full,2026-06-17,2026-06-17
+145,Oliver Moore,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8484197,Oliver_Moore,oliver-moore,nhl_roster_full,2026-06-17,2026-06-17
+146,Frank Nazar,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8483493,Frank_Nazar,frank-nazar,nhl_roster_full,2026-06-17,2026-06-17
+147,Landon Slaggert,L,f1,f1:L,CHI,CHI,chicago-blackhawks,Chicago,8482172,Landon_Slaggert,landon-slaggert,nhl_roster_full,2026-06-17,2026-06-17
+148,Teuvo Teravainen,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8476882,Teuvo_Teravainen,teuvo-teravainen,nhl_roster_full,2026-06-17,2026-06-17
+149,Dominic Toninato,C,f1,f1:C,CHI,CHI,chicago-blackhawks,Chicago,8476952,Dominic_Toninato,dominic-toninato,nhl_roster_full,2026-06-17,2026-06-17
+150,Louis Crevier,D,d1,d1:D,CHI,CHI,chicago-blackhawks,Chicago,8481806,Louis_Crevier,louis-crevier,nhl_roster_full,2026-06-17,2026-06-17
+151,Ethan Del Mastro,D,d1,d1:D,CHI,CHI,chicago-blackhawks,Chicago,8482807,Ethan_Del_Mastro,ethan-del-mastro,nhl_roster_full,2026-06-17,2026-06-17
+152,Matt Grzelcyk,D,d1,d1:D,CHI,CHI,chicago-blackhawks,Chicago,8476891,Matt_Grzelcyk,matt-grzelcyk,nhl_roster_full,2026-06-17,2026-06-17
+153,Wyatt Kaiser,D,d1,d1:D,CHI,CHI,chicago-blackhawks,Chicago,8482176,Wyatt_Kaiser,wyatt-kaiser,nhl_roster_full,2026-06-17,2026-06-17
+154,Kevin Korchinski,D,d1,d1:D,CHI,CHI,chicago-blackhawks,Chicago,8483466,Kevin_Korchinski,kevin-korchinski,nhl_roster_full,2026-06-17,2026-06-17
+155,Artyom Levshunov,D,d1,d1:D,CHI,CHI,chicago-blackhawks,Chicago,8484783,Artyom_Levshunov,artyom-levshunov,nhl_roster_full,2026-06-17,2026-06-17
+156,Sam Rinzel,D,d1,d1:D,CHI,CHI,chicago-blackhawks,Chicago,8483506,Sam_Rinzel,sam-rinzel,nhl_roster_full,2026-06-17,2026-06-17
+157,Alex Vlasic,D,d1,d1:D,CHI,CHI,chicago-blackhawks,Chicago,8481568,Alex_Vlasic,alex-vlasic,nhl_roster_full,2026-06-17,2026-06-17
+158,Zakhar Bardakov,C,f1,f1:C,COL,COL,colorado-avalanche,Colorado,8482947,Zakhar_Bardakov,zakhar-bardakov,nhl_roster_full,2026-06-17,2026-06-17
+159,Ross Colton,C,f1,f1:C,COL,COL,colorado-avalanche,Colorado,8479525,Ross_Colton,ross-colton,nhl_roster_full,2026-06-17,2026-06-17
+160,Jack Drury,C,f1,f1:C,COL,COL,colorado-avalanche,Colorado,8480835,Jack_Drury,jack-drury,nhl_roster_full,2026-06-17,2026-06-17
+161,Nazem Kadri,C,f1,f1:C,COL,COL,colorado-avalanche,Colorado,8475172,Nazem_Kadri,nazem-kadri,nhl_roster_full,2026-06-17,2026-06-17
+162,Parker Kelly,C,f1,f1:C,COL,COL,colorado-avalanche,Colorado,8480448,Parker_Kelly,parker-kelly,nhl_roster_full,2026-06-17,2026-06-17
+163,Joel Kiviranta,L,f1,f1:L,COL,COL,colorado-avalanche,Colorado,8481641,Joel_Kiviranta,joel-kiviranta,nhl_roster_full,2026-06-17,2026-06-17
+164,Gabriel Landeskog,L,f1,f1:L,COL,COL,colorado-avalanche,Colorado,8476455,Gabriel_Landeskog,gabriel-landeskog,nhl_roster_full,2026-06-17,2026-06-17
+165,Artturi Lehkonen,L,f1,f1:L,COL,COL,colorado-avalanche,Colorado,8477476,Artturi_Lehkonen,artturi-lehkonen,nhl_roster_full,2026-06-17,2026-06-17
+166,Nathan MacKinnon,C,f1,f1:C,COL,COL,colorado-avalanche,Colorado,8477492,Nathan_MacKinnon,nathan-mackinnon,nhl_roster_full,2026-06-17,2026-06-17
+167,Martin Necas,C,f1,f1:C,COL,COL,colorado-avalanche,Colorado,8480039,Martin_Necas,martin-necas,nhl_roster_full,2026-06-17,2026-06-17
+168,Brock Nelson,C,f1,f1:C,COL,COL,colorado-avalanche,Colorado,8475754,Brock_Nelson,brock-nelson,nhl_roster_full,2026-06-17,2026-06-17
+169,Valeri Nichushkin,R,f1,f1:R,COL,COL,colorado-avalanche,Colorado,8477501,Valeri_Nichushkin,valeri-nichushkin,nhl_roster_full,2026-06-17,2026-06-17
+170,Logan O'Connor,R,f1,f1:R,COL,COL,colorado-avalanche,Colorado,8481186,Logan_O'Connor,logan-oconnor,nhl_roster_full,2026-06-17,2026-06-17
+171,Nicolas Roy,C,f1,f1:C,COL,COL,colorado-avalanche,Colorado,8478462,Nicolas_Roy,nicolas-roy,nhl_roster_full,2026-06-17,2026-06-17
+172,Jack Ahcan,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8482072,Jack_Ahcan,jack-ahcan,nhl_roster_full,2026-06-17,2026-06-17
+173,Nick Blankenburg,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8483565,Nick_Blankenburg,nick-blankenburg,nhl_roster_full,2026-06-17,2026-06-17
+174,Brent Burns,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8470613,Brent_Burns,brent-burns,nhl_roster_full,2026-06-17,2026-06-17
+175,Alex Gagne,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8482942,Alex_Gagne,alex-gagne,nhl_roster_full,2026-06-17,2026-06-17
+176,Brett Kulak,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8476967,Brett_Kulak,brett-kulak,nhl_roster_full,2026-06-17,2026-06-17
+177,Cale Makar,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8480069,Cale_Makar,cale-makar,nhl_roster_full,2026-06-17,2026-06-17
+178,Sam Malinski,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8484258,Sam_Malinski,sam-malinski,nhl_roster_full,2026-06-17,2026-06-17
+179,Josh Manson,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8476312,Josh_Manson,josh-manson,nhl_roster_full,2026-06-17,2026-06-17
+180,Devon Toews,D,d1,d1:D,COL,COL,colorado-avalanche,Colorado,8478038,Devon_Toews,devon-toews,nhl_roster_full,2026-06-17,2026-06-17
+181,Charlie Coyle,C,f1,f1:C,CBJ,CBJ,columbus-blue-jackets,Columbus,8475745,Charlie_Coyle,charlie-coyle,nhl_roster_full,2026-06-17,2026-06-17
+182,Adam Fantilli,C,f1,f1:C,CBJ,CBJ,columbus-blue-jackets,Columbus,8484166,Adam_Fantilli,adam-fantilli,nhl_roster_full,2026-06-17,2026-06-17
+183,Conor Garland,R,f1,f1:R,CBJ,CBJ,columbus-blue-jackets,Columbus,8478856,Conor_Garland,conor-garland,nhl_roster_full,2026-06-17,2026-06-17
+184,Danton Heinen,L,f1,f1:L,CBJ,CBJ,columbus-blue-jackets,Columbus,8478046,Danton_Heinen,danton-heinen,nhl_roster_full,2026-06-17,2026-06-17
+185,Boone Jenner,C,f1,f1:C,CBJ,CBJ,columbus-blue-jackets,Columbus,8476432,Boone_Jenner,boone-jenner,nhl_roster_full,2026-06-17,2026-06-17
+186,Kent Johnson,C,f1,f1:C,CBJ,CBJ,columbus-blue-jackets,Columbus,8482660,Kent_Johnson,kent-johnson,nhl_roster_full,2026-06-17,2026-06-17
+187,Isac Lundeström,C,f1,f1:C,CBJ,CBJ,columbus-blue-jackets,Columbus,8480806,Isac_Lundeström,isac-lundeström,nhl_roster_full,2026-06-17,2026-06-17
+188,Kirill Marchenko,R,f1,f1:R,CBJ,CBJ,columbus-blue-jackets,Columbus,8480893,Kirill_Marchenko,kirill-marchenko,nhl_roster_full,2026-06-17,2026-06-17
+189,Mason Marchment,L,f1,f1:L,CBJ,CBJ,columbus-blue-jackets,Columbus,8478975,Mason_Marchment,mason-marchment,nhl_roster_full,2026-06-17,2026-06-17
+190,Sean Monahan,C,f1,f1:C,CBJ,CBJ,columbus-blue-jackets,Columbus,8477497,Sean_Monahan,sean-monahan,nhl_roster_full,2026-06-17,2026-06-17
+191,Mathieu Olivier,R,f1,f1:R,CBJ,CBJ,columbus-blue-jackets,Columbus,8479671,Mathieu_Olivier,mathieu-olivier,nhl_roster_full,2026-06-17,2026-06-17
+192,Cole Sillinger,C,f1,f1:C,CBJ,CBJ,columbus-blue-jackets,Columbus,8482705,Cole_Sillinger,cole-sillinger,nhl_roster_full,2026-06-17,2026-06-17
+193,Dmitri Voronkov,L,f1,f1:L,CBJ,CBJ,columbus-blue-jackets,Columbus,8481716,Dmitri_Voronkov,dmitri-voronkov,nhl_roster_full,2026-06-17,2026-06-17
+194,Miles Wood,L,f1,f1:L,CBJ,CBJ,columbus-blue-jackets,Columbus,8477425,Miles_Wood,miles-wood,nhl_roster_full,2026-06-17,2026-06-17
+195,Jake Christiansen,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8481161,Jake_Christiansen,jake-christiansen,nhl_roster_full,2026-06-17,2026-06-17
+196,Dante Fabbro,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8479371,Dante_Fabbro,dante-fabbro,nhl_roster_full,2026-06-17,2026-06-17
+197,Erik Gudbranson,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8475790,Erik_Gudbranson,erik-gudbranson,nhl_roster_full,2026-06-17,2026-06-17
+198,Denton Mateychuk,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8483485,Denton_Mateychuk,denton-mateychuk,nhl_roster_full,2026-06-17,2026-06-17
+199,Ivan Provorov,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8478500,Ivan_Provorov,ivan-provorov,nhl_roster_full,2026-06-17,2026-06-17
+200,Damon Severson,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8476923,Damon_Severson,damon-severson,nhl_roster_full,2026-06-17,2026-06-17
+201,Brendan Smith,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8474090,Brendan_Smith,brendan-smith,nhl_roster_full,2026-06-17,2026-06-17
+202,Zach Werenski,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8478460,Zach_Werenski,zach-werenski,nhl_roster_full,2026-06-17,2026-06-17
+203,Egor Zamula,D,d1,d1:D,CBJ,CBJ,columbus-blue-jackets,Columbus,8481178,Egor_Zamula,egor-zamula,nhl_roster_full,2026-06-17,2026-06-17
+204,Nathan Bastian,R,f1,f1:R,DAL,DAL,dallas-stars,Dallas,8479414,Nathan_Bastian,nathan-bastian,nhl_roster_full,2026-06-17,2026-06-17
+205,Jamie Benn,L,f1,f1:L,DAL,DAL,dallas-stars,Dallas,8473994,Jamie_Benn,jamie-benn,nhl_roster_full,2026-06-17,2026-06-17
+206,Colin Blackwell,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8476278,Colin_Blackwell,colin-blackwell,nhl_roster_full,2026-06-17,2026-06-17
+207,Mavrik Bourque,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8482145,Mavrik_Bourque,mavrik-bourque,nhl_roster_full,2026-06-17,2026-06-17
+208,Michael Bunting,L,f1,f1:L,DAL,DAL,dallas-stars,Dallas,8478047,Michael_Bunting,michael-bunting,nhl_roster_full,2026-06-17,2026-06-17
+209,Oskar Bäck,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8480840,Oskar_Bäck,oskar-bäck,nhl_roster_full,2026-06-17,2026-06-17
+210,Matt Duchene,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8475168,Matt_Duchene,matt-duchene,nhl_roster_full,2026-06-17,2026-06-17
+211,Adam Erne,L,f1,f1:L,DAL,DAL,dallas-stars,Dallas,8477454,Adam_Erne,adam-erne,nhl_roster_full,2026-06-17,2026-06-17
+212,Radek Faksa,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8476889,Radek_Faksa,radek-faksa,nhl_roster_full,2026-06-17,2026-06-17
+213,Roope Hintz,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8478449,Roope_Hintz,roope-hintz,nhl_roster_full,2026-06-17,2026-06-17
+214,Justin Hryckowian,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8484829,Justin_Hryckowian,justin-hryckowian,nhl_roster_full,2026-06-17,2026-06-17
+215,Arttu Hyry,R,f1,f1:R,DAL,DAL,dallas-stars,Dallas,8484938,Arttu_Hyry,arttu-hyry,nhl_roster_full,2026-06-17,2026-06-17
+216,Wyatt Johnston,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8482740,Wyatt_Johnston,wyatt-johnston,nhl_roster_full,2026-06-17,2026-06-17
+217,Mikko Rantanen,R,f1,f1:R,DAL,DAL,dallas-stars,Dallas,8478420,Mikko_Rantanen,mikko-rantanen,nhl_roster_full,2026-06-17,2026-06-17
+218,Jason Robertson,L,f1,f1:L,DAL,DAL,dallas-stars,Dallas,8480027,Jason_Robertson,jason-robertson,nhl_roster_full,2026-06-17,2026-06-17
+219,Tyler Seguin,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8475794,Tyler_Seguin,tyler-seguin,nhl_roster_full,2026-06-17,2026-06-17
+220,Sam Steel,C,f1,f1:C,DAL,DAL,dallas-stars,Dallas,8479351,Sam_Steel,sam-steel,nhl_roster_full,2026-06-17,2026-06-17
+221,Lian Bichsel,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8483425,Lian_Bichsel,lian-bichsel,nhl_roster_full,2026-06-17,2026-06-17
+222,Kyle Capobianco,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8478476,Kyle_Capobianco,kyle-capobianco,nhl_roster_full,2026-06-17,2026-06-17
+223,Thomas Harley,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8481581,Thomas_Harley,thomas-harley,nhl_roster_full,2026-06-17,2026-06-17
+224,Miro Heiskanen,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8480036,Miro_Heiskanen,miro-heiskanen,nhl_roster_full,2026-06-17,2026-06-17
+225,Esa Lindell,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8476902,Esa_Lindell,esa-lindell,nhl_roster_full,2026-06-17,2026-06-17
+226,Nils Lundkvist,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8480878,Nils_Lundkvist,nils-lundkvist,nhl_roster_full,2026-06-17,2026-06-17
+227,Ilya Lyubushkin,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8480950,Ilya_Lyubushkin,ilya-lyubushkin,nhl_roster_full,2026-06-17,2026-06-17
+228,Tyler Myers,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8474574,Tyler_Myers,tyler-myers,nhl_roster_full,2026-06-17,2026-06-17
+229,Alexander Petrovic,D,d1,d1:D,DAL,DAL,dallas-stars,Dallas,8475755,Alexander_Petrovic,alexander-petrovic,nhl_roster_full,2026-06-17,2026-06-17
+230,Mason Appleton,C,f1,f1:C,DET,DET,detroit-red-wings,Detroit,8478891,Mason_Appleton,mason-appleton,nhl_roster_full,2026-06-17,2026-06-17
+231,J.T. Compher,L,f1,f1:L,DET,DET,detroit-red-wings,Detroit,8477456,J.T._Compher,jt-compher,nhl_roster_full,2026-06-17,2026-06-17
+232,Andrew Copp,C,f1,f1:C,DET,DET,detroit-red-wings,Detroit,8477429,Andrew_Copp,andrew-copp,nhl_roster_full,2026-06-17,2026-06-17
+233,Alex DeBrincat,R,f1,f1:R,DET,DET,detroit-red-wings,Detroit,8479337,Alex_DeBrincat,alex-debrincat,nhl_roster_full,2026-06-17,2026-06-17
+234,Emmitt Finnie,C,f1,f1:C,DET,DET,detroit-red-wings,Detroit,8484471,Emmitt_Finnie,emmitt-finnie,nhl_roster_full,2026-06-17,2026-06-17
+235,Patrick Kane,R,f1,f1:R,DET,DET,detroit-red-wings,Detroit,8474141,Patrick_Kane,patrick-kane,nhl_roster_full,2026-06-17,2026-06-17
+236,Marco Kasper,C,f1,f1:C,DET,DET,detroit-red-wings,Detroit,8483464,Marco_Kasper,marco-kasper,nhl_roster_full,2026-06-17,2026-06-17
+237,Dylan Larkin,C,f1,f1:C,DET,DET,detroit-red-wings,Detroit,8477946,Dylan_Larkin,dylan-larkin,nhl_roster_full,2026-06-17,2026-06-17
+238,David Perron,L,f1,f1:L,DET,DET,detroit-red-wings,Detroit,8474102,David_Perron,david-perron,nhl_roster_full,2026-06-17,2026-06-17
+239,Michael Rasmussen,C,f1,f1:C,DET,DET,detroit-red-wings,Detroit,8479992,Michael_Rasmussen,michael-rasmussen,nhl_roster_full,2026-06-17,2026-06-17
+240,Lucas Raymond,L,f1,f1:L,DET,DET,detroit-red-wings,Detroit,8482078,Lucas_Raymond,lucas-raymond,nhl_roster_full,2026-06-17,2026-06-17
+241,James van Riemsdyk,L,f1,f1:L,DET,DET,detroit-red-wings,Detroit,8474037,James_van_Riemsdyk,james-van-riemsdyk,nhl_roster_full,2026-06-17,2026-06-17
+242,Jacob Bernard-Docker,D,d1,d1:D,DET,DET,detroit-red-wings,Detroit,8480879,Jacob_Bernard-Docker,jacob-bernard-docker,nhl_roster_full,2026-06-17,2026-06-17
+243,Ben Chiarot,D,d1,d1:D,DET,DET,detroit-red-wings,Detroit,8475279,Ben_Chiarot,ben-chiarot,nhl_roster_full,2026-06-17,2026-06-17
+244,Simon Edvinsson,D,d1,d1:D,DET,DET,detroit-red-wings,Detroit,8482762,Simon_Edvinsson,simon-edvinsson,nhl_roster_full,2026-06-17,2026-06-17
+245,Justin Faulk,D,d1,d1:D,DET,DET,detroit-red-wings,Detroit,8475753,Justin_Faulk,justin-faulk,nhl_roster_full,2026-06-17,2026-06-17
+246,Travis Hamonic,D,d1,d1:D,DET,DET,detroit-red-wings,Detroit,8474612,Travis_Hamonic,travis-hamonic,nhl_roster_full,2026-06-17,2026-06-17
+247,Albert Johansson,D,d1,d1:D,DET,DET,detroit-red-wings,Detroit,8481607,Albert_Johansson,albert-johansson,nhl_roster_full,2026-06-17,2026-06-17
+248,Moritz Seider,D,d1,d1:D,DET,DET,detroit-red-wings,Detroit,8481542,Moritz_Seider,moritz-seider,nhl_roster_full,2026-06-17,2026-06-17
+249,Colton Dach,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8482703,Colton_Dach,colton-dach,nhl_roster_full,2026-06-17,2026-06-17
+250,Jason Dickinson,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8477450,Jason_Dickinson,jason-dickinson,nhl_roster_full,2026-06-17,2026-06-17
+251,Leon Draisaitl,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8477934,Leon_Draisaitl,leon-draisaitl,nhl_roster_full,2026-06-17,2026-06-17
+252,Trent Frederic,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8479365,Trent_Frederic,trent-frederic,nhl_roster_full,2026-06-17,2026-06-17
+253,Adam Henrique,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8474641,Adam_Henrique,adam-henrique,nhl_roster_full,2026-06-17,2026-06-17
+254,Zach Hyman,L,f1,f1:L,EDM,EDM,edmonton-oilers,Edmonton,8475786,Zach_Hyman,zach-hyman,nhl_roster_full,2026-06-17,2026-06-17
+255,Mattias Janmark,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8477406,Mattias_Janmark,mattias-janmark,nhl_roster_full,2026-06-17,2026-06-17
+256,Max Jones,L,f1,f1:L,EDM,EDM,edmonton-oilers,Edmonton,8479368,Max_Jones,max-jones,nhl_roster_full,2026-06-17,2026-06-17
+257,Kasperi Kapanen,R,f1,f1:R,EDM,EDM,edmonton-oilers,Edmonton,8477953,Kasperi_Kapanen,kasperi-kapanen,nhl_roster_full,2026-06-17,2026-06-17
+258,Curtis Lazar,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8477508,Curtis_Lazar,curtis-lazar,nhl_roster_full,2026-06-17,2026-06-17
+259,Connor McDavid,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8478402,Connor_McDavid,connor-mcdavid,nhl_roster_full,2026-06-17,2026-06-17
+260,Ryan Nugent-Hopkins,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8476454,Ryan_Nugent-Hopkins,ryan-nugent-hopkins,nhl_roster_full,2026-06-17,2026-06-17
+261,Vasily Podkolzin,R,f1,f1:R,EDM,EDM,edmonton-oilers,Edmonton,8481617,Vasily_Podkolzin,vasily-podkolzin,nhl_roster_full,2026-06-17,2026-06-17
+262,Jack Roslovic,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8478458,Jack_Roslovic,jack-roslovic,nhl_roster_full,2026-06-17,2026-06-17
+263,Josh Samanski,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8484509,Josh_Samanski,josh-samanski,nhl_roster_full,2026-06-17,2026-06-17
+264,Matt Savoie,C,f1,f1:C,EDM,EDM,edmonton-oilers,Edmonton,8483512,Matt_Savoie,matt-savoie,nhl_roster_full,2026-06-17,2026-06-17
+265,Evan Bouchard,D,d1,d1:D,EDM,EDM,edmonton-oilers,Edmonton,8480803,Evan_Bouchard,evan-bouchard,nhl_roster_full,2026-06-17,2026-06-17
+266,Mattias Ekholm,D,d1,d1:D,EDM,EDM,edmonton-oilers,Edmonton,8475218,Mattias_Ekholm,mattias-ekholm,nhl_roster_full,2026-06-17,2026-06-17
+267,Ty Emberson,D,d1,d1:D,EDM,EDM,edmonton-oilers,Edmonton,8480834,Ty_Emberson,ty-emberson,nhl_roster_full,2026-06-17,2026-06-17
+268,Connor Murphy,D,d1,d1:D,EDM,EDM,edmonton-oilers,Edmonton,8476473,Connor_Murphy,connor-murphy,nhl_roster_full,2026-06-17,2026-06-17
+269,Darnell Nurse,D,d1,d1:D,EDM,EDM,edmonton-oilers,Edmonton,8477498,Darnell_Nurse,darnell-nurse,nhl_roster_full,2026-06-17,2026-06-17
+270,Spencer Stastney,D,d1,d1:D,EDM,EDM,edmonton-oilers,Edmonton,8481056,Spencer_Stastney,spencer-stastney,nhl_roster_full,2026-06-17,2026-06-17
+271,Jake Walman,D,d1,d1:D,EDM,EDM,edmonton-oilers,Edmonton,8478013,Jake_Walman,jake-walman,nhl_roster_full,2026-06-17,2026-06-17
+272,Aleksander Barkov,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8477493,Aleksander_Barkov,aleksander-barkov,nhl_roster_full,2026-06-17,2026-06-17
+273,Sam Bennett,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8477935,Sam_Bennett,sam-bennett,nhl_roster_full,2026-06-17,2026-06-17
+274,Jesper Boqvist,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8480003,Jesper_Boqvist,jesper-boqvist,nhl_roster_full,2026-06-17,2026-06-17
+275,Jonah Gadjovich,L,f1,f1:L,FLA,FLA,florida-panthers,Florida,8479981,Jonah_Gadjovich,jonah-gadjovich,nhl_roster_full,2026-06-17,2026-06-17
+276,A.J. Greer,L,f1,f1:L,FLA,FLA,florida-panthers,Florida,8478421,A.J._Greer,aj-greer,nhl_roster_full,2026-06-17,2026-06-17
+277,Vinnie Hinostroza,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8476994,Vinnie_Hinostroza,vinnie-hinostroza,nhl_roster_full,2026-06-17,2026-06-17
+278,Luke Kunin,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8479316,Luke_Kunin,luke-kunin,nhl_roster_full,2026-06-17,2026-06-17
+279,Anton Lundell,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8482113,Anton_Lundell,anton-lundell,nhl_roster_full,2026-06-17,2026-06-17
+280,Eetu Luostarinen,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8480185,Eetu_Luostarinen,eetu-luostarinen,nhl_roster_full,2026-06-17,2026-06-17
+281,Brad Marchand,L,f1,f1:L,FLA,FLA,florida-panthers,Florida,8473419,Brad_Marchand,brad-marchand,nhl_roster_full,2026-06-17,2026-06-17
+282,Tomas Nosek,L,f1,f1:L,FLA,FLA,florida-panthers,Florida,8477931,Tomas_Nosek,tomas-nosek,nhl_roster_full,2026-06-17,2026-06-17
+283,Cole Reinhardt,L,f1,f1:L,FLA,FLA,florida-panthers,Florida,8481133,Cole_Reinhardt,cole-reinhardt,nhl_roster_full,2026-06-17,2026-06-17
+284,Sam Reinhart,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8477933,Sam_Reinhart,sam-reinhart,nhl_roster_full,2026-06-17,2026-06-17
+285,Evan Rodrigues,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8478542,Evan_Rodrigues,evan-rodrigues,nhl_roster_full,2026-06-17,2026-06-17
+286,Mackie Samoskevich,R,f1,f1:R,FLA,FLA,florida-panthers,Florida,8482713,Mackie_Samoskevich,mackie-samoskevich,nhl_roster_full,2026-06-17,2026-06-17
+287,Cole Schwindt,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8481655,Cole_Schwindt,cole-schwindt,nhl_roster_full,2026-06-17,2026-06-17
+288,Matthew Tkachuk,L,f1,f1:L,FLA,FLA,florida-panthers,Florida,8479314,Matthew_Tkachuk,matthew-tkachuk,nhl_roster_full,2026-06-17,2026-06-17
+289,Carter Verhaeghe,C,f1,f1:C,FLA,FLA,florida-panthers,Florida,8477409,Carter_Verhaeghe,carter-verhaeghe,nhl_roster_full,2026-06-17,2026-06-17
+290,Uvis Balinskis,D,d1,d1:D,FLA,FLA,florida-panthers,Florida,8484304,Uvis_Balinskis,uvis-balinskis,nhl_roster_full,2026-06-17,2026-06-17
+291,Aaron Ekblad,D,d1,d1:D,FLA,FLA,florida-panthers,Florida,8477932,Aaron_Ekblad,aaron-ekblad,nhl_roster_full,2026-06-17,2026-06-17
+292,Gustav Forsling,D,d1,d1:D,FLA,FLA,florida-panthers,Florida,8478055,Gustav_Forsling,gustav-forsling,nhl_roster_full,2026-06-17,2026-06-17
+293,Seth Jones,D,d1,d1:D,FLA,FLA,florida-panthers,Florida,8477495,Seth_Jones,seth-jones,nhl_roster_full,2026-06-17,2026-06-17
+294,Dmitry Kulikov,D,d1,d1:D,FLA,FLA,florida-panthers,Florida,8475179,Dmitry_Kulikov,dmitry-kulikov,nhl_roster_full,2026-06-17,2026-06-17
+295,Niko Mikkola,D,d1,d1:D,FLA,FLA,florida-panthers,Florida,8478859,Niko_Mikkola,niko-mikkola,nhl_roster_full,2026-06-17,2026-06-17
+296,Donovan Sebrango,D,d1,d1:D,FLA,FLA,florida-panthers,Florida,8482131,Donovan_Sebrango,donovan-sebrango,nhl_roster_full,2026-06-17,2026-06-17
+297,Joel Armia,R,f1,f1:R,LA,LAK,los-angeles-kings,Los Angeles,8476469,Joel_Armia,joel-armia,nhl_roster_full,2026-06-17,2026-06-17
+298,Quinton Byfield,R,f1,f1:R,LA,LAK,los-angeles-kings,Los Angeles,8482124,Quinton_Byfield,quinton-byfield,nhl_roster_full,2026-06-17,2026-06-17
+299,Kevin Fiala,L,f1,f1:L,LA,LAK,los-angeles-kings,Los Angeles,8477942,Kevin_Fiala,kevin-fiala,nhl_roster_full,2026-06-17,2026-06-17
+300,Samuel Helenius,C,f1,f1:C,LA,LAK,los-angeles-kings,Los Angeles,8482726,Samuel_Helenius,samuel-helenius,nhl_roster_full,2026-06-17,2026-06-17
+301,Mathieu Joseph,R,f1,f1:R,LA,LAK,los-angeles-kings,Los Angeles,8478472,Mathieu_Joseph,mathieu-joseph,nhl_roster_full,2026-06-17,2026-06-17
+302,Adrian Kempe,R,f1,f1:R,LA,LAK,los-angeles-kings,Los Angeles,8477960,Adrian_Kempe,adrian-kempe,nhl_roster_full,2026-06-17,2026-06-17
+303,Anze Kopitar,C,f1,f1:C,LA,LAK,los-angeles-kings,Los Angeles,8471685,Anze_Kopitar,anze-kopitar,nhl_roster_full,2026-06-17,2026-06-17
+304,Andrei Kuzmenko,L,f1,f1:L,LA,LAK,los-angeles-kings,Los Angeles,8483808,Andrei_Kuzmenko,andrei-kuzmenko,nhl_roster_full,2026-06-17,2026-06-17
+305,Alex Laferriere,R,f1,f1:R,LA,LAK,los-angeles-kings,Los Angeles,8482155,Alex_Laferriere,alex-laferriere,nhl_roster_full,2026-06-17,2026-06-17
+306,Scott Laughton,C,f1,f1:C,LA,LAK,los-angeles-kings,Los Angeles,8476872,Scott_Laughton,scott-laughton,nhl_roster_full,2026-06-17,2026-06-17
+307,Jeff Malott,L,f1,f1:L,LA,LAK,los-angeles-kings,Los Angeles,8482408,Jeff_Malott,jeff-malott,nhl_roster_full,2026-06-17,2026-06-17
+308,Trevor Moore,L,f1,f1:L,LA,LAK,los-angeles-kings,Los Angeles,8479675,Trevor_Moore,trevor-moore,nhl_roster_full,2026-06-17,2026-06-17
+309,Artemi Panarin,L,f1,f1:L,LA,LAK,los-angeles-kings,Los Angeles,8478550,Artemi_Panarin,artemi-panarin,nhl_roster_full,2026-06-17,2026-06-17
+310,Alex Turcotte,C,f1,f1:C,LA,LAK,los-angeles-kings,Los Angeles,8481532,Alex_Turcotte,alex-turcotte,nhl_roster_full,2026-06-17,2026-06-17
+311,Taylor Ward,R,f1,f1:R,LA,LAK,los-angeles-kings,Los Angeles,8483406,Taylor_Ward,taylor-ward,nhl_roster_full,2026-06-17,2026-06-17
+312,Jared Wright,R,f1,f1:R,LA,LAK,los-angeles-kings,Los Angeles,8483756,Jared_Wright,jared-wright,nhl_roster_full,2026-06-17,2026-06-17
+313,Mikey Anderson,D,d1,d1:D,LA,LAK,los-angeles-kings,Los Angeles,8479998,Mikey_Anderson,mikey-anderson,nhl_roster_full,2026-06-17,2026-06-17
+314,Cody Ceci,D,d1,d1:D,LA,LAK,los-angeles-kings,Los Angeles,8476879,Cody_Ceci,cody-ceci,nhl_roster_full,2026-06-17,2026-06-17
+315,Brandt Clarke,D,d1,d1:D,LA,LAK,los-angeles-kings,Los Angeles,8482730,Brandt_Clarke,brandt-clarke,nhl_roster_full,2026-06-17,2026-06-17
+316,Drew Doughty,D,d1,d1:D,LA,LAK,los-angeles-kings,Los Angeles,8474563,Drew_Doughty,drew-doughty,nhl_roster_full,2026-06-17,2026-06-17
+317,Brian Dumoulin,D,d1,d1:D,LA,LAK,los-angeles-kings,Los Angeles,8475208,Brian_Dumoulin,brian-dumoulin,nhl_roster_full,2026-06-17,2026-06-17
+318,Joel Edmundson,D,d1,d1:D,LA,LAK,los-angeles-kings,Los Angeles,8476441,Joel_Edmundson,joel-edmundson,nhl_roster_full,2026-06-17,2026-06-17
+319,Jacob Moverare,D,d1,d1:D,LA,LAK,los-angeles-kings,Los Angeles,8479421,Jacob_Moverare,jacob-moverare,nhl_roster_full,2026-06-17,2026-06-17
+320,Nicolas Aube-Kubel,R,f1,f1:R,MIN,MIN,minnesota-wild,Minnesota,8477979,Nicolas_Aube-Kubel,nicolas-aube-kubel,nhl_roster_full,2026-06-17,2026-06-17
+321,Matt Boldy,L,f1,f1:L,MIN,MIN,minnesota-wild,Minnesota,8481557,Matt_Boldy,matt-boldy,nhl_roster_full,2026-06-17,2026-06-17
+322,Bobby Brink,R,f1,f1:R,MIN,MIN,minnesota-wild,Minnesota,8481553,Bobby_Brink,bobby-brink,nhl_roster_full,2026-06-17,2026-06-17
+323,Joel Eriksson Ek,C,f1,f1:C,MIN,MIN,minnesota-wild,Minnesota,8478493,Joel_Eriksson_Ek,joel-eriksson-ek,nhl_roster_full,2026-06-17,2026-06-17
+324,Robby Fabbri,C,f1,f1:C,MIN,MIN,minnesota-wild,Minnesota,8477952,Robby_Fabbri,robby-fabbri,nhl_roster_full,2026-06-17,2026-06-17
+325,Marcus Foligno,L,f1,f1:L,MIN,MIN,minnesota-wild,Minnesota,8475220,Marcus_Foligno,marcus-foligno,nhl_roster_full,2026-06-17,2026-06-17
+326,Nick Foligno,L,f1,f1:L,MIN,MIN,minnesota-wild,Minnesota,8473422,Nick_Foligno,nick-foligno,nhl_roster_full,2026-06-17,2026-06-17
+327,Hunter Haight,C,f1,f1:C,MIN,MIN,minnesota-wild,Minnesota,8483452,Hunter_Haight,hunter-haight,nhl_roster_full,2026-06-17,2026-06-17
+328,Ryan Hartman,R,f1,f1:R,MIN,MIN,minnesota-wild,Minnesota,8477451,Ryan_Hartman,ryan-hartman,nhl_roster_full,2026-06-17,2026-06-17
+329,Marcus Johansson,L,f1,f1:L,MIN,MIN,minnesota-wild,Minnesota,8475149,Marcus_Johansson,marcus-johansson,nhl_roster_full,2026-06-17,2026-06-17
+330,Ben Jones,C,f1,f1:C,MIN,MIN,minnesota-wild,Minnesota,8480259,Ben_Jones,ben-jones,nhl_roster_full,2026-06-17,2026-06-17
+331,Kirill Kaprizov,L,f1,f1:L,MIN,MIN,minnesota-wild,Minnesota,8478864,Kirill_Kaprizov,kirill-kaprizov,nhl_roster_full,2026-06-17,2026-06-17
+332,Michael McCarron,C,f1,f1:C,MIN,MIN,minnesota-wild,Minnesota,8477446,Michael_McCarron,michael-mccarron,nhl_roster_full,2026-06-17,2026-06-17
+333,Nico Sturm,C,f1,f1:C,MIN,MIN,minnesota-wild,Minnesota,8481477,Nico_Sturm,nico-sturm,nhl_roster_full,2026-06-17,2026-06-17
+334,Vladimir Tarasenko,R,f1,f1:R,MIN,MIN,minnesota-wild,Minnesota,8475765,Vladimir_Tarasenko,vladimir-tarasenko,nhl_roster_full,2026-06-17,2026-06-17
+335,Yakov Trenin,C,f1,f1:C,MIN,MIN,minnesota-wild,Minnesota,8478508,Yakov_Trenin,yakov-trenin,nhl_roster_full,2026-06-17,2026-06-17
+336,Danila Yurov,R,f1,f1:R,MIN,MIN,minnesota-wild,Minnesota,8483525,Danila_Yurov,danila-yurov,nhl_roster_full,2026-06-17,2026-06-17
+337,Mats Zuccarello,R,f1,f1:R,MIN,MIN,minnesota-wild,Minnesota,8475692,Mats_Zuccarello,mats-zuccarello,nhl_roster_full,2026-06-17,2026-06-17
+338,Zach Bogosian,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8474567,Zach_Bogosian,zach-bogosian,nhl_roster_full,2026-06-17,2026-06-17
+339,Jonas Brodin,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8476463,Jonas_Brodin,jonas-brodin,nhl_roster_full,2026-06-17,2026-06-17
+340,Brock Faber,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8482122,Brock_Faber,brock-faber,nhl_roster_full,2026-06-17,2026-06-17
+341,Viking Gustafsson Nyberg,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8486166,Viking_Gustafsson_Nyberg,viking-gustafsson-nyberg,nhl_roster_full,2026-06-17,2026-06-17
+342,Quinn Hughes,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8480800,Quinn_Hughes,quinn-hughes,nhl_roster_full,2026-06-17,2026-06-17
+343,Daemon Hunt,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8482094,Daemon_Hunt,daemon-hunt,nhl_roster_full,2026-06-17,2026-06-17
+344,Matt Kiersted,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8482641,Matt_Kiersted,matt-kiersted,nhl_roster_full,2026-06-17,2026-06-17
+345,Carson Lambos,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8482781,Carson_Lambos,carson-lambos,nhl_roster_full,2026-06-17,2026-06-17
+346,Jake Middleton,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8478136,Jake_Middleton,jake-middleton,nhl_roster_full,2026-06-17,2026-06-17
+347,Jeff Petry,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8473507,Jeff_Petry,jeff-petry,nhl_roster_full,2026-06-17,2026-06-17
+348,David Spacek,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8483766,David_Spacek,david-spacek,nhl_roster_full,2026-06-17,2026-06-17
+349,Jared Spurgeon,D,d1,d1:D,MIN,MIN,minnesota-wild,Minnesota,8474716,Jared_Spurgeon,jared-spurgeon,nhl_roster_full,2026-06-17,2026-06-17
+350,Josh Anderson,R,f1,f1:R,MON,MTL,montreal-canadiens,Montreal,8476981,Josh_Anderson,josh-anderson,nhl_roster_full,2026-06-17,2026-06-17
+351,Owen Beck,C,f1,f1:C,MON,MTL,montreal-canadiens,Montreal,8483424,Owen_Beck,owen-beck,nhl_roster_full,2026-06-17,2026-06-17
+352,Zachary Bolduc,R,f1,f1:R,MON,MTL,montreal-canadiens,Montreal,8482737,Zachary_Bolduc,zachary-bolduc,nhl_roster_full,2026-06-17,2026-06-17
+353,Cole Caufield,R,f1,f1:R,MON,MTL,montreal-canadiens,Montreal,8481540,Cole_Caufield,cole-caufield,nhl_roster_full,2026-06-17,2026-06-17
+354,Kirby Dach,C,f1,f1:C,MON,MTL,montreal-canadiens,Montreal,8481523,Kirby_Dach,kirby-dach,nhl_roster_full,2026-06-17,2026-06-17
+355,Phillip Danault,C,f1,f1:C,MON,MTL,montreal-canadiens,Montreal,8476479,Phillip_Danault,phillip-danault,nhl_roster_full,2026-06-17,2026-06-17
+356,Ivan Demidov,R,f1,f1:R,MON,MTL,montreal-canadiens,Montreal,8484984,Ivan_Demidov,ivan-demidov,nhl_roster_full,2026-06-17,2026-06-17
+357,Jake Evans,C,f1,f1:C,MON,MTL,montreal-canadiens,Montreal,8478133,Jake_Evans,jake-evans,nhl_roster_full,2026-06-17,2026-06-17
+358,Brendan Gallagher,R,f1,f1:R,MON,MTL,montreal-canadiens,Montreal,8475848,Brendan_Gallagher,brendan-gallagher,nhl_roster_full,2026-06-17,2026-06-17
+359,Oliver Kapanen,C,f1,f1:C,MON,MTL,montreal-canadiens,Montreal,8482775,Oliver_Kapanen,oliver-kapanen,nhl_roster_full,2026-06-17,2026-06-17
+360,Patrik Laine,R,f1,f1:R,MON,MTL,montreal-canadiens,Montreal,8479339,Patrik_Laine,patrik-laine,nhl_roster_full,2026-06-17,2026-06-17
+361,Alex Newhook,C,f1,f1:C,MON,MTL,montreal-canadiens,Montreal,8481618,Alex_Newhook,alex-newhook,nhl_roster_full,2026-06-17,2026-06-17
+362,Juraj Slafkovský,L,f1,f1:L,MON,MTL,montreal-canadiens,Montreal,8483515,Juraj_Slafkovský,juraj-slafkovský,nhl_roster_full,2026-06-17,2026-06-17
+363,Nick Suzuki,C,f1,f1:C,MON,MTL,montreal-canadiens,Montreal,8480018,Nick_Suzuki,nick-suzuki,nhl_roster_full,2026-06-17,2026-06-17
+364,Alexandre Texier,L,f1,f1:L,MON,MTL,montreal-canadiens,Montreal,8480074,Alexandre_Texier,alexandre-texier,nhl_roster_full,2026-06-17,2026-06-17
+365,Joe Veleno,C,f1,f1:C,MON,MTL,montreal-canadiens,Montreal,8480813,Joe_Veleno,joe-veleno,nhl_roster_full,2026-06-17,2026-06-17
+366,Florian Xhekaj,L,f1,f1:L,MON,MTL,montreal-canadiens,Montreal,8484403,Florian_Xhekaj,florian-xhekaj,nhl_roster_full,2026-06-17,2026-06-17
+367,Alexandre Carrier,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8478851,Alexandre_Carrier,alexandre-carrier,nhl_roster_full,2026-06-17,2026-06-17
+368,Noah Dobson,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8480865,Noah_Dobson,noah-dobson,nhl_roster_full,2026-06-17,2026-06-17
+369,Adam Engstrom,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8483686,Adam_Engstrom,adam-engstrom,nhl_roster_full,2026-06-17,2026-06-17
+370,Kaiden Guhle,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8482087,Kaiden_Guhle,kaiden-guhle,nhl_roster_full,2026-06-17,2026-06-17
+371,Lane Hutson,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8483457,Lane_Hutson,lane-hutson,nhl_roster_full,2026-06-17,2026-06-17
+372,Mike Matheson,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8476875,Mike_Matheson,mike-matheson,nhl_roster_full,2026-06-17,2026-06-17
+373,David Reinbacher,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8484220,David_Reinbacher,david-reinbacher,nhl_roster_full,2026-06-17,2026-06-17
+374,Jayden Struble,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8481593,Jayden_Struble,jayden-struble,nhl_roster_full,2026-06-17,2026-06-17
+375,Arber Xhekaj,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8482964,Arber_Xhekaj,arber-xhekaj,nhl_roster_full,2026-06-17,2026-06-17
+376,Ross Colton,C,f1,f1:C,NAS,NSH,nashville-predators,Nashville,8479525,Ross_Colton,ross-colton,nhl_roster_full,2026-06-17,2026-06-17
+377,Luke Evangelista,R,f1,f1:R,NAS,NSH,nashville-predators,Nashville,8482146,Luke_Evangelista,luke-evangelista,nhl_roster_full,2026-06-17,2026-06-17
+378,Aiden Fink,R,f1,f1:R,NAS,NSH,nashville-predators,Nashville,8484494,Aiden_Fink,aiden-fink,nhl_roster_full,2026-06-17,2026-06-17
+379,Filip Forsberg,L,f1,f1:L,NAS,NSH,nashville-predators,Nashville,8476887,Filip_Forsberg,filip-forsberg,nhl_roster_full,2026-06-17,2026-06-17
+380,Erik Haula,L,f1,f1:L,NAS,NSH,nashville-predators,Nashville,8475287,Erik_Haula,erik-haula,nhl_roster_full,2026-06-17,2026-06-17
+381,Tyson Jost,C,f1,f1:C,NAS,NSH,nashville-predators,Nashville,8479370,Tyson_Jost,tyson-jost,nhl_roster_full,2026-06-17,2026-06-17
+382,Jonathan Marchessault,C,f1,f1:C,NAS,NSH,nashville-predators,Nashville,8476539,Jonathan_Marchessault,jonathan-marchessault,nhl_roster_full,2026-06-17,2026-06-17
+383,Ryan O'Reilly,C,f1,f1:C,NAS,NSH,nashville-predators,Nashville,8475158,Ryan_O'Reilly,ryan-oreilly,nhl_roster_full,2026-06-17,2026-06-17
+384,Steven Stamkos,C,f1,f1:C,NAS,NSH,nashville-predators,Nashville,8474564,Steven_Stamkos,steven-stamkos,nhl_roster_full,2026-06-17,2026-06-17
+385,Fedor Svechkov,C,f1,f1:C,NAS,NSH,nashville-predators,Nashville,8482768,Fedor_Svechkov,fedor-svechkov,nhl_roster_full,2026-06-17,2026-06-17
+386,Ozzy Wiesblatt,C,f1,f1:C,NAS,NSH,nashville-predators,Nashville,8482103,Ozzy_Wiesblatt,ozzy-wiesblatt,nhl_roster_full,2026-06-17,2026-06-17
+387,Matthew Wood,R,f1,f1:R,NAS,NSH,nashville-predators,Nashville,8484241,Matthew_Wood,matthew-wood,nhl_roster_full,2026-06-17,2026-06-17
+388,Justin Barron,D,d1,d1:D,NAS,NSH,nashville-predators,Nashville,8482111,Justin_Barron,justin-barron,nhl_roster_full,2026-06-17,2026-06-17
+389,Nicolas Hague,D,d1,d1:D,NAS,NSH,nashville-predators,Nashville,8479980,Nicolas_Hague,nicolas-hague,nhl_roster_full,2026-06-17,2026-06-17
+390,Roman Josi,D,d1,d1:D,NAS,NSH,nashville-predators,Nashville,8474600,Roman_Josi,roman-josi,nhl_roster_full,2026-06-17,2026-06-17
+391,Nick Perbix,D,d1,d1:D,NAS,NSH,nashville-predators,Nashville,8480246,Nick_Perbix,nick-perbix,nhl_roster_full,2026-06-17,2026-06-17
+392,Brady Skjei,D,d1,d1:D,NAS,NSH,nashville-predators,Nashville,8476869,Brady_Skjei,brady-skjei,nhl_roster_full,2026-06-17,2026-06-17
+393,Adam Wilsby,D,d1,d1:D,NAS,NSH,nashville-predators,Nashville,8482482,Adam_Wilsby,adam-wilsby,nhl_roster_full,2026-06-17,2026-06-17
+394,Nick Bjugstad,C,f1,f1:C,NJ,NJD,new-jersey-devils,New Jersey,8475760,Nick_Bjugstad,nick-bjugstad,nhl_roster_full,2026-06-17,2026-06-17
+395,Jesper Bratt,L,f1,f1:L,NJ,NJD,new-jersey-devils,New Jersey,8479407,Jesper_Bratt,jesper-bratt,nhl_roster_full,2026-06-17,2026-06-17
+396,Connor Brown,R,f1,f1:R,NJ,NJD,new-jersey-devils,New Jersey,8477015,Connor_Brown,connor-brown,nhl_roster_full,2026-06-17,2026-06-17
+397,Paul Cotter,L,f1,f1:L,NJ,NJD,new-jersey-devils,New Jersey,8481032,Paul_Cotter,paul-cotter,nhl_roster_full,2026-06-17,2026-06-17
+398,Evgenii Dadonov,L,f1,f1:L,NJ,NJD,new-jersey-devils,New Jersey,8474149,Evgenii_Dadonov,evgenii-dadonov,nhl_roster_full,2026-06-17,2026-06-17
+399,Cody Glass,C,f1,f1:C,NJ,NJD,new-jersey-devils,New Jersey,8479996,Cody_Glass,cody-glass,nhl_roster_full,2026-06-17,2026-06-17
+400,Arseny Gritsyuk,R,f1,f1:R,NJ,NJD,new-jersey-devils,New Jersey,8481721,Arseny_Gritsyuk,arseny-gritsyuk,nhl_roster_full,2026-06-17,2026-06-17
+401,Nico Hischier,C,f1,f1:C,NJ,NJD,new-jersey-devils,New Jersey,8480002,Nico_Hischier,nico-hischier,nhl_roster_full,2026-06-17,2026-06-17
+402,Jack Hughes,C,f1,f1:C,NJ,NJD,new-jersey-devils,New Jersey,8481559,Jack_Hughes,jack-hughes,nhl_roster_full,2026-06-17,2026-06-17
+403,Zack MacEwen,R,f1,f1:R,NJ,NJD,new-jersey-devils,New Jersey,8479772,Zack_MacEwen,zack-macewen,nhl_roster_full,2026-06-17,2026-06-17
+404,Timo Meier,R,f1,f1:R,NJ,NJD,new-jersey-devils,New Jersey,8478414,Timo_Meier,timo-meier,nhl_roster_full,2026-06-17,2026-06-17
+405,Dawson Mercer,C,f1,f1:C,NJ,NJD,new-jersey-devils,New Jersey,8482110,Dawson_Mercer,dawson-mercer,nhl_roster_full,2026-06-17,2026-06-17
+406,Stefan Noesen,R,f1,f1:R,NJ,NJD,new-jersey-devils,New Jersey,8476474,Stefan_Noesen,stefan-noesen,nhl_roster_full,2026-06-17,2026-06-17
+407,Maxim Tsyplakov,R,f1,f1:R,NJ,NJD,new-jersey-devils,New Jersey,8484958,Maxim_Tsyplakov,maxim-tsyplakov,nhl_roster_full,2026-06-17,2026-06-17
+408,Dennis Cholowski,D,d1,d1:D,NJ,NJD,new-jersey-devils,New Jersey,8479395,Dennis_Cholowski,dennis-cholowski,nhl_roster_full,2026-06-17,2026-06-17
+409,Brenden Dillon,D,d1,d1:D,NJ,NJD,new-jersey-devils,New Jersey,8475455,Brenden_Dillon,brenden-dillon,nhl_roster_full,2026-06-17,2026-06-17
+410,Dougie Hamilton,D,d1,d1:D,NJ,NJD,new-jersey-devils,New Jersey,8476462,Dougie_Hamilton,dougie-hamilton,nhl_roster_full,2026-06-17,2026-06-17
+411,Luke Hughes,D,d1,d1:D,NJ,NJD,new-jersey-devils,New Jersey,8482684,Luke_Hughes,luke-hughes,nhl_roster_full,2026-06-17,2026-06-17
+412,Johnathan Kovacevic,D,d1,d1:D,NJ,NJD,new-jersey-devils,New Jersey,8480192,Johnathan_Kovacevic,johnathan-kovacevic,nhl_roster_full,2026-06-17,2026-06-17
+413,Simon Nemec,D,d1,d1:D,NJ,NJD,new-jersey-devils,New Jersey,8483495,Simon_Nemec,simon-nemec,nhl_roster_full,2026-06-17,2026-06-17
+414,Brett Pesce,D,d1,d1:D,NJ,NJD,new-jersey-devils,New Jersey,8477488,Brett_Pesce,brett-pesce,nhl_roster_full,2026-06-17,2026-06-17
+415,Jonas Siegenthaler,D,d1,d1:D,NJ,NJD,new-jersey-devils,New Jersey,8478399,Jonas_Siegenthaler,jonas-siegenthaler,nhl_roster_full,2026-06-17,2026-06-17
+416,Mathew Barzal,C,f1,f1:C,NYI,NYI,new-york-islanders,New York Islanders,8478445,Mathew_Barzal,mathew-barzal,nhl_roster_full,2026-06-17,2026-06-17
+417,Casey Cizikas,C,f1,f1:C,NYI,NYI,new-york-islanders,New York Islanders,8475231,Casey_Cizikas,casey-cizikas,nhl_roster_full,2026-06-17,2026-06-17
+418,Anthony Duclair,L,f1,f1:L,NYI,NYI,new-york-islanders,New York Islanders,8477407,Anthony_Duclair,anthony-duclair,nhl_roster_full,2026-06-17,2026-06-17
+419,Marc Gatcomb,C,f1,f1:C,NYI,NYI,new-york-islanders,New York Islanders,8483553,Marc_Gatcomb,marc-gatcomb,nhl_roster_full,2026-06-17,2026-06-17
+420,Emil Heineman,L,f1,f1:L,NYI,NYI,new-york-islanders,New York Islanders,8482476,Emil_Heineman,emil-heineman,nhl_roster_full,2026-06-17,2026-06-17
+421,Simon Holmstrom,R,f1,f1:R,NYI,NYI,new-york-islanders,New York Islanders,8481601,Simon_Holmstrom,simon-holmstrom,nhl_roster_full,2026-06-17,2026-06-17
+422,Bo Horvat,C,f1,f1:C,NYI,NYI,new-york-islanders,New York Islanders,8477500,Bo_Horvat,bo-horvat,nhl_roster_full,2026-06-17,2026-06-17
+423,Anders Lee,L,f1,f1:L,NYI,NYI,new-york-islanders,New York Islanders,8475314,Anders_Lee,anders-lee,nhl_roster_full,2026-06-17,2026-06-17
+424,Kyle MacLean,C,f1,f1:C,NYI,NYI,new-york-islanders,New York Islanders,8481237,Kyle_MacLean,kyle-maclean,nhl_roster_full,2026-06-17,2026-06-17
+425,Jean-Gabriel Pageau,C,f1,f1:C,NYI,NYI,new-york-islanders,New York Islanders,8476419,Jean-Gabriel_Pageau,jean-gabriel-pageau,nhl_roster_full,2026-06-17,2026-06-17
+426,Ondrej Palat,L,f1,f1:L,NYI,NYI,new-york-islanders,New York Islanders,8476292,Ondrej_Palat,ondrej-palat,nhl_roster_full,2026-06-17,2026-06-17
+427,Kyle Palmieri,C,f1,f1:C,NYI,NYI,new-york-islanders,New York Islanders,8475151,Kyle_Palmieri,kyle-palmieri,nhl_roster_full,2026-06-17,2026-06-17
+428,Brayden Schenn,C,f1,f1:C,NYI,NYI,new-york-islanders,New York Islanders,8475170,Brayden_Schenn,brayden-schenn,nhl_roster_full,2026-06-17,2026-06-17
+429,Max Shabanov,R,f1,f1:R,NYI,NYI,new-york-islanders,New York Islanders,8485702,Max_Shabanov,max-shabanov,nhl_roster_full,2026-06-17,2026-06-17
+430,Adam Boqvist,D,d1,d1:D,NYI,NYI,new-york-islanders,New York Islanders,8480871,Adam_Boqvist,adam-boqvist,nhl_roster_full,2026-06-17,2026-06-17
+431,Tony DeAngelo,D,d1,d1:D,NYI,NYI,new-york-islanders,New York Islanders,8477950,Tony_DeAngelo,tony-deangelo,nhl_roster_full,2026-06-17,2026-06-17
+432,Scott Mayfield,D,d1,d1:D,NYI,NYI,new-york-islanders,New York Islanders,8476429,Scott_Mayfield,scott-mayfield,nhl_roster_full,2026-06-17,2026-06-17
+433,Adam Pelech,D,d1,d1:D,NYI,NYI,new-york-islanders,New York Islanders,8476917,Adam_Pelech,adam-pelech,nhl_roster_full,2026-06-17,2026-06-17
+434,Ryan Pulock,D,d1,d1:D,NYI,NYI,new-york-islanders,New York Islanders,8477506,Ryan_Pulock,ryan-pulock,nhl_roster_full,2026-06-17,2026-06-17
+435,Alexander Romanov,D,d1,d1:D,NYI,NYI,new-york-islanders,New York Islanders,8481014,Alexander_Romanov,alexander-romanov,nhl_roster_full,2026-06-17,2026-06-17
+436,Matthew Schaefer,D,d1,d1:D,NYI,NYI,new-york-islanders,New York Islanders,8485366,Matthew_Schaefer,matthew-schaefer,nhl_roster_full,2026-06-17,2026-06-17
+437,Carson Soucy,D,d1,d1:D,NYI,NYI,new-york-islanders,New York Islanders,8477369,Carson_Soucy,carson-soucy,nhl_roster_full,2026-06-17,2026-06-17
+438,Jonny Brodzinski,C,f1,f1:C,NYR,NYR,new-york-rangers,New York Rangers,8477380,Jonny_Brodzinski,jonny-brodzinski,nhl_roster_full,2026-06-17,2026-06-17
+439,Jaroslav Chmelar,R,f1,f1:R,NYR,NYR,new-york-rangers,New York Rangers,8482877,Jaroslav_Chmelar,jaroslav-chmelar,nhl_roster_full,2026-06-17,2026-06-17
+440,Will Cuylle,L,f1,f1:L,NYR,NYR,new-york-rangers,New York Rangers,8482157,Will_Cuylle,will-cuylle,nhl_roster_full,2026-06-17,2026-06-17
+441,Adam Edstrom,C,f1,f1:C,NYR,NYR,new-york-rangers,New York Rangers,8481726,Adam_Edstrom,adam-edstrom,nhl_roster_full,2026-06-17,2026-06-17
+442,Tye Kartye,L,f1,f1:L,NYR,NYR,new-york-rangers,New York Rangers,8481789,Tye_Kartye,tye-kartye,nhl_roster_full,2026-06-17,2026-06-17
+443,Noah Laba,C,f1,f1:C,NYR,NYR,new-york-rangers,New York Rangers,8483690,Noah_Laba,noah-laba,nhl_roster_full,2026-06-17,2026-06-17
+444,Alexis Lafrenière,L,f1,f1:L,NYR,NYR,new-york-rangers,New York Rangers,8482109,Alexis_Lafrenière,alexis-lafrenière,nhl_roster_full,2026-06-17,2026-06-17
+445,J.T. Miller,C,f1,f1:C,NYR,NYR,new-york-rangers,New York Rangers,8476468,J.T._Miller,jt-miller,nhl_roster_full,2026-06-17,2026-06-17
+446,Gabe Perreault,R,f1,f1:R,NYR,NYR,new-york-rangers,New York Rangers,8484210,Gabe_Perreault,gabe-perreault,nhl_roster_full,2026-06-17,2026-06-17
+447,Taylor Raddysh,R,f1,f1:R,NYR,NYR,new-york-rangers,New York Rangers,8479390,Taylor_Raddysh,taylor-raddysh,nhl_roster_full,2026-06-17,2026-06-17
+448,Matt Rempe,C,f1,f1:C,NYR,NYR,new-york-rangers,New York Rangers,8482460,Matt_Rempe,matt-rempe,nhl_roster_full,2026-06-17,2026-06-17
+449,Conor Sheary,L,f1,f1:L,NYR,NYR,new-york-rangers,New York Rangers,8477839,Conor_Sheary,conor-sheary,nhl_roster_full,2026-06-17,2026-06-17
+450,Adam Sykora,L,f1,f1:L,NYR,NYR,new-york-rangers,New York Rangers,8483669,Adam_Sykora,adam-sykora,nhl_roster_full,2026-06-17,2026-06-17
+451,Vincent Trocheck,C,f1,f1:C,NYR,NYR,new-york-rangers,New York Rangers,8476389,Vincent_Trocheck,vincent-trocheck,nhl_roster_full,2026-06-17,2026-06-17
+452,Mika Zibanejad,C,f1,f1:C,NYR,NYR,new-york-rangers,New York Rangers,8476459,Mika_Zibanejad,mika-zibanejad,nhl_roster_full,2026-06-17,2026-06-17
+453,Will Borgen,D,d1,d1:D,NYR,NYR,new-york-rangers,New York Rangers,8478840,Will_Borgen,will-borgen,nhl_roster_full,2026-06-17,2026-06-17
+454,Drew Fortescue,D,d1,d1:D,NYR,NYR,new-york-rangers,New York Rangers,8484169,Drew_Fortescue,drew-fortescue,nhl_roster_full,2026-06-17,2026-06-17
+455,Adam Fox,D,d1,d1:D,NYR,NYR,new-york-rangers,New York Rangers,8479323,Adam_Fox,adam-fox,nhl_roster_full,2026-06-17,2026-06-17
+456,Vladislav Gavrikov,D,d1,d1:D,NYR,NYR,new-york-rangers,New York Rangers,8478882,Vladislav_Gavrikov,vladislav-gavrikov,nhl_roster_full,2026-06-17,2026-06-17
+457,Vincent Iorio,D,d1,d1:D,NYR,NYR,new-york-rangers,New York Rangers,8482861,Vincent_Iorio,vincent-iorio,nhl_roster_full,2026-06-17,2026-06-17
+458,Matthew Robertson,D,d1,d1:D,NYR,NYR,new-york-rangers,New York Rangers,8481525,Matthew_Robertson,matthew-robertson,nhl_roster_full,2026-06-17,2026-06-17
+459,Braden Schneider,D,d1,d1:D,NYR,NYR,new-york-rangers,New York Rangers,8482073,Braden_Schneider,braden-schneider,nhl_roster_full,2026-06-17,2026-06-17
+460,Urho Vaakanainen,D,d1,d1:D,NYR,NYR,new-york-rangers,New York Rangers,8480001,Urho_Vaakanainen,urho-vaakanainen,nhl_roster_full,2026-06-17,2026-06-17
+461,Michael Amadio,R,f1,f1:R,OTT,OTT,ottawa-senators,Ottawa,8478020,Michael_Amadio,michael-amadio,nhl_roster_full,2026-06-17,2026-06-17
+462,Drake Batherson,R,f1,f1:R,OTT,OTT,ottawa-senators,Ottawa,8480208,Drake_Batherson,drake-batherson,nhl_roster_full,2026-06-17,2026-06-17
+463,Tyler Boucher,R,f1,f1:R,OTT,OTT,ottawa-senators,Ottawa,8482674,Tyler_Boucher,tyler-boucher,nhl_roster_full,2026-06-17,2026-06-17
+464,Graeme Clarke,R,f1,f1:R,OTT,OTT,ottawa-senators,Ottawa,8481578,Graeme_Clarke,graeme-clarke,nhl_roster_full,2026-06-17,2026-06-17
+465,Nick Cousins,C,f1,f1:C,OTT,OTT,ottawa-senators,Ottawa,8476393,Nick_Cousins,nick-cousins,nhl_roster_full,2026-06-17,2026-06-17
+466,Dylan Cozens,C,f1,f1:C,OTT,OTT,ottawa-senators,Ottawa,8481528,Dylan_Cozens,dylan-cozens,nhl_roster_full,2026-06-17,2026-06-17
+467,Lars Eller,C,f1,f1:C,OTT,OTT,ottawa-senators,Ottawa,8474189,Lars_Eller,lars-eller,nhl_roster_full,2026-06-17,2026-06-17
+468,Warren Foegele,L,f1,f1:L,OTT,OTT,ottawa-senators,Ottawa,8477998,Warren_Foegele,warren-foegele,nhl_roster_full,2026-06-17,2026-06-17
+469,Claude Giroux,R,f1,f1:R,OTT,OTT,ottawa-senators,Ottawa,8473512,Claude_Giroux,claude-giroux,nhl_roster_full,2026-06-17,2026-06-17
+470,Ridly Greig,C,f1,f1:C,OTT,OTT,ottawa-senators,Ottawa,8482092,Ridly_Greig,ridly-greig,nhl_roster_full,2026-06-17,2026-06-17
+471,Stephen Halliday,C,f1,f1:C,OTT,OTT,ottawa-senators,Ottawa,8483676,Stephen_Halliday,stephen-halliday,nhl_roster_full,2026-06-17,2026-06-17
+472,Hayden Hodgson,R,f1,f1:R,OTT,OTT,ottawa-senators,Ottawa,8478173,Hayden_Hodgson,hayden-hodgson,nhl_roster_full,2026-06-17,2026-06-17
+473,Arthur Kaliyev,R,f1,f1:R,OTT,OTT,ottawa-senators,Ottawa,8481560,Arthur_Kaliyev,arthur-kaliyev,nhl_roster_full,2026-06-17,2026-06-17
+474,Kurtis MacDermid,L,f1,f1:L,OTT,OTT,ottawa-senators,Ottawa,8477073,Kurtis_MacDermid,kurtis-macdermid,nhl_roster_full,2026-06-17,2026-06-17
+475,Oskar Pettersson,R,f1,f1:R,OTT,OTT,ottawa-senators,Ottawa,8483673,Oskar_Pettersson,oskar-pettersson,nhl_roster_full,2026-06-17,2026-06-17
+476,Shane Pinto,C,f1,f1:C,OTT,OTT,ottawa-senators,Ottawa,8481596,Shane_Pinto,shane-pinto,nhl_roster_full,2026-06-17,2026-06-17
+477,Tim Stützle,C,f1,f1:C,OTT,OTT,ottawa-senators,Ottawa,8482116,Tim_Stützle,tim-stützle,nhl_roster_full,2026-06-17,2026-06-17
+478,Brady Tkachuk,L,f1,f1:L,OTT,OTT,ottawa-senators,Ottawa,8480801,Brady_Tkachuk,brady-tkachuk,nhl_roster_full,2026-06-17,2026-06-17
+479,Fabian Zetterlund,L,f1,f1:L,OTT,OTT,ottawa-senators,Ottawa,8480188,Fabian_Zetterlund,fabian-zetterlund,nhl_roster_full,2026-06-17,2026-06-17
+480,Thomas Chabot,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8478469,Thomas_Chabot,thomas-chabot,nhl_roster_full,2026-06-17,2026-06-17
+481,Cameron Crotty,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8480075,Cameron_Crotty,cameron-crotty,nhl_roster_full,2026-06-17,2026-06-17
+482,Dennis Gilbert,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8478502,Dennis_Gilbert,dennis-gilbert,nhl_roster_full,2026-06-17,2026-06-17
+483,Nick Jensen,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8475324,Nick_Jensen,nick-jensen,nhl_roster_full,2026-06-17,2026-06-17
+484,Tyler Kleven,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8482095,Tyler_Kleven,tyler-kleven,nhl_roster_full,2026-06-17,2026-06-17
+485,Nikolas Matinpalo,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8484321,Nikolas_Matinpalo,nikolas-matinpalo,nhl_roster_full,2026-06-17,2026-06-17
+486,Jake Sanderson,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8482105,Jake_Sanderson,jake-sanderson,nhl_roster_full,2026-06-17,2026-06-17
+487,Jordan Spence,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8481606,Jordan_Spence,jordan-spence,nhl_roster_full,2026-06-17,2026-06-17
+488,Lassi Thomson,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8481575,Lassi_Thomson,lassi-thomson,nhl_roster_full,2026-06-17,2026-06-17
+489,Carter Yakemchuk,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8484759,Carter_Yakemchuk,carter-yakemchuk,nhl_roster_full,2026-06-17,2026-06-17
+490,Artem Zub,D,d1,d1:D,OTT,OTT,ottawa-senators,Ottawa,8482245,Artem_Zub,artem-zub,nhl_roster_full,2026-06-17,2026-06-17
+491,Rodrigo Abols,C,f1,f1:C,PHI,PHI,philadelphia-flyers,Philadelphia,8479022,Rodrigo_Abols,rodrigo-abols,nhl_roster_full,2026-06-17,2026-06-17
+492,Denver Barkey,C,f1,f1:C,PHI,PHI,philadelphia-flyers,Philadelphia,8484142,Denver_Barkey,denver-barkey,nhl_roster_full,2026-06-17,2026-06-17
+493,Alex Bump,L,f1,f1:L,PHI,PHI,philadelphia-flyers,Philadelphia,8483731,Alex_Bump,alex-bump,nhl_roster_full,2026-06-17,2026-06-17
+494,Noah Cates,L,f1,f1:L,PHI,PHI,philadelphia-flyers,Philadelphia,8480220,Noah_Cates,noah-cates,nhl_roster_full,2026-06-17,2026-06-17
+495,Sean Couturier,C,f1,f1:C,PHI,PHI,philadelphia-flyers,Philadelphia,8476461,Sean_Couturier,sean-couturier,nhl_roster_full,2026-06-17,2026-06-17
+496,Christian Dvorak,C,f1,f1:C,PHI,PHI,philadelphia-flyers,Philadelphia,8477989,Christian_Dvorak,christian-dvorak,nhl_roster_full,2026-06-17,2026-06-17
+497,Oscar Eklind,L,f1,f1:L,PHI,PHI,philadelphia-flyers,Philadelphia,8484928,Oscar_Eklind,oscar-eklind,nhl_roster_full,2026-06-17,2026-06-17
+498,Tyson Foerster,R,f1,f1:R,PHI,PHI,philadelphia-flyers,Philadelphia,8482159,Tyson_Foerster,tyson-foerster,nhl_roster_full,2026-06-17,2026-06-17
+499,Jacob Gaucher,C,f1,f1:C,PHI,PHI,philadelphia-flyers,Philadelphia,8481848,Jacob_Gaucher,jacob-gaucher,nhl_roster_full,2026-06-17,2026-06-17
+500,Luke Glendening,C,f1,f1:C,PHI,PHI,philadelphia-flyers,Philadelphia,8476822,Luke_Glendening,luke-glendening,nhl_roster_full,2026-06-17,2026-06-17
+501,Nikita Grebenkin,R,f1,f1:R,PHI,PHI,philadelphia-flyers,Philadelphia,8483733,Nikita_Grebenkin,nikita-grebenkin,nhl_roster_full,2026-06-17,2026-06-17
+502,Carl Grundstrom,R,f1,f1:R,PHI,PHI,philadelphia-flyers,Philadelphia,8479336,Carl_Grundstrom,carl-grundstrom,nhl_roster_full,2026-06-17,2026-06-17
+503,Garnet Hathaway,R,f1,f1:R,PHI,PHI,philadelphia-flyers,Philadelphia,8477903,Garnet_Hathaway,garnet-hathaway,nhl_roster_full,2026-06-17,2026-06-17
+504,Travis Konecny,R,f1,f1:R,PHI,PHI,philadelphia-flyers,Philadelphia,8478439,Travis_Konecny,travis-konecny,nhl_roster_full,2026-06-17,2026-06-17
+505,Jett Luchanko,C,f1,f1:C,PHI,PHI,philadelphia-flyers,Philadelphia,8484779,Jett_Luchanko,jett-luchanko,nhl_roster_full,2026-06-17,2026-06-17
+506,Porter Martone,R,f1,f1:R,PHI,PHI,philadelphia-flyers,Philadelphia,8485406,Porter_Martone,porter-martone,nhl_roster_full,2026-06-17,2026-06-17
+507,Matvei Michkov,R,f1,f1:R,PHI,PHI,philadelphia-flyers,Philadelphia,8484387,Matvei_Michkov,matvei-michkov,nhl_roster_full,2026-06-17,2026-06-17
+508,Owen Tippett,R,f1,f1:R,PHI,PHI,philadelphia-flyers,Philadelphia,8480015,Owen_Tippett,owen-tippett,nhl_roster_full,2026-06-17,2026-06-17
+509,Garrett Wilson,L,f1,f1:L,PHI,PHI,philadelphia-flyers,Philadelphia,8475253,Garrett_Wilson,garrett-wilson,nhl_roster_full,2026-06-17,2026-06-17
+510,Trevor Zegras,C,f1,f1:C,PHI,PHI,philadelphia-flyers,Philadelphia,8481533,Trevor_Zegras,trevor-zegras,nhl_roster_full,2026-06-17,2026-06-17
+511,Emil Andrae,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8482126,Emil_Andrae,emil-andrae,nhl_roster_full,2026-06-17,2026-06-17
+512,Simon Benoit,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8481122,Simon_Benoit,simon-benoit,nhl_roster_full,2026-06-17,2026-06-17
+513,Oliver Bonk,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8484148,Oliver_Bonk,oliver-bonk,nhl_roster_full,2026-06-17,2026-06-17
+514,Jamie Drysdale,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8482142,Jamie_Drysdale,jamie-drysdale,nhl_roster_full,2026-06-17,2026-06-17
+515,Helge Grans,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8482169,Helge_Grans,helge-grans,nhl_roster_full,2026-06-17,2026-06-17
+516,David Jiricek,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8483460,David_Jiricek,david-jiricek,nhl_roster_full,2026-06-17,2026-06-17
+517,Noah Juulsen,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8478454,Noah_Juulsen,noah-juulsen,nhl_roster_full,2026-06-17,2026-06-17
+518,Hunter McDonald,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8483760,Hunter_McDonald,hunter-mcdonald,nhl_roster_full,2026-06-17,2026-06-17
+519,Rasmus Ristolainen,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8477499,Rasmus_Ristolainen,rasmus-ristolainen,nhl_roster_full,2026-06-17,2026-06-17
+520,Travis Sanheim,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8477948,Travis_Sanheim,travis-sanheim,nhl_roster_full,2026-06-17,2026-06-17
+521,Nick Seeler,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8476372,Nick_Seeler,nick-seeler,nhl_roster_full,2026-06-17,2026-06-17
+522,Cam York,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8481546,Cam_York,cam-york,nhl_roster_full,2026-06-17,2026-06-17
+523,Noel Acciari,C,f1,f1:C,PIT,PIT,pittsburgh-penguins,Pittsburgh,8478569,Noel_Acciari,noel-acciari,nhl_roster_full,2026-06-17,2026-06-17
+524,Justin Brazeau,R,f1,f1:R,PIT,PIT,pittsburgh-penguins,Pittsburgh,8479638,Justin_Brazeau,justin-brazeau,nhl_roster_full,2026-06-17,2026-06-17
+525,Egor Chinakhov,R,f1,f1:R,PIT,PIT,pittsburgh-penguins,Pittsburgh,8482475,Egor_Chinakhov,egor-chinakhov,nhl_roster_full,2026-06-17,2026-06-17
+526,Sidney Crosby,C,f1,f1:C,PIT,PIT,pittsburgh-penguins,Pittsburgh,8471675,Sidney_Crosby,sidney-crosby,nhl_roster_full,2026-06-17,2026-06-17
+527,Connor Dewar,C,f1,f1:C,PIT,PIT,pittsburgh-penguins,Pittsburgh,8480980,Connor_Dewar,connor-dewar,nhl_roster_full,2026-06-17,2026-06-17
+528,Filip Hallander,C,f1,f1:C,PIT,PIT,pittsburgh-penguins,Pittsburgh,8480842,Filip_Hallander,filip-hallander,nhl_roster_full,2026-06-17,2026-06-17
+529,Kevin Hayes,R,f1,f1:R,PIT,PIT,pittsburgh-penguins,Pittsburgh,8475763,Kevin_Hayes,kevin-hayes,nhl_roster_full,2026-06-17,2026-06-17
+530,Ben Kindel,C,f1,f1:C,PIT,PIT,pittsburgh-penguins,Pittsburgh,8485414,Ben_Kindel,ben-kindel,nhl_roster_full,2026-06-17,2026-06-17
+531,Ville Koivunen,R,f1,f1:R,PIT,PIT,pittsburgh-penguins,Pittsburgh,8482758,Ville_Koivunen,ville-koivunen,nhl_roster_full,2026-06-17,2026-06-17
+532,Blake Lizotte,C,f1,f1:C,PIT,PIT,pittsburgh-penguins,Pittsburgh,8481481,Blake_Lizotte,blake-lizotte,nhl_roster_full,2026-06-17,2026-06-17
+533,Evgeni Malkin,C,f1,f1:C,PIT,PIT,pittsburgh-penguins,Pittsburgh,8471215,Evgeni_Malkin,evgeni-malkin,nhl_roster_full,2026-06-17,2026-06-17
+534,Anthony Mantha,R,f1,f1:R,PIT,PIT,pittsburgh-penguins,Pittsburgh,8477511,Anthony_Mantha,anthony-mantha,nhl_roster_full,2026-06-17,2026-06-17
+535,Tommy Novak,C,f1,f1:C,PIT,PIT,pittsburgh-penguins,Pittsburgh,8478438,Tommy_Novak,tommy-novak,nhl_roster_full,2026-06-17,2026-06-17
+536,Rickard Rakell,R,f1,f1:R,PIT,PIT,pittsburgh-penguins,Pittsburgh,8476483,Rickard_Rakell,rickard-rakell,nhl_roster_full,2026-06-17,2026-06-17
+537,Bryan Rust,R,f1,f1:R,PIT,PIT,pittsburgh-penguins,Pittsburgh,8475810,Bryan_Rust,bryan-rust,nhl_roster_full,2026-06-17,2026-06-17
+538,Elmer Soderblom,L,f1,f1:L,PIT,PIT,pittsburgh-penguins,Pittsburgh,8481725,Elmer_Soderblom,elmer-soderblom,nhl_roster_full,2026-06-17,2026-06-17
+539,Connor Clifton,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8477365,Connor_Clifton,connor-clifton,nhl_roster_full,2026-06-17,2026-06-17
+540,Samuel Girard,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8479398,Samuel_Girard,samuel-girard,nhl_roster_full,2026-06-17,2026-06-17
+541,Ryan Graves,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8477435,Ryan_Graves,ryan-graves,nhl_roster_full,2026-06-17,2026-06-17
+542,Erik Karlsson,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8474578,Erik_Karlsson,erik-karlsson,nhl_roster_full,2026-06-17,2026-06-17
+543,Kris Letang,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8471724,Kris_Letang,kris-letang,nhl_roster_full,2026-06-17,2026-06-17
+544,Jake Livanavage,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8486169,Jake_Livanavage,jake-livanavage,nhl_roster_full,2026-06-17,2026-06-17
+545,Ryan Shea,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8478854,Ryan_Shea,ryan-shea,nhl_roster_full,2026-06-17,2026-06-17
+546,Ilya Solovyov,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8482470,Ilya_Solovyov,ilya-solovyov,nhl_roster_full,2026-06-17,2026-06-17
+547,Jack St. Ivany,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8481030,Jack_St._Ivany,jack-st-ivany,nhl_roster_full,2026-06-17,2026-06-17
+548,Parker Wotherspoon,D,d1,d1:D,PIT,PIT,pittsburgh-penguins,Pittsburgh,8478450,Parker_Wotherspoon,parker-wotherspoon,nhl_roster_full,2026-06-17,2026-06-17
+549,Macklin Celebrini,C,f1,f1:C,SJ,SJS,san-jose-sharks,San Jose,8484801,Macklin_Celebrini,macklin-celebrini,nhl_roster_full,2026-06-17,2026-06-17
+550,Ty Dellandrea,C,f1,f1:C,SJ,SJS,san-jose-sharks,San Jose,8480848,Ty_Dellandrea,ty-dellandrea,nhl_roster_full,2026-06-17,2026-06-17
+551,William Eklund,L,f1,f1:L,SJ,SJS,san-jose-sharks,San Jose,8482667,William_Eklund,william-eklund,nhl_roster_full,2026-06-17,2026-06-17
+552,Adam Gaudette,R,f1,f1:R,SJ,SJS,san-jose-sharks,San Jose,8478874,Adam_Gaudette,adam-gaudette,nhl_roster_full,2026-06-17,2026-06-17
+553,Barclay Goodrow,C,f1,f1:C,SJ,SJS,san-jose-sharks,San Jose,8476624,Barclay_Goodrow,barclay-goodrow,nhl_roster_full,2026-06-17,2026-06-17
+554,Collin Graf,R,f1,f1:R,SJ,SJS,san-jose-sharks,San Jose,8484911,Collin_Graf,collin-graf,nhl_roster_full,2026-06-17,2026-06-17
+555,Philipp Kurashev,C,f1,f1:C,SJ,SJS,san-jose-sharks,San Jose,8480798,Philipp_Kurashev,philipp-kurashev,nhl_roster_full,2026-06-17,2026-06-17
+556,Michael Misa,C,f1,f1:C,SJ,SJS,san-jose-sharks,San Jose,8485402,Michael_Misa,michael-misa,nhl_roster_full,2026-06-17,2026-06-17
+557,Zack Ostapchuk,C,f1,f1:C,SJ,SJS,san-jose-sharks,San Jose,8482859,Zack_Ostapchuk,zack-ostapchuk,nhl_roster_full,2026-06-17,2026-06-17
+558,Ryan Reaves,R,f1,f1:R,SJ,SJS,san-jose-sharks,San Jose,8471817,Ryan_Reaves,ryan-reaves,nhl_roster_full,2026-06-17,2026-06-17
+559,Pavol Regenda,L,f1,f1:L,SJ,SJS,san-jose-sharks,San Jose,8483630,Pavol_Regenda,pavol-regenda,nhl_roster_full,2026-06-17,2026-06-17
+560,Kiefer Sherwood,L,f1,f1:L,SJ,SJS,san-jose-sharks,San Jose,8480748,Kiefer_Sherwood,kiefer-sherwood,nhl_roster_full,2026-06-17,2026-06-17
+561,Will Smith,C,f1,f1:C,SJ,SJS,san-jose-sharks,San Jose,8484227,Will_Smith,will-smith,nhl_roster_full,2026-06-17,2026-06-17
+562,Tyler Toffoli,C,f1,f1:C,SJ,SJS,san-jose-sharks,San Jose,8475726,Tyler_Toffoli,tyler-toffoli,nhl_roster_full,2026-06-17,2026-06-17
+563,Alexander Wennberg,C,f1,f1:C,SJ,SJS,san-jose-sharks,San Jose,8477505,Alexander_Wennberg,alexander-wennberg,nhl_roster_full,2026-06-17,2026-06-17
+564,Vincent Desharnais,D,d1,d1:D,SJ,SJS,san-jose-sharks,San Jose,8479576,Vincent_Desharnais,vincent-desharnais,nhl_roster_full,2026-06-17,2026-06-17
+565,Sam Dickinson,D,d1,d1:D,SJ,SJS,san-jose-sharks,San Jose,8484806,Sam_Dickinson,sam-dickinson,nhl_roster_full,2026-06-17,2026-06-17
+566,Mario Ferraro,D,d1,d1:D,SJ,SJS,san-jose-sharks,San Jose,8479983,Mario_Ferraro,mario-ferraro,nhl_roster_full,2026-06-17,2026-06-17
+567,John Klingberg,D,d1,d1:D,SJ,SJS,san-jose-sharks,San Jose,8475906,John_Klingberg,john-klingberg,nhl_roster_full,2026-06-17,2026-06-17
+568,Nick Leddy,D,d1,d1:D,SJ,SJS,san-jose-sharks,San Jose,8475181,Nick_Leddy,nick-leddy,nhl_roster_full,2026-06-17,2026-06-17
+569,Shakir Mukhamadullin,D,d1,d1:D,SJ,SJS,san-jose-sharks,San Jose,8482166,Shakir_Mukhamadullin,shakir-mukhamadullin,nhl_roster_full,2026-06-17,2026-06-17
+570,Dmitry Orlov,D,d1,d1:D,SJ,SJS,san-jose-sharks,San Jose,8475200,Dmitry_Orlov,dmitry-orlov,nhl_roster_full,2026-06-17,2026-06-17
+571,Matty Beniers,C,f1,f1:C,SEA,SEA,seattle-kraken,Seattle,8482665,Matty_Beniers,matty-beniers,nhl_roster_full,2026-06-17,2026-06-17
+572,Berkly Catton,C,f1,f1:C,SEA,SEA,seattle-kraken,Seattle,8484800,Berkly_Catton,berkly-catton,nhl_roster_full,2026-06-17,2026-06-17
+573,Jordan Eberle,R,f1,f1:R,SEA,SEA,seattle-kraken,Seattle,8474586,Jordan_Eberle,jordan-eberle,nhl_roster_full,2026-06-17,2026-06-17
+574,Frederick Gaudreau,C,f1,f1:C,SEA,SEA,seattle-kraken,Seattle,8477919,Frederick_Gaudreau,frederick-gaudreau,nhl_roster_full,2026-06-17,2026-06-17
+575,Kaapo Kakko,R,f1,f1:R,SEA,SEA,seattle-kraken,Seattle,8481554,Kaapo_Kakko,kaapo-kakko,nhl_roster_full,2026-06-17,2026-06-17
+576,Jared McCann,L,f1,f1:L,SEA,SEA,seattle-kraken,Seattle,8477955,Jared_McCann,jared-mccann,nhl_roster_full,2026-06-17,2026-06-17
+577,Bobby McMann,C,f1,f1:C,SEA,SEA,seattle-kraken,Seattle,8482259,Bobby_McMann,bobby-mcmann,nhl_roster_full,2026-06-17,2026-06-17
+578,Ben Meyers,C,f1,f1:C,SEA,SEA,seattle-kraken,Seattle,8483570,Ben_Meyers,ben-meyers,nhl_roster_full,2026-06-17,2026-06-17
+579,Jaden Schwartz,L,f1,f1:L,SEA,SEA,seattle-kraken,Seattle,8475768,Jaden_Schwartz,jaden-schwartz,nhl_roster_full,2026-06-17,2026-06-17
+580,Chandler Stephenson,C,f1,f1:C,SEA,SEA,seattle-kraken,Seattle,8476905,Chandler_Stephenson,chandler-stephenson,nhl_roster_full,2026-06-17,2026-06-17
+581,Eeli Tolvanen,R,f1,f1:R,SEA,SEA,seattle-kraken,Seattle,8480009,Eeli_Tolvanen,eeli-tolvanen,nhl_roster_full,2026-06-17,2026-06-17
+582,Ryan Winterton,C,f1,f1:C,SEA,SEA,seattle-kraken,Seattle,8482751,Ryan_Winterton,ryan-winterton,nhl_roster_full,2026-06-17,2026-06-17
+583,Shane Wright,C,f1,f1:C,SEA,SEA,seattle-kraken,Seattle,8483524,Shane_Wright,shane-wright,nhl_roster_full,2026-06-17,2026-06-17
+584,Vince Dunn,D,d1,d1:D,SEA,SEA,seattle-kraken,Seattle,8478407,Vince_Dunn,vince-dunn,nhl_roster_full,2026-06-17,2026-06-17
+585,Ryker Evans,D,d1,d1:D,SEA,SEA,seattle-kraken,Seattle,8482858,Ryker_Evans,ryker-evans,nhl_roster_full,2026-06-17,2026-06-17
+586,Cale Fleury,D,d1,d1:D,SEA,SEA,seattle-kraken,Seattle,8479985,Cale_Fleury,cale-fleury,nhl_roster_full,2026-06-17,2026-06-17
+587,Adam Larsson,D,d1,d1:D,SEA,SEA,seattle-kraken,Seattle,8476457,Adam_Larsson,adam-larsson,nhl_roster_full,2026-06-17,2026-06-17
+588,Ryan Lindgren,D,d1,d1:D,SEA,SEA,seattle-kraken,Seattle,8479324,Ryan_Lindgren,ryan-lindgren,nhl_roster_full,2026-06-17,2026-06-17
+589,Joshua Mahura,D,d1,d1:D,SEA,SEA,seattle-kraken,Seattle,8479372,Joshua_Mahura,joshua-mahura,nhl_roster_full,2026-06-17,2026-06-17
+590,Brandon Montour,D,d1,d1:D,SEA,SEA,seattle-kraken,Seattle,8477986,Brandon_Montour,brandon-montour,nhl_roster_full,2026-06-17,2026-06-17
+591,Jamie Oleksiak,D,d1,d1:D,SEA,SEA,seattle-kraken,Seattle,8476467,Jamie_Oleksiak,jamie-oleksiak,nhl_roster_full,2026-06-17,2026-06-17
+592,Jonatan Berggren,R,f1,f1:R,STL,STL,st-louis-blues,St. Louis,8481013,Jonatan_Berggren,jonatan-berggren,nhl_roster_full,2026-06-17,2026-06-17
+593,Pavel Buchnevich,L,f1,f1:L,STL,STL,st-louis-blues,St. Louis,8477402,Pavel_Buchnevich,pavel-buchnevich,nhl_roster_full,2026-06-17,2026-06-17
+594,Jonathan Drouin,L,f1,f1:L,STL,STL,st-louis-blues,St. Louis,8477494,Jonathan_Drouin,jonathan-drouin,nhl_roster_full,2026-06-17,2026-06-17
+595,Dalibor Dvorsky,R,f1,f1:R,STL,STL,st-louis-blues,St. Louis,8484164,Dalibor_Dvorsky,dalibor-dvorsky,nhl_roster_full,2026-06-17,2026-06-17
+596,Jack Finley,C,f1,f1:C,STL,STL,st-louis-blues,St. Louis,8482090,Jack_Finley,jack-finley,nhl_roster_full,2026-06-17,2026-06-17
+597,Dylan Holloway,L,f1,f1:L,STL,STL,st-louis-blues,St. Louis,8482077,Dylan_Holloway,dylan-holloway,nhl_roster_full,2026-06-17,2026-06-17
+598,Jordan Kyrou,R,f1,f1:R,STL,STL,st-louis-blues,St. Louis,8479385,Jordan_Kyrou,jordan-kyrou,nhl_roster_full,2026-06-17,2026-06-17
+599,Jake Neighbours,L,f1,f1:L,STL,STL,st-louis-blues,St. Louis,8482089,Jake_Neighbours,jake-neighbours,nhl_roster_full,2026-06-17,2026-06-17
+600,Jimmy Snuggerud,R,f1,f1:R,STL,STL,st-louis-blues,St. Louis,8483516,Jimmy_Snuggerud,jimmy-snuggerud,nhl_roster_full,2026-06-17,2026-06-17
+601,Oskar Sundqvist,C,f1,f1:C,STL,STL,st-louis-blues,St. Louis,8476897,Oskar_Sundqvist,oskar-sundqvist,nhl_roster_full,2026-06-17,2026-06-17
+602,Pius Suter,C,f1,f1:C,STL,STL,st-louis-blues,St. Louis,8480459,Pius_Suter,pius-suter,nhl_roster_full,2026-06-17,2026-06-17
+603,Robert Thomas,C,f1,f1:C,STL,STL,st-louis-blues,St. Louis,8480023,Robert_Thomas,robert-thomas,nhl_roster_full,2026-06-17,2026-06-17
+604,Alexey Toropchenko,R,f1,f1:R,STL,STL,st-louis-blues,St. Louis,8480281,Alexey_Toropchenko,alexey-toropchenko,nhl_roster_full,2026-06-17,2026-06-17
+605,Nathan Walker,L,f1,f1:L,STL,STL,st-louis-blues,St. Louis,8477573,Nathan_Walker,nathan-walker,nhl_roster_full,2026-06-17,2026-06-17
+606,Philip Broberg,D,d1,d1:D,STL,STL,st-louis-blues,St. Louis,8481598,Philip_Broberg,philip-broberg,nhl_roster_full,2026-06-17,2026-06-17
+607,Cam Fowler,D,d1,d1:D,STL,STL,st-louis-blues,St. Louis,8475764,Cam_Fowler,cam-fowler,nhl_roster_full,2026-06-17,2026-06-17
+608,Justin Holl,D,d1,d1:D,STL,STL,st-louis-blues,St. Louis,8475718,Justin_Holl,justin-holl,nhl_roster_full,2026-06-17,2026-06-17
+609,Matthew Kessel,D,d1,d1:D,STL,STL,st-louis-blues,St. Louis,8482516,Matthew_Kessel,matthew-kessel,nhl_roster_full,2026-06-17,2026-06-17
+610,Logan Mailloux,D,d1,d1:D,STL,STL,st-louis-blues,St. Louis,8482733,Logan_Mailloux,logan-mailloux,nhl_roster_full,2026-06-17,2026-06-17
+611,Colton Parayko,D,d1,d1:D,STL,STL,st-louis-blues,St. Louis,8476892,Colton_Parayko,colton-parayko,nhl_roster_full,2026-06-17,2026-06-17
+612,Tyler Tucker,D,d1,d1:D,STL,STL,st-louis-blues,St. Louis,8481006,Tyler_Tucker,tyler-tucker,nhl_roster_full,2026-06-17,2026-06-17
+613,Oliver Bjorkstrand,R,f1,f1:R,TB,TBL,tampa-bay-lightning,Tampa Bay,8477416,Oliver_Bjorkstrand,oliver-bjorkstrand,nhl_roster_full,2026-06-17,2026-06-17
+614,Anthony Cirelli,C,f1,f1:C,TB,TBL,tampa-bay-lightning,Tampa Bay,8478519,Anthony_Cirelli,anthony-cirelli,nhl_roster_full,2026-06-17,2026-06-17
+615,Conor Geekie,C,f1,f1:C,TB,TBL,tampa-bay-lightning,Tampa Bay,8483447,Conor_Geekie,conor-geekie,nhl_roster_full,2026-06-17,2026-06-17
+616,Zemgus Girgensons,C,f1,f1:C,TB,TBL,tampa-bay-lightning,Tampa Bay,8476878,Zemgus_Girgensons,zemgus-girgensons,nhl_roster_full,2026-06-17,2026-06-17
+617,Gage Goncalves,C,f1,f1:C,TB,TBL,tampa-bay-lightning,Tampa Bay,8482201,Gage_Goncalves,gage-goncalves,nhl_roster_full,2026-06-17,2026-06-17
+618,Yanni Gourde,C,f1,f1:C,TB,TBL,tampa-bay-lightning,Tampa Bay,8476826,Yanni_Gourde,yanni-gourde,nhl_roster_full,2026-06-17,2026-06-17
+619,Jake Guentzel,C,f1,f1:C,TB,TBL,tampa-bay-lightning,Tampa Bay,8477404,Jake_Guentzel,jake-guentzel,nhl_roster_full,2026-06-17,2026-06-17
+620,Brandon Hagel,L,f1,f1:L,TB,TBL,tampa-bay-lightning,Tampa Bay,8479542,Brandon_Hagel,brandon-hagel,nhl_roster_full,2026-06-17,2026-06-17
+621,Pontus Holmberg,R,f1,f1:R,TB,TBL,tampa-bay-lightning,Tampa Bay,8480995,Pontus_Holmberg,pontus-holmberg,nhl_roster_full,2026-06-17,2026-06-17
+622,Dominic James,C,f1,f1:C,TB,TBL,tampa-bay-lightning,Tampa Bay,8483752,Dominic_James,dominic-james,nhl_roster_full,2026-06-17,2026-06-17
+623,Nikita Kucherov,R,f1,f1:R,TB,TBL,tampa-bay-lightning,Tampa Bay,8476453,Nikita_Kucherov,nikita-kucherov,nhl_roster_full,2026-06-17,2026-06-17
+624,Nick Paul,L,f1,f1:L,TB,TBL,tampa-bay-lightning,Tampa Bay,8477426,Nick_Paul,nick-paul,nhl_roster_full,2026-06-17,2026-06-17
+625,Corey Perry,R,f1,f1:R,TB,TBL,tampa-bay-lightning,Tampa Bay,8470621,Corey_Perry,corey-perry,nhl_roster_full,2026-06-17,2026-06-17
+626,Brayden Point,C,f1,f1:C,TB,TBL,tampa-bay-lightning,Tampa Bay,8478010,Brayden_Point,brayden-point,nhl_roster_full,2026-06-17,2026-06-17
+627,Scott Sabourin,R,f1,f1:R,TB,TBL,tampa-bay-lightning,Tampa Bay,8477149,Scott_Sabourin,scott-sabourin,nhl_roster_full,2026-06-17,2026-06-17
+628,Declan Carlile,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8483398,Declan_Carlile,declan-carlile,nhl_roster_full,2026-06-17,2026-06-17
+629,Erik Cernak,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8478416,Erik_Cernak,erik-cernak,nhl_roster_full,2026-06-17,2026-06-17
+630,Max Crozier,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8481719,Max_Crozier,max-crozier,nhl_roster_full,2026-06-17,2026-06-17
+631,Charle-Edouard D'Astous,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8480426,Charle-Edouard_D'Astous,charle-edouard-dastous,nhl_roster_full,2026-06-17,2026-06-17
+632,Victor Hedman,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8475167,Victor_Hedman,victor-hedman,nhl_roster_full,2026-06-17,2026-06-17
+633,Emil Lilleberg,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8482929,Emil_Lilleberg,emil-lilleberg,nhl_roster_full,2026-06-17,2026-06-17
+634,Ryan McDonagh,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8474151,Ryan_McDonagh,ryan-mcdonagh,nhl_roster_full,2026-06-17,2026-06-17
+635,J.J. Moser,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8482655,J.J._Moser,jj-moser,nhl_roster_full,2026-06-17,2026-06-17
+636,Darren Raddysh,D,d1,d1:D,TB,TBL,tampa-bay-lightning,Tampa Bay,8478178,Darren_Raddysh,darren-raddysh,nhl_roster_full,2026-06-17,2026-06-17
+637,Max Domi,C,f1,f1:C,TOR,TOR,toronto-maple-leafs,Toronto,8477503,Max_Domi,max-domi,nhl_roster_full,2026-06-17,2026-06-17
+638,Bo Groulx,C,f1,f1:C,TOR,TOR,toronto-maple-leafs,Toronto,8480870,Bo_Groulx,bo-groulx,nhl_roster_full,2026-06-17,2026-06-17
+639,Luke Haymes,C,f1,f1:C,TOR,TOR,toronto-maple-leafs,Toronto,8485467,Luke_Haymes,luke-haymes,nhl_roster_full,2026-06-17,2026-06-17
+640,Calle Jarnkrok,C,f1,f1:C,TOR,TOR,toronto-maple-leafs,Toronto,8475714,Calle_Jarnkrok,calle-jarnkrok,nhl_roster_full,2026-06-17,2026-06-17
+641,Dakota Joshua,C,f1,f1:C,TOR,TOR,toronto-maple-leafs,Toronto,8478057,Dakota_Joshua,dakota-joshua,nhl_roster_full,2026-06-17,2026-06-17
+642,Matthew Knies,L,f1,f1:L,TOR,TOR,toronto-maple-leafs,Toronto,8482720,Matthew_Knies,matthew-knies,nhl_roster_full,2026-06-17,2026-06-17
+643,Steven Lorentz,C,f1,f1:C,TOR,TOR,toronto-maple-leafs,Toronto,8478904,Steven_Lorentz,steven-lorentz,nhl_roster_full,2026-06-17,2026-06-17
+644,Matias Maccelli,L,f1,f1:L,TOR,TOR,toronto-maple-leafs,Toronto,8481711,Matias_Maccelli,matias-maccelli,nhl_roster_full,2026-06-17,2026-06-17
+645,Auston Matthews,C,f1,f1:C,TOR,TOR,toronto-maple-leafs,Toronto,8479318,Auston_Matthews,auston-matthews,nhl_roster_full,2026-06-17,2026-06-17
+646,William Nylander,R,f1,f1:R,TOR,TOR,toronto-maple-leafs,Toronto,8477939,William_Nylander,william-nylander,nhl_roster_full,2026-06-17,2026-06-17
+647,Nicholas Robertson,L,f1,f1:L,TOR,TOR,toronto-maple-leafs,Toronto,8481582,Nicholas_Robertson,nicholas-robertson,nhl_roster_full,2026-06-17,2026-06-17
+648,John Tavares,C,f1,f1:C,TOR,TOR,toronto-maple-leafs,Toronto,8475166,John_Tavares,john-tavares,nhl_roster_full,2026-06-17,2026-06-17
+649,Emil Andrae,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8482126,Emil_Andrae,emil-andrae,nhl_roster_full,2026-06-17,2026-06-17
+650,Simon Benoit,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8481122,Simon_Benoit,simon-benoit,nhl_roster_full,2026-06-17,2026-06-17
+651,Brandon Carlo,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8478443,Brandon_Carlo,brandon-carlo,nhl_roster_full,2026-06-17,2026-06-17
+652,Oliver Ekman-Larsson,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8475171,Oliver_Ekman-Larsson,oliver-ekman-larsson,nhl_roster_full,2026-06-17,2026-06-17
+653,Jake McCabe,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8476931,Jake_McCabe,jake-mccabe,nhl_roster_full,2026-06-17,2026-06-17
+654,Philippe Myers,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8479026,Philippe_Myers,philippe-myers,nhl_roster_full,2026-06-17,2026-06-17
+655,Morgan Rielly,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8476853,Morgan_Rielly,morgan-rielly,nhl_roster_full,2026-06-17,2026-06-17
+656,Troy Stecher,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8479442,Troy_Stecher,troy-stecher,nhl_roster_full,2026-06-17,2026-06-17
+657,Chris Tanev,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8475690,Chris_Tanev,chris-tanev,nhl_roster_full,2026-06-17,2026-06-17
+658,Andrew Agozzino,L,f1,f1:L,UTA,UTA,utah-mammoth,Utah,8475461,Andrew_Agozzino,andrew-agozzino,nhl_roster_full,2026-06-17,2026-06-17
+659,Daniil But,L,f1,f1:L,UTA,UTA,utah-mammoth,Utah,8484388,Daniil_But,daniil-but,nhl_roster_full,2026-06-17,2026-06-17
+660,Michael Carcone,L,f1,f1:L,UTA,UTA,utah-mammoth,Utah,8479619,Michael_Carcone,michael-carcone,nhl_roster_full,2026-06-17,2026-06-17
+661,Logan Cooley,C,f1,f1:C,UTA,UTA,utah-mammoth,Utah,8483431,Logan_Cooley,logan-cooley,nhl_roster_full,2026-06-17,2026-06-17
+662,Lawson Crouse,L,f1,f1:L,UTA,UTA,utah-mammoth,Utah,8478474,Lawson_Crouse,lawson-crouse,nhl_roster_full,2026-06-17,2026-06-17
+663,Dylan Guenther,R,f1,f1:R,UTA,UTA,utah-mammoth,Utah,8482699,Dylan_Guenther,dylan-guenther,nhl_roster_full,2026-06-17,2026-06-17
+664,Barrett Hayton,C,f1,f1:C,UTA,UTA,utah-mammoth,Utah,8480849,Barrett_Hayton,barrett-hayton,nhl_roster_full,2026-06-17,2026-06-17
+665,Cam Hebig,C,f1,f1:C,UTA,UTA,utah-mammoth,Utah,8479656,Cam_Hebig,cam-hebig,nhl_roster_full,2026-06-17,2026-06-17
+666,Clayton Keller,R,f1,f1:R,UTA,UTA,utah-mammoth,Utah,8479343,Clayton_Keller,clayton-keller,nhl_roster_full,2026-06-17,2026-06-17
+667,Alexander Kerfoot,C,f1,f1:C,UTA,UTA,utah-mammoth,Utah,8477021,Alexander_Kerfoot,alexander-kerfoot,nhl_roster_full,2026-06-17,2026-06-17
+668,Jack McBain,C,f1,f1:C,UTA,UTA,utah-mammoth,Utah,8480855,Jack_McBain,jack-mcbain,nhl_roster_full,2026-06-17,2026-06-17
+669,Ben McCartney,L,f1,f1:L,UTA,UTA,utah-mammoth,Utah,8481827,Ben_McCartney,ben-mccartney,nhl_roster_full,2026-06-17,2026-06-17
+670,Liam O'Brien,C,f1,f1:C,UTA,UTA,utah-mammoth,Utah,8477070,Liam_O'Brien,liam-obrien,nhl_roster_full,2026-06-17,2026-06-17
+671,JJ Peterka,R,f1,f1:R,UTA,UTA,utah-mammoth,Utah,8482175,JJ_Peterka,jj-peterka,nhl_roster_full,2026-06-17,2026-06-17
+672,Kevin Rooney,C,f1,f1:C,UTA,UTA,utah-mammoth,Utah,8479291,Kevin_Rooney,kevin-rooney,nhl_roster_full,2026-06-17,2026-06-17
+673,Nick Schmaltz,C,f1,f1:C,UTA,UTA,utah-mammoth,Utah,8477951,Nick_Schmaltz,nick-schmaltz,nhl_roster_full,2026-06-17,2026-06-17
+674,Kevin Stenlund,C,f1,f1:C,UTA,UTA,utah-mammoth,Utah,8478831,Kevin_Stenlund,kevin-stenlund,nhl_roster_full,2026-06-17,2026-06-17
+675,Brandon Tanev,L,f1,f1:L,UTA,UTA,utah-mammoth,Utah,8479293,Brandon_Tanev,brandon-tanev,nhl_roster_full,2026-06-17,2026-06-17
+676,Kailer Yamamoto,R,f1,f1:R,UTA,UTA,utah-mammoth,Utah,8479977,Kailer_Yamamoto,kailer-yamamoto,nhl_roster_full,2026-06-17,2026-06-17
+677,Ian Cole,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8474013,Ian_Cole,ian-cole,nhl_roster_full,2026-06-17,2026-06-17
+678,Nick DeSimone,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8480084,Nick_DeSimone,nick-desimone,nhl_roster_full,2026-06-17,2026-06-17
+679,Sean Durzi,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8480434,Sean_Durzi,sean-durzi,nhl_roster_full,2026-06-17,2026-06-17
+680,Maveric Lamoureux,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8483472,Maveric_Lamoureux,maveric-lamoureux,nhl_roster_full,2026-06-17,2026-06-17
+681,John Marino,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8478507,John_Marino,john-marino,nhl_roster_full,2026-06-17,2026-06-17
+682,Scott Perunovich,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8481059,Scott_Perunovich,scott-perunovich,nhl_roster_full,2026-06-17,2026-06-17
+683,Nate Schmidt,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8477220,Nate_Schmidt,nate-schmidt,nhl_roster_full,2026-06-17,2026-06-17
+684,Mikhail Sergachev,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8479410,Mikhail_Sergachev,mikhail-sergachev,nhl_roster_full,2026-06-17,2026-06-17
+685,Dmitri Simashev,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8484386,Dmitri_Simashev,dmitri-simashev,nhl_roster_full,2026-06-17,2026-06-17
+686,Maksymilian Szuber,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8483763,Maksymilian_Szuber,maksymilian-szuber,nhl_roster_full,2026-06-17,2026-06-17
+687,MacKenzie Weegar,D,d1,d1:D,UTA,UTA,utah-mammoth,Utah,8477346,MacKenzie_Weegar,mackenzie-weegar,nhl_roster_full,2026-06-17,2026-06-17
+688,Nils Aman,C,f1,f1:C,VAN,VAN,vancouver-canucks,Vancouver,8482496,Nils_Aman,nils-aman,nhl_roster_full,2026-06-17,2026-06-17
+689,Teddy Blueger,C,f1,f1:C,VAN,VAN,vancouver-canucks,Vancouver,8476927,Teddy_Blueger,teddy-blueger,nhl_roster_full,2026-06-17,2026-06-17
+690,Brock Boeser,R,f1,f1:R,VAN,VAN,vancouver-canucks,Vancouver,8478444,Brock_Boeser,brock-boeser,nhl_roster_full,2026-06-17,2026-06-17
+691,Filip Chytil,C,f1,f1:C,VAN,VAN,vancouver-canucks,Vancouver,8480078,Filip_Chytil,filip-chytil,nhl_roster_full,2026-06-17,2026-06-17
+692,Jake DeBrusk,L,f1,f1:L,VAN,VAN,vancouver-canucks,Vancouver,8478498,Jake_DeBrusk,jake-debrusk,nhl_roster_full,2026-06-17,2026-06-17
+693,Curtis Douglas,C,f1,f1:C,VAN,VAN,vancouver-canucks,Vancouver,8480876,Curtis_Douglas,curtis-douglas,nhl_roster_full,2026-06-17,2026-06-17
+694,Nils Hoglander,L,f1,f1:L,VAN,VAN,vancouver-canucks,Vancouver,8481535,Nils_Hoglander,nils-hoglander,nhl_roster_full,2026-06-17,2026-06-17
+695,Evander Kane,L,f1,f1:L,VAN,VAN,vancouver-canucks,Vancouver,8475169,Evander_Kane,evander-kane,nhl_roster_full,2026-06-17,2026-06-17
+696,Linus Karlsson,C,f1,f1:C,VAN,VAN,vancouver-canucks,Vancouver,8481024,Linus_Karlsson,linus-karlsson,nhl_roster_full,2026-06-17,2026-06-17
+697,Drew O'Connor,L,f1,f1:L,VAN,VAN,vancouver-canucks,Vancouver,8482055,Drew_O'Connor,drew-oconnor,nhl_roster_full,2026-06-17,2026-06-17
+698,Liam Ohgren,L,f1,f1:L,VAN,VAN,vancouver-canucks,Vancouver,8483499,Liam_Ohgren,liam-ohgren,nhl_roster_full,2026-06-17,2026-06-17
+699,Elias Pettersson,C,f1,f1:C,VAN,VAN,vancouver-canucks,Vancouver,8480012,Elias_Pettersson,elias-pettersson,nhl_roster_full,2026-06-17,2026-06-17
+700,Aatu Räty,C,f1,f1:C,VAN,VAN,vancouver-canucks,Vancouver,8482691,Aatu_Räty,aatu-räty,nhl_roster_full,2026-06-17,2026-06-17
+701,Marco Rossi,C,f1,f1:C,VAN,VAN,vancouver-canucks,Vancouver,8482079,Marco_Rossi,marco-rossi,nhl_roster_full,2026-06-17,2026-06-17
+702,Max Sasson,C,f1,f1:C,VAN,VAN,vancouver-canucks,Vancouver,8484136,Max_Sasson,max-sasson,nhl_roster_full,2026-06-17,2026-06-17
+703,Zeev Buium,D,d1,d1:D,VAN,VAN,vancouver-canucks,Vancouver,8484798,Zeev_Buium,zeev-buium,nhl_roster_full,2026-06-17,2026-06-17
+704,Derek Forbort,D,d1,d1:D,VAN,VAN,vancouver-canucks,Vancouver,8475762,Derek_Forbort,derek-forbort,nhl_roster_full,2026-06-17,2026-06-17
+705,Filip Hronek,D,d1,d1:D,VAN,VAN,vancouver-canucks,Vancouver,8479425,Filip_Hronek,filip-hronek,nhl_roster_full,2026-06-17,2026-06-17
+706,Pierre-Olivier Joseph,D,d1,d1:D,VAN,VAN,vancouver-canucks,Vancouver,8480058,Pierre-Olivier_Joseph,pierre-olivier-joseph,nhl_roster_full,2026-06-17,2026-06-17
+707,Victor Mancini,D,d1,d1:D,VAN,VAN,vancouver-canucks,Vancouver,8483768,Victor_Mancini,victor-mancini,nhl_roster_full,2026-06-17,2026-06-17
+708,Elias Pettersson,D,d1,d1:D,VAN,VAN,vancouver-canucks,Vancouver,8483678,Elias_Pettersson,elias-pettersson,nhl_roster_full,2026-06-17,2026-06-17
+709,Marcus Pettersson,D,d1,d1:D,VAN,VAN,vancouver-canucks,Vancouver,8477969,Marcus_Pettersson,marcus-pettersson,nhl_roster_full,2026-06-17,2026-06-17
+710,Tom Willander,D,d1,d1:D,VAN,VAN,vancouver-canucks,Vancouver,8484240,Tom_Willander,tom-willander,nhl_roster_full,2026-06-17,2026-06-17
+711,Ivan Barbashev,L,f1,f1:L,VEG,VGK,vegas-golden-knights,Vegas,8477964,Ivan_Barbashev,ivan-barbashev,nhl_roster_full,2026-06-17,2026-06-17
+712,Braeden Bowman,R,f1,f1:R,VEG,VGK,vegas-golden-knights,Vegas,8483890,Braeden_Bowman,braeden-bowman,nhl_roster_full,2026-06-17,2026-06-17
+713,Trevor Connelly,L,f1,f1:L,VEG,VGK,vegas-golden-knights,Vegas,8484803,Trevor_Connelly,trevor-connelly,nhl_roster_full,2026-06-17,2026-06-17
+714,Pavel Dorofeyev,R,f1,f1:R,VEG,VGK,vegas-golden-knights,Vegas,8481604,Pavel_Dorofeyev,pavel-dorofeyev,nhl_roster_full,2026-06-17,2026-06-17
+715,Nic Dowd,C,f1,f1:C,VEG,VGK,vegas-golden-knights,Vegas,8475343,Nic_Dowd,nic-dowd,nhl_roster_full,2026-06-17,2026-06-17
+716,Jack Eichel,C,f1,f1:C,VEG,VGK,vegas-golden-knights,Vegas,8478403,Jack_Eichel,jack-eichel,nhl_roster_full,2026-06-17,2026-06-17
+717,Tomas Hertl,C,f1,f1:C,VEG,VGK,vegas-golden-knights,Vegas,8476881,Tomas_Hertl,tomas-hertl,nhl_roster_full,2026-06-17,2026-06-17
+718,Alexander Holtz,R,f1,f1:R,VEG,VGK,vegas-golden-knights,Vegas,8482125,Alexander_Holtz,alexander-holtz,nhl_roster_full,2026-06-17,2026-06-17
+719,Brett Howden,C,f1,f1:C,VEG,VGK,vegas-golden-knights,Vegas,8479353,Brett_Howden,brett-howden,nhl_roster_full,2026-06-17,2026-06-17
+720,William Karlsson,C,f1,f1:C,VEG,VGK,vegas-golden-knights,Vegas,8476448,William_Karlsson,william-karlsson,nhl_roster_full,2026-06-17,2026-06-17
+721,Keegan Kolesar,R,f1,f1:R,VEG,VGK,vegas-golden-knights,Vegas,8478434,Keegan_Kolesar,keegan-kolesar,nhl_roster_full,2026-06-17,2026-06-17
+722,Tanner Laczynski,C,f1,f1:C,VEG,VGK,vegas-golden-knights,Vegas,8479550,Tanner_Laczynski,tanner-laczynski,nhl_roster_full,2026-06-17,2026-06-17
+723,Raphael Lavoie,C,f1,f1:C,VEG,VGK,vegas-golden-knights,Vegas,8481534,Raphael_Lavoie,raphael-lavoie,nhl_roster_full,2026-06-17,2026-06-17
+724,Mitch Marner,R,f1,f1:R,VEG,VGK,vegas-golden-knights,Vegas,8478483,Mitch_Marner,mitch-marner,nhl_roster_full,2026-06-17,2026-06-17
+725,Jonas Rondbjerg,R,f1,f1:R,VEG,VGK,vegas-golden-knights,Vegas,8480007,Jonas_Rondbjerg,jonas-rondbjerg,nhl_roster_full,2026-06-17,2026-06-17
+726,Brandon Saad,L,f1,f1:L,VEG,VGK,vegas-golden-knights,Vegas,8476438,Brandon_Saad,brandon-saad,nhl_roster_full,2026-06-17,2026-06-17
+727,Colton Sissons,C,f1,f1:C,VEG,VGK,vegas-golden-knights,Vegas,8476925,Colton_Sissons,colton-sissons,nhl_roster_full,2026-06-17,2026-06-17
+728,Cole Smith,R,f1,f1:R,VEG,VGK,vegas-golden-knights,Vegas,8482062,Cole_Smith,cole-smith,nhl_roster_full,2026-06-17,2026-06-17
+729,Reilly Smith,R,f1,f1:R,VEG,VGK,vegas-golden-knights,Vegas,8475191,Reilly_Smith,reilly-smith,nhl_roster_full,2026-06-17,2026-06-17
+730,Mark Stone,R,f1,f1:R,VEG,VGK,vegas-golden-knights,Vegas,8475913,Mark_Stone,mark-stone,nhl_roster_full,2026-06-17,2026-06-17
+731,Kai Uchacz,C,f1,f1:C,VEG,VGK,vegas-golden-knights,Vegas,8485251,Kai_Uchacz,kai-uchacz,nhl_roster_full,2026-06-17,2026-06-17
+732,Rasmus Andersson,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8478397,Rasmus_Andersson,rasmus-andersson,nhl_roster_full,2026-06-17,2026-06-17
+733,Dylan Coghlan,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8479639,Dylan_Coghlan,dylan-coghlan,nhl_roster_full,2026-06-17,2026-06-17
+734,Jeremy Davies,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8479602,Jeremy_Davies,jeremy-davies,nhl_roster_full,2026-06-17,2026-06-17
+735,Noah Hanifin,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8478396,Noah_Hanifin,noah-hanifin,nhl_roster_full,2026-06-17,2026-06-17
+736,Ben Hutton,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8477018,Ben_Hutton,ben-hutton,nhl_roster_full,2026-06-17,2026-06-17
+737,Kaedan Korczak,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8481527,Kaedan_Korczak,kaedan-korczak,nhl_roster_full,2026-06-17,2026-06-17
+738,Jeremy Lauzon,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8478468,Jeremy_Lauzon,jeremy-lauzon,nhl_roster_full,2026-06-17,2026-06-17
+739,Brayden McNabb,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8475188,Brayden_McNabb,brayden-mcnabb,nhl_roster_full,2026-06-17,2026-06-17
+740,Jaycob Megna,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8477034,Jaycob_Megna,jaycob-megna,nhl_roster_full,2026-06-17,2026-06-17
+741,Shea Theodore,D,d1,d1:D,VEG,VGK,vegas-golden-knights,Vegas,8477447,Shea_Theodore,shea-theodore,nhl_roster_full,2026-06-17,2026-06-17
+742,Anthony Beauvillier,R,f1,f1:R,WAS,WSH,washington-capitals,Washington,8478463,Anthony_Beauvillier,anthony-beauvillier,nhl_roster_full,2026-06-17,2026-06-17
+743,Pierre-Luc Dubois,C,f1,f1:C,WAS,WSH,washington-capitals,Washington,8479400,Pierre-Luc_Dubois,pierre-luc-dubois,nhl_roster_full,2026-06-17,2026-06-17
+744,Brandon Duhaime,L,f1,f1:L,WAS,WSH,washington-capitals,Washington,8479520,Brandon_Duhaime,brandon-duhaime,nhl_roster_full,2026-06-17,2026-06-17
+745,Ethen Frank,R,f1,f1:R,WAS,WSH,washington-capitals,Washington,8483573,Ethen_Frank,ethen-frank,nhl_roster_full,2026-06-17,2026-06-17
+746,David Kampf,C,f1,f1:C,WAS,WSH,washington-capitals,Washington,8480144,David_Kampf,david-kampf,nhl_roster_full,2026-06-17,2026-06-17
+747,Hendrix Lapierre,C,f1,f1:C,WAS,WSH,washington-capitals,Washington,8482148,Hendrix_Lapierre,hendrix-lapierre,nhl_roster_full,2026-06-17,2026-06-17
+748,Ryan Leonard,R,f1,f1:R,WAS,WSH,washington-capitals,Washington,8484186,Ryan_Leonard,ryan-leonard,nhl_roster_full,2026-06-17,2026-06-17
+749,Connor McMichael,L,f1,f1:L,WAS,WSH,washington-capitals,Washington,8481580,Connor_McMichael,connor-mcmichael,nhl_roster_full,2026-06-17,2026-06-17
+750,Ivan Miroshnichenko,L,f1,f1:L,WAS,WSH,washington-capitals,Washington,8483491,Ivan_Miroshnichenko,ivan-miroshnichenko,nhl_roster_full,2026-06-17,2026-06-17
+751,Alex Ovechkin,L,f1,f1:L,WAS,WSH,washington-capitals,Washington,8471214,Alex_Ovechkin,alex-ovechkin,nhl_roster_full,2026-06-17,2026-06-17
+752,Aliaksei Protas,L,f1,f1:L,WAS,WSH,washington-capitals,Washington,8481656,Aliaksei_Protas,aliaksei-protas,nhl_roster_full,2026-06-17,2026-06-17
+753,Ilya Protas,L,f1,f1:L,WAS,WSH,washington-capitals,Washington,8484999,Ilya_Protas,ilya-protas,nhl_roster_full,2026-06-17,2026-06-17
+754,Justin Sourdif,C,f1,f1:C,WAS,WSH,washington-capitals,Washington,8482088,Justin_Sourdif,justin-sourdif,nhl_roster_full,2026-06-17,2026-06-17
+755,Dylan Strome,C,f1,f1:C,WAS,WSH,washington-capitals,Washington,8478440,Dylan_Strome,dylan-strome,nhl_roster_full,2026-06-17,2026-06-17
+756,Tom Wilson,R,f1,f1:R,WAS,WSH,washington-capitals,Washington,8476880,Tom_Wilson,tom-wilson,nhl_roster_full,2026-06-17,2026-06-17
+757,Declan Chisholm,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8480990,Declan_Chisholm,declan-chisholm,nhl_roster_full,2026-06-17,2026-06-17
+758,Jakob Chychrun,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8479345,Jakob_Chychrun,jakob-chychrun,nhl_roster_full,2026-06-17,2026-06-17
+759,Martin Fehérváry,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8480796,Martin_Fehérváry,martin-fehérváry,nhl_roster_full,2026-06-17,2026-06-17
+760,Cole Hutson,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8484873,Cole_Hutson,cole-hutson,nhl_roster_full,2026-06-17,2026-06-17
+761,Timothy Liljegren,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8480043,Timothy_Liljegren,timothy-liljegren,nhl_roster_full,2026-06-17,2026-06-17
+762,Dylan McIlrath,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8475795,Dylan_McIlrath,dylan-mcilrath,nhl_roster_full,2026-06-17,2026-06-17
+763,Matt Roy,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8478911,Matt_Roy,matt-roy,nhl_roster_full,2026-06-17,2026-06-17
+764,Rasmus Sandin,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8480873,Rasmus_Sandin,rasmus-sandin,nhl_roster_full,2026-06-17,2026-06-17
+765,Trevor van Riemsdyk,D,d1,d1:D,WAS,WSH,washington-capitals,Washington,8477845,Trevor_van_Riemsdyk,trevor-van-riemsdyk,nhl_roster_full,2026-06-17,2026-06-17
+766,Morgan Barron,C,f1,f1:C,WPG,WPG,winnipeg-jets,Winnipeg,8480289,Morgan_Barron,morgan-barron,nhl_roster_full,2026-06-17,2026-06-17
+767,Nikita Chibrikov,R,f1,f1:R,WPG,WPG,winnipeg-jets,Winnipeg,8482787,Nikita_Chibrikov,nikita-chibrikov,nhl_roster_full,2026-06-17,2026-06-17
+768,Kyle Connor,L,f1,f1:L,WPG,WPG,winnipeg-jets,Winnipeg,8478398,Kyle_Connor,kyle-connor,nhl_roster_full,2026-06-17,2026-06-17
+769,Alex Iafallo,L,f1,f1:L,WPG,WPG,winnipeg-jets,Winnipeg,8480113,Alex_Iafallo,alex-iafallo,nhl_roster_full,2026-06-17,2026-06-17
+770,Cole Koepke,L,f1,f1:L,WPG,WPG,winnipeg-jets,Winnipeg,8481043,Cole_Koepke,cole-koepke,nhl_roster_full,2026-06-17,2026-06-17
+771,Adam Lowry,C,f1,f1:C,WPG,WPG,winnipeg-jets,Winnipeg,8476392,Adam_Lowry,adam-lowry,nhl_roster_full,2026-06-17,2026-06-17
+772,Vladislav Namestnikov,C,f1,f1:C,WPG,WPG,winnipeg-jets,Winnipeg,8476480,Vladislav_Namestnikov,vladislav-namestnikov,nhl_roster_full,2026-06-17,2026-06-17
+773,Nino Niederreiter,R,f1,f1:R,WPG,WPG,winnipeg-jets,Winnipeg,8475799,Nino_Niederreiter,nino-niederreiter,nhl_roster_full,2026-06-17,2026-06-17
+774,Gustav Nyquist,R,f1,f1:R,WPG,WPG,winnipeg-jets,Winnipeg,8474679,Gustav_Nyquist,gustav-nyquist,nhl_roster_full,2026-06-17,2026-06-17
+775,Cole Perfetti,C,f1,f1:C,WPG,WPG,winnipeg-jets,Winnipeg,8482149,Cole_Perfetti,cole-perfetti,nhl_roster_full,2026-06-17,2026-06-17
+776,Isak Rosen,R,f1,f1:R,WPG,WPG,winnipeg-jets,Winnipeg,8482765,Isak_Rosen,isak-rosen,nhl_roster_full,2026-06-17,2026-06-17
+777,Mark Scheifele,C,f1,f1:C,WPG,WPG,winnipeg-jets,Winnipeg,8476460,Mark_Scheifele,mark-scheifele,nhl_roster_full,2026-06-17,2026-06-17
+778,Jonathan Toews,C,f1,f1:C,WPG,WPG,winnipeg-jets,Winnipeg,8473604,Jonathan_Toews,jonathan-toews,nhl_roster_full,2026-06-17,2026-06-17
+779,Gabriel Vilardi,C,f1,f1:C,WPG,WPG,winnipeg-jets,Winnipeg,8480014,Gabriel_Vilardi,gabriel-vilardi,nhl_roster_full,2026-06-17,2026-06-17
+780,Jacob Bryson,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8480196,Jacob_Bryson,jacob-bryson,nhl_roster_full,2026-06-17,2026-06-17
+781,Dylan DeMelo,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8476331,Dylan_DeMelo,dylan-demelo,nhl_roster_full,2026-06-17,2026-06-17
+782,Haydn Fleury,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8477938,Haydn_Fleury,haydn-fleury,nhl_roster_full,2026-06-17,2026-06-17
+783,Ville Heinola,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8481572,Ville_Heinola,ville-heinola,nhl_roster_full,2026-06-17,2026-06-17
+784,Colin Miller,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8476525,Colin_Miller,colin-miller,nhl_roster_full,2026-06-17,2026-06-17
+785,Josh Morrissey,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8477504,Josh_Morrissey,josh-morrissey,nhl_roster_full,2026-06-17,2026-06-17
+786,Neal Pionk,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8480145,Neal_Pionk,neal-pionk,nhl_roster_full,2026-06-17,2026-06-17
+787,Elias Salomonsson,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8483510,Elias_Salomonsson,elias-salomonsson,nhl_roster_full,2026-06-17,2026-06-17
+788,Dylan Samberg,D,d1,d1:D,WPG,WPG,winnipeg-jets,Winnipeg,8480049,Dylan_Samberg,dylan-samberg,nhl_roster_full,2026-06-17,2026-06-17
