@@ -20,17 +20,28 @@ LAST:
 STATUS: blocked on TWO owner decisions + the long-standing Reddit creds blocker.
 
 ## DECISION 1 (one-glance, next session): final pool definition
-GP diagnostic was run over the 788 (`_pool_gp_diag.py`, read-only). Results:
+GP diagnostic run over the 788 (`_pool_gp_diag.py`, read-only, 0 fetch-fails). 2025-26 NHL reg-season GP:
+- **GP = 0 (never played 2025-26): 21**
+- GP 1-19: 82  ·  GP 20-40: 80  ·  GP 41+: 605
+- **Played ≥1 NHL game: 767 (97%)**
 
-> **GP DIAGNOSTIC RESULT: in progress (background task bqoqo4imc) — numbers patched in on completion.**
+So `/current` is cleaner than feared — only 21 reserves, not ~100. BUT the 21 GP=0 are a MIX:
+- Mostly never-played junior/AHL prospects (drop): Nico Myatovic, Stian Solberg, Noah Warren, Anton
+  Wahlberg, Radim Mrtka, Riley Fiddler-Schultz, Vsevolod Komarov, Tyler Boucher, Graeme Clarke,
+  Helge Grans, Trevor Connelly, etc. (20 shown in the diagnostic; re-run `_pool_gp_diag.py` for the full 21).
+- **At least one injured franchise player: Aleksander Barkov (FLA).** VERIFIED — no 2025-26 row at all,
+  prior 8 seasons 50-82 GP. A naive "≥1 GP this year" filter would WRONGLY drop him. This is exactly the
+  valuable-player-who-missed-the-year case you flagged.
 
-Options (nothing scraped yet, so refining now is free):
-1. **Refine to ≥1 NHL game in 2025-26** (RECOMMENDED) — clean "played in the NHL this season" pool;
-   keeps every real NHLer incl. low-GP, drops never-played reserves. Not the GP gate you objected to.
-2. **Keep all 788 as-is** — maximal; carries never-played reserves; `small_sample` flag can't catch GP=0.
-3. **Light floor: ≥1 NHL GP OR on the active 23-man roster** — also re-includes shed UFAs.
-To apply opt 1/3: add a season-totals GP intersection to `fetch_rosters_league.py` (or post-filter
-`players.csv`), then re-lock players.csv (player_ids re-sequence — fine, nothing depends on them yet).
+RECOMMENDATION (revised by the Barkov finding): refine to **"≥1 NHL GP in 2025-26 OR career regular"**.
+Only 21 names are ambiguous, so just **hand-classify those 21** (keep career NHLers like Barkov, drop
+never-played prospects). Net pool ≈ 767 + a few injured vets ≈ **~770**. Options:
+1. **≥1 GP OR career-regular, hand-classifying the 21** (RECOMMENDED) — keeps injured stars, drops prospects.
+2. **Strict ≥1 NHL GP in 2025-26** → exactly 767; simplest but drops injured vets like Barkov (slightly wrong).
+3. **Keep all 788** — maximal; the 21 never-played prospects sit at the bottom with no production (NaN/noise).
+To apply: post-filter `players.csv` to the kept `nhl_player_id`s (or add a season-totals GP+career
+intersection to `fetch_rosters_league.py`), then re-lock players.csv (player_ids re-sequence — fine,
+nothing depends on them yet).
 
 ## DECISION 2 / BLOCKER: Reddit OAuth creds (still empty)
 `pilot2/.env` keys exist but all 4 VALUES are blank. Register a free *script* app at
