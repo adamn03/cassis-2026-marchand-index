@@ -96,6 +96,13 @@ K_PEERS = 10
 BOOTSTRAP_DRAWS = 1000
 SEED = 20260526
 
+# Whole-league pivot (A10): descriptive, NON-EXCLUSIONARY low-GP flag. A skater
+# with fewer than this many NHL regular-season games this year is flagged
+# small_sample so the headline is never quoted on a tiny-sample call-up (or a
+# season-long injury absence, GP NULL → flagged). The player stays in the pool
+# and in every computation; the §10 bootstrap CIs already widen for thin signal.
+SMALL_SAMPLE_GP = 20
+
 # A4: per-position OLS denominator for the headline Marchand Index. Age is
 # deliberately EXCLUDED — including it re-imports the rookie scale via
 # young/cheap peers (verified: a ±5yr age band re-inflates rookie MI).
@@ -162,7 +169,8 @@ def load_inputs() -> pd.DataFrame:
     ].copy()
 
     df = df.merge(
-        skill[["player_id", "age", "ppg", "toi_per_game"]], on="player_id", how="left"
+        skill[["player_id", "age", "ppg", "toi_per_game", "games_played"]],
+        on="player_id", how="left",
     )
     df = df.merge(wiki[["player_id", "wiki_12mo", "wiki_match"]], on="player_id", how="left")
     df = df.merge(trends[["player_id", "trends_12mo"]], on="player_id", how="left")
@@ -205,7 +213,8 @@ def load_inputs() -> pd.DataFrame:
     _to_num(
         df,
         SKILL_COLS
-        + ["wiki_12mo", "trends_12mo", "instagram_followers", "cap_hit_M", "jersey_rank"],
+        + ["games_played", "wiki_12mo", "trends_12mo", "instagram_followers",
+           "cap_hit_M", "jersey_rank"],
     )
     for c in ("jersey_list_member", "asg2024_member"):
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
@@ -219,6 +228,13 @@ def load_inputs() -> pd.DataFrame:
     wiki_m = df["wiki_match"].astype("string").str.strip().str.lower()
     wiki_unresolved = wiki_m.isin(["none", "weak"])
     df["match_quality"] = np.where(nhl_unresolved | wiki_unresolved, "low", "ok")
+
+    # A10 small_sample (descriptive, non-exclusionary): GP < SMALL_SAMPLE_GP, or
+    # GP NULL (no current-season row, e.g. a season-long injury absence). Players
+    # stay in the pool and in every computation; the flag only warns the headline
+    # must not be quoted on a tiny-sample row. NaN >= GP is False -> flagged 1.
+    gp = df["games_played"].to_numpy(dtype=float)
+    df["small_sample"] = np.where(gp >= SMALL_SAMPLE_GP, 0, 1).astype(int)
 
     df = df.sort_values("player_id").reset_index(drop=True)
     return df
@@ -1010,6 +1026,10 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     n_cap_low = int((df["cap_quality"].astype(str).str.lower() == "low").sum())
     lines.append(f"- match_quality=low: {n_mq_low} (identity-resolution); "
                  f"cap_quality=low: {n_cap_low} (excluded from MI leaderboard)")
+    n_small = int((df["small_sample"] == 1).sum())
+    lines.append(f"- small_sample (GP < {SMALL_SAMPLE_GP} or NULL; A10, "
+                 f"descriptive/non-exclusionary): {n_small} — kept in all "
+                 "computations; headline is not quoted on these rows")
     lines.append("- **A8 headline denominator:** `marchand_index_hybrid` — "
                  "rookie-deal players use `expected_cap` (per-group OLS of "
                  "cap_hit_M ~ PPG + TOI/G, age excluded, floored at "
@@ -1383,7 +1403,7 @@ def _json_safe(obj):
 
 OUT_COLS = [
     "player_id", "full_name", "position", "group", "team_code",
-    "age", "ppg", "toi_per_game",
+    "age", "ppg", "toi_per_game", "games_played", "small_sample",
     "wiki_12mo", "trends_12mo", "reddit_mentions_12mo", "reddit_upvotes_12mo",
     "instagram_followers",
     "engagement_raw", "dropped_components",
