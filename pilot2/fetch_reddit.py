@@ -1,8 +1,21 @@
-"""Fetch 12-month Reddit mention + upvote counts per player (pre-reg §3.3-3.4).
+"""Fetch 12-month Reddit mention + upvote counts per player (pre-reg §3.3-3.4,
+window amended A11 2026-06-19).
 
 Composite weights 0.250 (mentions) + 0.167 (upvotes). Searches r/hockey + the
-team subreddit for the player's last name over the trailing 365 days, dedups by
-submission id, counts matches and sums their `score`.
+team subreddit for the player's last name over a FIXED trailing-365-day window
+ENDING the last day of the 2025-26 NHL regular season (2026-04-17 inclusive;
+api-web.nhle.com standingsEnd), dedups by submission id, counts matches and
+sums their `score`.
+
+Window (pre-reg A11, 2026-06-19): was a trailing 365 days anchored to the
+fetch moment (A2/§3.3-3.4). Anchoring to run-time baked the 2026 playoff run
+into "attention" while OAQ matches REGULAR-SEASON production -> a made-the-
+playoffs confound. The window now ends on the last reg-season day, is identical
+for every player, and is independent of when the scrape runs. Reddit `t` is
+therefore `all` (not `year`): from a June fetch `t:year` only reaches ~12 months
+back and would clip the window's early edge. With sort=new we page newest-first,
+SKIP posts newer than the window end, collect the window, and STOP once a post
+falls below the window start.
 
 Mechanism (pre-reg §14 A2, 2026-05-27; transport amended A9, 2026-05-28):
 authenticated Reddit OAuth search (`oauth.reddit.com/r/<sub>/search` with an
@@ -49,6 +62,10 @@ from requests.auth import HTTPBasicAuth  # noqa: E402
 UA = "marchand-index-pilot2/0.2 (research; contact ana178@sfu.ca)"
 OAUTH_BASE = "https://oauth.reddit.com"           # authenticated host (A9)
 TOKEN_URL = "https://www.reddit.com/api/v1/access_token"
+# Fixed attention window (pre-reg A11, 2026-06-19): trailing WINDOW_DAYS ending
+# the last day of the 2025-26 reg season (inclusive). api-web.nhle.com
+# standingsEnd for season 20252026 = 2026-04-17. Decoupled from fetch time.
+WINDOW_END = dt.date(2026, 4, 17)                 # last reg-season day, inclusive
 WINDOW_DAYS = 365
 MAX_RESULTS = 1000          # pre-registered search cap
 PAGE = 100
@@ -144,7 +161,7 @@ def ensure_token(sess, force: bool = False) -> str:
 def get_page(sess, sub: str, query: str, after: str | None) -> tuple[list, str | None, bool]:
     """One search page. Returns (children, next_after, ok)."""
     params = {"q": query, "restrict_sr": 1, "sort": "new",
-              "t": "year", "limit": PAGE, "raw_json": 1}
+              "t": "all", "limit": PAGE, "raw_json": 1}
     if after:
         params["after"] = after
     for attempt in range(RETRIES):
@@ -180,13 +197,20 @@ def get_page(sess, sub: str, query: str, after: str | None) -> tuple[list, str |
     return [], None, False
 
 
-def search_sub(sess, sub: str, query: str, cutoff: float):
-    """Paginate one subreddit. Returns (id->score dict, authors set, capped, ok)."""
+def search_sub(sess, sub: str, query: str, lower_cutoff: float, upper_cutoff: float):
+    """Paginate one subreddit over the window [lower_cutoff, upper_cutoff).
+
+    Results are newest-first (sort=new, t=all). Posts NEWER than the window end
+    are skipped (e.g. the 2026 playoff run); once a post OLDER than the window
+    start appears, paging stops since everything beyond is older still.
+    Returns (id->score dict, authors set, capped, ok).
+    """
     scores: dict[str, int] = {}
     authors: set[str] = set()
     after = None
     capped = False
     any_ok = False
+    reached_floor = False
     while len(scores) < MAX_RESULTS:
         children, after, ok = get_page(sess, sub, query, after)
         any_ok = any_ok or ok
@@ -195,7 +219,11 @@ def search_sub(sess, sub: str, query: str, cutoff: float):
             break
         for c in children:
             d = c.get("data", {})
-            if d.get("created_utc", 0) < cutoff:
+            ts = d.get("created_utc", 0) or 0
+            if ts >= upper_cutoff:
+                continue              # newer than window end -> not yet in window
+            if ts < lower_cutoff:
+                reached_floor = True  # older than window start; stop after this page
                 continue
             sid = d.get("name") or d.get("id")
             if not sid:
@@ -203,6 +231,8 @@ def search_sub(sess, sub: str, query: str, cutoff: float):
             scores[sid] = int(d.get("score", 0) or 0)
             if d.get("author"):
                 authors.add(d["author"])
+        if reached_floor:
+            break
         if not after or len(children) < PAGE:
             break
         if len(scores) >= MAX_RESULTS:
@@ -247,13 +277,22 @@ def snapshot(order: list[str], counts_by_pid: dict[str, dict],
 def main() -> None:
     global _CREDS
     fetch_date = dt.date.today().isoformat()
-    cutoff = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=WINDOW_DAYS)).timestamp()
+    # Fixed window: end = last reg-season day inclusive -> exclusive bound is the
+    # next UTC midnight; start = WINDOW_DAYS earlier. Identical for every player,
+    # independent of when the scrape runs (pre-reg A11).
+    upper_cutoff = dt.datetime(WINDOW_END.year, WINDOW_END.month, WINDOW_END.day,
+                               tzinfo=dt.timezone.utc).timestamp() + 86400.0
+    lower_cutoff = upper_cutoff - WINDOW_DAYS * 86400.0
     sess = requests.Session()
 
     _CREDS = load_creds()
     grant = "password" if (_CREDS.get("username") and _CREDS.get("password")) else "client_credentials"
     ensure_token(sess)  # validate creds up-front; exits clearly if they are wrong
     print(f"Reddit OAuth token acquired ({grant} grant).")
+    win_lo = dt.datetime.fromtimestamp(lower_cutoff, dt.timezone.utc).date()
+    win_hi = dt.datetime.fromtimestamp(upper_cutoff, dt.timezone.utc).date()
+    print(f"Window: {win_lo.isoformat()} .. {win_hi.isoformat()} (end exclusive), "
+          f"{WINDOW_DAYS}d, ending reg-season {WINDOW_END.isoformat()}")
 
     players = load_players()
     order = [p["player_id"] for p in players]
@@ -274,7 +313,7 @@ def main() -> None:
         capped = False
         ok_count = 0
         for sub in subs:
-            sc, au, cap, ok = search_sub(sess, sub, ln, cutoff)
+            sc, au, cap, ok = search_sub(sess, sub, ln, lower_cutoff, upper_cutoff)
             all_scores.update(sc)        # dedup submission ids across subs
             authors |= au
             capped = capped or cap

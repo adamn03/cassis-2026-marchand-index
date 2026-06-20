@@ -46,7 +46,10 @@ def main() -> None:
     for p in load_players():
         query = p["full_name"]
         try:
-            pytrends.build_payload([query], cat=0, timeframe="today 12-m", geo="")
+            # A11: FIXED reg-season-end window (2025-04-18 .. 2026-04-17), NOT run-time
+            # anchored ("today 12-m"), to match the Reddit/Wikipedia window and avoid the
+            # 2026-playoff confound (attention matched against regular-season production).
+            pytrends.build_payload([query], cat=0, timeframe="2025-04-18 2026-04-17", geo="")
             df = pytrends.interest_over_time()
             if df.empty or query not in df.columns:
                 mean_val, n_weeks = None, 0
