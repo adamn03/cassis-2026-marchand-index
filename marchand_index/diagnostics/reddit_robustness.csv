@@ -1,0 +1,4 @@
+reddit_factor,reddit_weight,spearman_vs_headline,top20_overlap,n
+1.0,0.44,1.0,20,774
+0.5,0.22,1.0,20,774
+0.0,0.0,1.0,20,774

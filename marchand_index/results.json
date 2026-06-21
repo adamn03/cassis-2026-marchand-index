@@ -7,18 +7,18 @@
       "metro_population",
       "arena_attendance"
     ],
-    "reddit_availability": "86/160 players had non-NULL Reddit data"
+    "reddit_availability": "0/774 players had non-NULL Reddit data"
   },
   "external_validation": {
     "V1a": {
       "test": "Spearman rho(OAQ_portable, jersey_rank) over rank overlap",
       "metric": "spearman_rho",
-      "value": 1.0,
+      "value": 0.0,
       "ci95": [
-        1.0,
+        -1.0,
         1.0
       ],
-      "n": 4,
+      "n": 5,
       "floor": 0.4,
       "target": 0.5,
       "underpowered": true,
@@ -27,25 +27,25 @@
     "V1b": {
       "test": "AUC OAQ_portable discriminating jersey_list_member (1/0)",
       "metric": "auc",
-      "value": 0.8073333333333333,
+      "value": 0.9229119504348862,
       "ci95": [
-        0.6296393981146636,
-        0.9674229486108624
+        0.847325676469782,
+        0.9819593919439121
       ],
-      "n_total": 160,
-      "n_members": 10,
+      "n_total": 774,
+      "n_members": 11,
       "underpowered": false
     },
     "V2": {
       "test": "AUC OAQ_portable discriminating asg2024_member (1/0)",
       "metric": "auc",
-      "value": 0.6396103896103896,
+      "value": 0.7201161946259985,
       "ci95": [
-        0.3682488159398988,
-        0.9182389937106918
+        0.45981341060729847,
+        0.9636483512164445
       ],
-      "n_total": 160,
-      "n_members": 6,
+      "n_total": 774,
+      "n_members": 9,
       "floor": 0.45,
       "target": 0.55,
       "underpowered": true,
@@ -54,10 +54,10 @@
     "V3": {
       "test": "Spearman rho(sum_OAQ_observed_per_team, team_wiki_12mo) across n teams",
       "metric": "spearman_rho",
-      "value": 0.3911290322580645,
+      "value": 0.3929618768328445,
       "ci95": [
-        0.062306986448379405,
-        0.6766253752721965
+        0.012957288870979598,
+        0.703533758153036
       ],
       "n": 32,
       "floor": 0.4,
@@ -66,10 +66,10 @@
       "outcome_signal": "team Wikipedia 12-mo pageviews (A6 graceful-degradation: Reddit subscriber 403)",
       "predictor": "sum of OAQ_observed across each team's 5 pilot players",
       "robustness_eng_raw": {
-        "rho": 0.4252199413489736,
+        "rho": 0.45197947214076245,
         "ci95": [
-          0.09467341306347749,
-          0.6897705716024194
+          0.1054166894714758,
+          0.7361088918034228
         ],
         "note": "mechanical baseline: sum of engagement_raw (no peer-skill control)"
       },
@@ -113,12 +113,12 @@
     "PA": {
       "description": "OAQ_portable aligns with independent jersey demand (V1 Spearman >= 0.40)",
       "metric": "spearman_rho (signed; negative = agreement)",
-      "value": 1.0,
+      "value": 0.0,
       "ci95": [
-        1.0,
+        -1.0,
         1.0
       ],
-      "n": 4,
+      "n": 5,
       "floor": 0.4,
       "underpowered": true,
       "verdict": "inconclusive"
@@ -127,12 +127,12 @@
       "description": "OAQ_portable aligns with independent fan voting (V2 Spearman >= 0.45)",
       "metric": "spearman_rho (unavailable: asg2024 membership-only)",
       "value": null,
-      "auc_proxy": 0.6396103896103896,
+      "auc_proxy": 0.7201161946259985,
       "auc_ci95": [
-        0.3682488159398988,
-        0.9182389937106918
+        0.45981341060729847,
+        0.9636483512164445
       ],
-      "n_members": 6,
+      "n_members": 9,
       "floor": 0.45,
       "underpowered": true,
       "verdict": "inconclusive"
@@ -140,20 +140,20 @@
     "PD": {
       "description": "Sum of OAQ_observed per team aligns with independent team Wikipedia pageviews (V3 Spearman >= 0.40)",
       "metric": "spearman_rho",
-      "value": 0.3911290322580645,
+      "value": 0.3929618768328445,
       "ci95": [
-        0.062306986448379405,
-        0.6766253752721965
+        0.012957288870979598,
+        0.703533758153036
       ],
       "n": 32,
       "floor": 0.4,
       "underpowered": false,
       "verdict": "disconfirmed",
       "robustness_eng_raw": {
-        "rho": 0.4252199413489736,
+        "rho": 0.45197947214076245,
         "ci95": [
-          0.09467341306347749,
-          0.6897705716024194
+          0.1054166894714758,
+          0.7361088918034228
         ],
         "note": "mechanical baseline: sum of engagement_raw (no peer-skill control)"
       }
@@ -162,35 +162,40 @@
       "description": ">=3 of top-10 by engagement_raw displaced out of top-10 by marchand_index_hybrid (A8 hybrid headline)",
       "top10_engagement_raw": [
         "Jack Hughes",
+        "Alex Ovechkin",
         "Sidney Crosby",
+        "Quinn Hughes",
         "Macklin Celebrini",
         "Connor McDavid",
-        "Quinn Hughes",
-        "Brad Marchand",
+        "Matthew Tkachuk",
         "Nick Suzuki",
-        "Connor Bedard",
-        "Nathan MacKinnon",
-        "Cole Caufield"
+        "Brad Marchand",
+        "Leon Draisaitl"
       ],
       "top10_marchand_index_hybrid": [
-        "Vasily Podkolzin",
+        "Ryan Johnson",
+        "Ben Jones",
+        "Ian Moore",
+        "Nathan Walker",
+        "Max Jones",
+        "Ben Meyers",
+        "Tyler Tucker",
+        "Jack Finley",
+        "Parker Kelly",
+        "Brent Burns"
+      ],
+      "n_displaced": 10,
+      "displaced_names": [
         "Jack Hughes",
+        "Alex Ovechkin",
         "Sidney Crosby",
         "Quinn Hughes",
-        "Brad Marchand",
-        "Cam York",
-        "Sean Walker",
         "Macklin Celebrini",
-        "Chandler Stephenson",
-        "Collin Graf"
-      ],
-      "n_displaced": 5,
-      "displaced_names": [
         "Connor McDavid",
+        "Matthew Tkachuk",
         "Nick Suzuki",
-        "Connor Bedard",
-        "Nathan MacKinnon",
-        "Cole Caufield"
+        "Brad Marchand",
+        "Leon Draisaitl"
       ],
       "floor": 3,
       "verdict": "confirmed"
