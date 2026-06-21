@@ -83,12 +83,16 @@ except Exception:  # pragma: no cover - scipy may be absent
         return float(np.corrcoef(rx, ry)[0, 1])
 
 
+# A12 (2026-06-21) — composite re-locked by demographic-coverage reasoning,
+# BEFORE the wiki_intl fetch. Instagram (stock) DROPPED; wiki_intl_12mo (flow)
+# ADDED. Prior vector retained in preregistration.md A12 for audit. The code
+# key `wiki_12mo` IS the spec's `wiki_en_12mo` (same en-Wikipedia column).
 WEIGHTS = {
-    "wiki_12mo": 0.306,
-    "reddit_mentions_12mo": 0.250,
-    "reddit_upvotes_12mo": 0.167,
-    "trends_12mo": 0.139,
-    "instagram_followers": 0.139,
+    "wiki_12mo": 0.29,           # wiki_en_12mo: EN encyclopedic / casual lookup
+    "wiki_intl_12mo": 0.11,      # non-anglophone hockey markets (A12)
+    "reddit_mentions_12mo": 0.27,
+    "reddit_upvotes_12mo": 0.17,
+    "trends_12mo": 0.16,
 }
 COMPONENTS = list(WEIGHTS.keys())
 SKILL_COLS = ["age", "ppg", "toi_per_game"]
@@ -160,7 +164,8 @@ def load_inputs() -> pd.DataFrame:
     skill = pd.read_csv(RAW_DIR / "nhl_skill.csv", dtype={"player_id": int})
     wiki = pd.read_csv(RAW_DIR / "wiki_pageviews.csv", dtype={"player_id": int})
     trends = pd.read_csv(RAW_DIR / "trends.csv", dtype={"player_id": int})
-    ig = pd.read_csv(RAW_DIR / "instagram_followers.csv", dtype={"player_id": int})
+    wiki_intl = pd.read_csv(RAW_DIR / "wiki_intl_pageviews.csv",
+                            dtype={"player_id": int})
     caps = pd.read_csv(RAW_DIR / "cap_hits.csv", dtype={"player_id": int})
     external = pd.read_csv(PILOT_DIR / "external_outcomes.csv", dtype={"player_id": int})
 
@@ -173,10 +178,11 @@ def load_inputs() -> pd.DataFrame:
         on="player_id", how="left",
     )
     df = df.merge(wiki[["player_id", "wiki_12mo", "wiki_match"]], on="player_id", how="left")
-    df = df.merge(trends[["player_id", "trends_12mo"]], on="player_id", how="left")
     df = df.merge(
-        ig[["player_id", "instagram_followers"]], on="player_id", how="left"
+        wiki_intl[["player_id", "wiki_intl_12mo", "intl_match"]],
+        on="player_id", how="left",
     )
+    df = df.merge(trends[["player_id", "trends_12mo"]], on="player_id", how="left")
     df = df.merge(
         caps[["player_id", "cap_hit_M", "cap_quality"]], on="player_id", how="left"
     )
@@ -213,7 +219,7 @@ def load_inputs() -> pd.DataFrame:
     _to_num(
         df,
         SKILL_COLS
-        + ["games_played", "wiki_12mo", "trends_12mo", "instagram_followers",
+        + ["games_played", "wiki_12mo", "wiki_intl_12mo", "trends_12mo",
            "cap_hit_M", "jersey_rank"],
     )
     for c in ("jersey_list_member", "asg2024_member"):
@@ -256,6 +262,23 @@ def load_wiki_daily() -> dict[int, np.ndarray]:
         else:
             arr = np.empty(0, dtype=float)
         out[int(row["player_id"])] = arr
+    return out
+
+
+def load_wiki_intl_daily_summed() -> dict[int, np.ndarray]:
+    """player_id -> pooled intl daily-view array (all whitelisted editions
+    concatenated) for bootstrap resampling. Empty for anglophone-only players."""
+    path = RAW_DIR / "wiki_intl_daily.csv"
+    out: dict[int, np.ndarray] = {}
+    if not path.exists():
+        return out
+    wd = pd.read_csv(path, dtype={"player_id": int})
+    for pid, grp in wd.groupby("player_id"):
+        pool: list[float] = []
+        for raw in grp["daily_views"]:
+            if isinstance(raw, str) and raw.strip():
+                pool.extend(float(x) for x in raw.split("|") if x.strip() != "")
+        out[int(pid)] = np.array(pool, dtype=float)
     return out
 
 
@@ -555,13 +578,14 @@ def bootstrap_player_cis(
     market_z: np.ndarray,
     wiki_daily: dict[int, np.ndarray],
     reddit_scores: dict[int, np.ndarray],
+    wiki_intl_daily: dict[int, np.ndarray],
     n_draws: int = BOOTSTRAP_DRAWS,
     seed: int = SEED,
 ):
     """Resample each player's wiki daily vector + reddit submission pool with
     replacement; recompute engagement/OAQ/MI each draw; return percentile CIs.
 
-    trends, instagram, cap, market_z, and peer SETS are FIXED across draws.
+    trends, cap, market_z, and peer SETS are FIXED across draws.
     """
     rng = np.random.default_rng(seed)
     n = len(df)
@@ -570,6 +594,7 @@ def bootstrap_player_cis(
     # Precompute per-player numpy arrays for resampling (hot loop avoids pandas).
     daily_arrays = [wiki_daily.get(int(p), np.empty(0)) for p in pids]
     reddit_arrays = [reddit_scores.get(int(p), np.empty(0)) for p in pids]
+    intl_arrays = [wiki_intl_daily.get(int(p), np.empty(0)) for p in pids]
 
     # Which players legitimately HAVE each resampled component (NULL stays NULL).
     base_wiki = df["wiki_12mo"].to_numpy(dtype=float)
@@ -577,10 +602,11 @@ def bootstrap_player_cis(
     base_rup = df["reddit_upvotes_12mo"].to_numpy(dtype=float)
     wiki_present = np.isfinite(base_wiki)
     reddit_present = np.isfinite(base_rmen)  # mentions+upvotes share NULL status
+    base_intl = df["wiki_intl_12mo"].to_numpy(dtype=float)
+    intl_present = np.isfinite(base_intl)
 
     # Fixed (non-resampled) components.
     trends_fixed = df["trends_12mo"].to_numpy(dtype=float)
-    ig_fixed = df["instagram_followers"].to_numpy(dtype=float)
     cap = df["cap_hit_M"].to_numpy(dtype=float)
     cap_ok = (cap > 0) & np.isfinite(cap)
     # A4: expected_cap is a function of (PPG, TOI/G), which are NOT resampled,
@@ -609,6 +635,7 @@ def bootstrap_player_cis(
         wiki_draw = base_wiki.copy()
         rmen_draw = base_rmen.copy()
         rup_draw = base_rup.copy()
+        intl_draw = base_intl.copy()
 
         for i in range(n):
             if wiki_present[i]:
@@ -617,6 +644,11 @@ def bootstrap_player_cis(
                     samp = arr[rng.integers(0, arr.size, arr.size)]
                     wiki_draw[i] = samp.sum()
                 # else keep base value (no daily detail) -> effectively fixed
+            if intl_present[i]:
+                arr = intl_arrays[i]
+                if arr.size:
+                    samp = arr[rng.integers(0, arr.size, arr.size)]
+                    intl_draw[i] = samp.sum()
             if reddit_present[i]:
                 arr = reddit_arrays[i]
                 if arr.size:
@@ -629,10 +661,10 @@ def bootstrap_player_cis(
 
         comp_z = {
             "wiki_12mo": zscore_array(wiki_draw),
+            "wiki_intl_12mo": zscore_array(intl_draw),
             "reddit_mentions_12mo": zscore_array(rmen_draw),
             "reddit_upvotes_12mo": zscore_array(rup_draw),
             "trends_12mo": zscore_array(trends_fixed),
-            "instagram_followers": zscore_array(ig_fixed),
         }
         er = engagement_from_components(comp_z)
 
@@ -1404,8 +1436,8 @@ def _json_safe(obj):
 OUT_COLS = [
     "player_id", "full_name", "position", "group", "team_code",
     "age", "ppg", "toi_per_game", "games_played", "small_sample",
-    "wiki_12mo", "trends_12mo", "reddit_mentions_12mo", "reddit_upvotes_12mo",
-    "instagram_followers",
+    "wiki_12mo", "wiki_intl_12mo", "intl_match",
+    "trends_12mo", "reddit_mentions_12mo", "reddit_upvotes_12mo",
     "engagement_raw", "dropped_components",
     "effective_K", "peer_player_ids", "peer_engagement_mean",
     "market_z",
@@ -1428,6 +1460,7 @@ def main() -> None:
     df = load_inputs()
     wiki_daily = load_wiki_daily()
     reddit_scores = load_reddit_scores()
+    wiki_intl_daily = load_wiki_intl_daily_summed()
 
     market_z, market_used = compute_market_z(df)
     df["market_z"] = market_z
@@ -1435,7 +1468,8 @@ def main() -> None:
     peers = compute_peers(df)
     df = compute_oaq(df, peers=peers, market_z=market_z)
 
-    ci = bootstrap_player_cis(df, peers, market_z, wiki_daily, reddit_scores)
+    ci = bootstrap_player_cis(df, peers, market_z, wiki_daily, reddit_scores,
+                              wiki_intl_daily)
     for k, v in ci.items():
         df[k] = v
 
