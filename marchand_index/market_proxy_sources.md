@@ -196,7 +196,7 @@ utahmammoth, canucks, vegasgoldenknights, capitals, nhljets.
 ## How to reproduce
 
 ```
-cd pilot2
+cd marchand_index
 python fetch_market_proxy.py
 # -> writes market_proxy.csv (32 rows; atomic .tmp -> rename)
 ```

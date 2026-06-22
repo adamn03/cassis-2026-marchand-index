@@ -10,7 +10,7 @@ Pre-declared expectation (§3.5): Meta's anonymous block (the v1 403) will likel
 recur, leaving Instagram NULL across the set; sentinel renorm (§4) then applies.
 We still attempt it so the failure is recorded, not assumed.
 
-Writes: pilot2/raw/instagram_followers.csv
+Writes: marchand_index/raw/instagram_followers.csv
   player_id, full_name, instagram_handle, instagram_followers, resolved_from,
   ig_status, fetch_date
 """

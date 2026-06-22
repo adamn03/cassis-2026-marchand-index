@@ -7,7 +7,7 @@ pytrends throttles hard; at 160 players a 429 mid-run is likely. Any player
 that fails (empty frame / rate-limit) is written NULL and handled by the
 sentinel renorm (§4); re-running resumes from cache for the ones that succeeded.
 
-Writes: pilot2/raw/trends.csv
+Writes: marchand_index/raw/trends.csv
   player_id, full_name, query, trends_12mo, n_weeks, fetch_date
 """
 from __future__ import annotations

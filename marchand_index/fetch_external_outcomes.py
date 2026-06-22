@@ -23,7 +23,7 @@ membership-based (asg2024_votes blank for everyone). On this 160 set only 4 of t
 12 fall in-sample (4 < 10) -> V2 is also underpowered per §9. Expected/acceptable.
 
 Writes:
-  pilot2/external_outcomes.csv          160 rows
+  marchand_index/external_outcomes.csv          160 rows
 
 Run modes:
   python fetch_external_outcomes.py             build the CSV
@@ -46,7 +46,7 @@ OUT_CSV = PILOT_DIR / "external_outcomes.csv"
 
 BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
-CONTACT_UA = "marchand-index-pilot2/0.1 (research; ana178@sfu.ca)"
+CONTACT_UA = "marchand-index/0.1 (research; ana178@sfu.ca)"
 
 FIELDNAMES = ["player_id", "full_name", "nhl_player_id", "jersey_list_member",
               "jersey_rank", "asg2024_member", "asg2024_votes", "match_note"]

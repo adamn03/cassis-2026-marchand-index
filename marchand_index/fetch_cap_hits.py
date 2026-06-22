@@ -14,7 +14,7 @@ must fall in [$0.7M league-min, $20M]. Any failure -> cap_quality=low with a
 note, kept in the CSV but excluded from the Marchand Index leaderboard
 downstream. A 10-player random sample is hand-verified before compute.
 
-Writes: pilot2/raw/cap_hits.csv
+Writes: marchand_index/raw/cap_hits.csv
   player_id, full_name, nhl_player_id, capwages_nhlid, cap_hit_M, season,
   cap_quality, cap_note, source_url, fetched_at
 """

@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # pilot2/
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # marchand_index/
 import fetch_wikipedia_intl as fwi  # noqa: E402
 
 

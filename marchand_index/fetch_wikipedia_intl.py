@@ -7,11 +7,11 @@ the en fetcher's run-time window). Each player's wikidata_qid is REUSED from
 raw/wiki_pageviews.csv (A1 occupation-checked resolver); no re-resolution.
 
 Writes:
-  pilot2/raw/wiki_intl_pageviews.csv
+  marchand_index/raw/wiki_intl_pageviews.csv
     player_id, full_name, wikidata_qid, editions_available, editions_fetched,
     wiki_intl_12mo, per_edition_json, window_start, window_end, fetch_date,
     intl_match
-  pilot2/raw/wiki_intl_daily.csv
+  marchand_index/raw/wiki_intl_daily.csv
     player_id, edition, n_days, daily_views
 """
 from __future__ import annotations

@@ -22,7 +22,7 @@ floor for a team, the floor is relaxed for that one slot to the highest-TOI/G
 rostered skater at that position; recorded as roster_source = nhl_toi_relaxed.
 
 Writes:
-  pilot2/players.csv   160 rows (the A7-locked set)
+  marchand_index/players.csv   160 rows (the A7-locked set)
 """
 from __future__ import annotations
 

@@ -18,7 +18,7 @@ downstream joins are unchanged. NHL playerId comes straight from the roster
 endpoint (no name-search resolution needed).
 
 Writes:
-  pilot2/players.csv   ~715 rows (the A10-locked whole-league pool)
+  marchand_index/players.csv   ~715 rows (the A10-locked whole-league pool)
 """
 from __future__ import annotations
 

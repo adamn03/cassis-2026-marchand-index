@@ -1,8 +1,10 @@
 # Session Handoff
-Date: 2026-06-21
+Date: 2026-06-22
 Active: NHL_Marchand_Index — FULL BUILD. Branch: `marchand-index-full-build` (pushed).
 
-LAST: **A13 (skill-vector expansion) FULLY SHIPPED — all 11 tasks, 11 commits, pushed.** Peer vector grown 3->6: added MoneyPuck 5v5 on-ice features cf_pct/xgf_pct/ozs_pct to (age, ppg, toi_per_game). New fetcher `fetch_moneypuck.py` (+ 15 unit tests), `raw/nhl_onice.csv` (774 rows). compute_oaq SKILL_COLS/load_inputs/OUT_COLS + docstring/results prose updated. A13 prereg amendment logged. **56/56 unit tests pass.** End-to-end regenerated.
+LAST: **Non-OAuth cleanup pass (Reddit still blocked).** (1) Resolved the Trends A11 open question — VERDICT: trust current `raw/trends.csv` as the post-A11 fixed-window fetch; do NOT re-fetch. (2) Cosmetic debt cleared: `pilot2/` path refs + `marchand-index-pilot2/` UA strings → `marchand_index/` across 19 files (.py + 2 non-locked .md). Locked `preregistration.md` + generated `results.md` UNTOUCHED; bare `(pilot2)` codename left intact (audit identity). 56/56 tests pass post-cleanup.
+
+TRENDS VERDICT (resolved, evidence): old code `timeframe="today 12-m"` (run-anchored, confounded) through 2026-06-18 (a3cf9ee); fixed-window `"2025-04-18 2026-04-17"` code landed 2026-06-20 13:21 (0c3ccbe); current trends.csv fetch_date=2026-06-20, 774 rows, n_weeks=53 uniform. File postdates the fix and the only 06-20 re-fetch driver was A11 itself → it IS the post-fix fetch. Residual risk (fetch ran before 13:21 that day) is low + uncheckable from git/data alone; defer a 1-call spot-check (one 2026 deep-playoff player: stored value should EXCLUDE the playoff spike) to the mandatory post-Reddit e2e re-run. Re-fetching all 774 = perishable + 429-prone for ~zero expected gain.
 
 STATUS: working
 
@@ -18,16 +20,14 @@ REDDIT-BLOCKED (hard carry-forward, NOT doable until creds land):
 - Reddit OAuth creds STILL BLANK in `marchand_index/.env`. Reddit = 0/774 NULL in current run (~0.44 of engagement weight).
 - Consequence: final OAQ magnitudes + BOTH A12 diagnostics UNINFORMATIVE right now. Pattern verdicts currently PA/PB inconclusive, PC/PD confirmed (Reddit-NULL state). **Re-run `compute_oaq.py` + both `diagnostics/*.py` after Reddit creds added** — A13 machinery is built, numbers become real post-Reddit.
 
-OPEN QUESTION (owner to decide next session — both Reddit-independent):
-- **Trends A11 re-run** — `raw/trends.csv` ambiguous (can't tell pre/post window-fix; `fetch_trends.py` hardcodes fixed window). Re-running is perishable + 429-prone, re-churns e2e. Decide: trust current file, or re-fetch then re-run compute_oaq + diagnostics. (Deferred from last session in favor of A13; A13 chosen + done.)
+OPEN QUESTION: none Reddit-independent remain. (Trends A11 — RESOLVED this session, see TRENDS VERDICT above.)
 
-NEXT (exact): Either (a) wait on Reddit creds then re-run compute_oaq + diagnostics for informative OAQ, or (b) owner decides Trends A11 re-run. No further plan-driven build pending — A12 + A13 both shipped.
+NEXT (exact): Wait on Reddit OAuth creds → add to `marchand_index/.env` → re-run `compute_oaq.py` + both `diagnostics/*.py` for informative OAQ. At that re-run, do the 1-call Trends spot-check (above). No further plan-driven build pending — A12 + A13 both shipped; cosmetic debt cleared.
 
 CARRY-FORWARD (still valid):
 - 774 locked pool (497 F / 277 D, snapshot 2026-06-17). players.csv: group f1=F/d1=D; player_id 1..774; nhl_player_id per player.
 - A13 source: MoneyPuck `https://moneypuck.com/moneypuck/playerData/seasonSummary/2025/regular/skaters.csv` cached at `raw/moneypuck_skaters_2025.csv` (3.5MB, committed; re-runs free, no network). Join nhl_player_id==playerId.
 - compute_oaq deterministic (seed 20260526, 1000 bootstrap, ~2-3 min run). _common.py forces UTF-8; Windows console cp1252 (no non-ASCII in ad-hoc python -c). Scrapes share one sqlite cache/http_cache -> run SEQUENTIALLY.
 - YouTube = Gate-4 validation ONLY, never a composite input (anti-circularity).
-- Cosmetic debt: some .py docstrings still say "pilot2"; _common.CONTACT_UA still "marchand-index-pilot2/0.1"; fetch_wikipedia_intl.py docstring references pilot2/raw paths.
 
 Deadline: abstract accepted for poster. Poster session 2026-09-12 (~12 wk runway). Roster snapshot locked; no live perishability.

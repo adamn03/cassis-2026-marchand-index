@@ -13,8 +13,8 @@ team_code is kept on DailyFaceoff's scheme throughout (so it joins teams.csv);
 the NHL tri-code is recorded separately as nhl_team_code.
 
 Writes:
-  pilot2/players.csv      160 rows (the locked set)
-  pilot2/raw/teams.csv    32 rows (team_code, slug, city, division)
+  marchand_index/players.csv      160 rows (the locked set)
+  marchand_index/raw/teams.csv    32 rows (team_code, slug, city, division)
 """
 from __future__ import annotations
 

@@ -26,7 +26,7 @@ contributes 0 and sets reddit_status=partial; if every request fails the row is
 NULL (reddit_status=null) and the §4 sentinel renormalizes.
 
 Credentials: a free Reddit "script" app's client_id + client_secret, read from
-env (REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET) or pilot2/.env (gitignored). App-only
+env (REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET) or marchand_index/.env (gitignored). App-only
 `client_credentials` grant is used by default (id + secret only, no account
 password); if REDDIT_USERNAME + REDDIT_PASSWORD are also present the more-permissive
 `password` grant is used instead.
@@ -40,10 +40,10 @@ Robustness (2026-05-27, not a pre-reg change — transport hardening only):
   * 429s get escalating backoff (5/10/20/40s) so popular players are not falsely
     NULLed by late-run rate limiting.
 
-Writes: pilot2/raw/reddit_counts.csv
+Writes: marchand_index/raw/reddit_counts.csv
   player_id, full_name, subreddits, reddit_mentions_12mo, reddit_upvotes_12mo,
   unique_authors, reddit_capped, reddit_status, fetch_date
-  + pilot2/raw/reddit_detail.csv (player_id, submission_id, score) for the §10 bootstrap
+  + marchand_index/raw/reddit_detail.csv (player_id, submission_id, score) for the §10 bootstrap
 """
 from __future__ import annotations
 
@@ -59,7 +59,7 @@ from _common import RAW_DIR, atomic_write_csv, load_csv, load_players  # noqa: E
 import requests  # noqa: E402
 from requests.auth import HTTPBasicAuth  # noqa: E402
 
-UA = "marchand-index-pilot2/0.2 (research; contact ana178@sfu.ca)"
+UA = "marchand-index/0.2 (research; contact ana178@sfu.ca)"
 OAUTH_BASE = "https://oauth.reddit.com"           # authenticated host (A9)
 TOKEN_URL = "https://www.reddit.com/api/v1/access_token"
 # Fixed attention window (pre-reg A11, 2026-06-19): trailing WINDOW_DAYS ending
@@ -107,7 +107,7 @@ _ENV_MAP = {
 
 
 def load_creds() -> dict:
-    """Reddit OAuth creds from env, falling back to pilot2/.env (gitignored).
+    """Reddit OAuth creds from env, falling back to marchand_index/.env (gitignored).
 
     Requires client_id + client_secret. username + password are optional (enable
     the password grant); absent them the app-only client_credentials grant is used.
@@ -128,7 +128,7 @@ def load_creds() -> dict:
                 creds[field] = val.strip().strip('"').strip("'")
     if not creds["client_id"] or not creds["client_secret"]:
         sys.exit("Reddit OAuth creds missing. Set REDDIT_CLIENT_ID and "
-                 "REDDIT_CLIENT_SECRET in env or pilot2/.env (see module header).")
+                 "REDDIT_CLIENT_SECRET in env or marchand_index/.env (see module header).")
     return creds
 
 

@@ -1,4 +1,4 @@
-"""Build pilot2/market_proxy.csv -- exogenous team market-size components.
+"""Build marchand_index/market_proxy.csv -- exogenous team market-size components.
 
 Pre-registration sec.7 governs MarketSize_team:
   equal-weight mean of the 32-team z-scores of

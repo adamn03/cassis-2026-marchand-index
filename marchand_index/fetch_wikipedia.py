@@ -16,7 +16,7 @@ canonical title and accept it only if its Wikidata entity has occupation
 canonical title. Falls back to the first non-disambiguation real title
 (wiki_match=weak) or NULL (wiki_match=none).
 
-Writes: pilot2/raw/wiki_pageviews.csv
+Writes: marchand_index/raw/wiki_pageviews.csv
   player_id, full_name, wikipedia_slug_tried, wikipedia_slug_chosen,
   wikidata_qid, wiki_match, wiki_12mo, fetch_date, window_start, window_end
 """

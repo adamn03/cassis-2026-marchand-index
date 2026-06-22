@@ -1,6 +1,6 @@
 # External Outcomes — Sources & Matching (pilot2 §9 external validation)
 
-Built by `pilot2/fetch_external_outcomes.py` -> `pilot2/external_outcomes.csv` (160 rows).
+Built by `marchand_index/fetch_external_outcomes.py` -> `marchand_index/external_outcomes.csv` (160 rows).
 Run date: 2026-05-27.
 
 These are the two **independent, published** fan-attention targets the Marchand Index

@@ -6,7 +6,7 @@ Per A6 graceful-degradation logged 2026-05-28, V3 outcome reduced to
 strategies). Subscriber column is fetched best-effort and left blank
 on failure; the V3 statistic is computed off wiki_12mo alone.
 
-Writes pilot2/team_outcomes.csv:
+Writes marchand_index/team_outcomes.csv:
   team_code, team_full_name, subreddit, subreddit_subscribers,
   wiki_article, wiki_12mo, fetch_date
 """
@@ -22,7 +22,7 @@ from _common import PILOT_DIR, atomic_write_csv  # noqa: E402
 
 import requests  # noqa: E402
 
-UA = "marchand-index-pilot2/0.1 (research; contact ana178@sfu.ca)"
+UA = "marchand-index/0.1 (research; contact ana178@sfu.ca)"
 SLEEP_REDDIT = 2.0          # unauthenticated Reddit
 SLEEP_WIKI = 0.2            # Wikimedia is liberal
 

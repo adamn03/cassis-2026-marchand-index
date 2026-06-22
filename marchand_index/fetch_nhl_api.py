@@ -13,7 +13,7 @@ DailyFaceoff top-pair anomaly absent from FLA's NHL roster) gets NULL skill
 fields and is flagged match_quality=low downstream — kept, not dropped.
 
 Writes:
-  pilot2/raw/nhl_skill.csv   160 rows
+  marchand_index/raw/nhl_skill.csv   160 rows
     player_id, full_name, nhl_player_id, team_code, position, age, ppg,
     toi_per_game, games_played, fetch_date
 """

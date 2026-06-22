@@ -15,9 +15,9 @@ RULE (Option 1 — keep career NHLers, drop never-played prospects):
 On a landing fetch failure the skater is KEPT (conservative: never drop a real
 roster member on a transient error) and flagged in the audit.
 
-Reads:  pilot2/players.csv            (the 788 locked snapshot, committed @ HEAD)
-Writes: pilot2/players.csv            (kept rows only, player_id re-sequenced 1..N)
-        pilot2/pool_gp_audit.csv      (ALL 788 + cur_gp/career_nhl_gp/kept/reason;
+Reads:  marchand_index/players.csv            (the 788 locked snapshot, committed @ HEAD)
+Writes: marchand_index/players.csv            (kept rows only, player_id re-sequenced 1..N)
+        marchand_index/pool_gp_audit.csv      (ALL 788 + cur_gp/career_nhl_gp/kept/reason;
                                         preserves the pre-filter snapshot for audit)
 
 The landing calls share _common.session()'s on-disk requests-cache, so the

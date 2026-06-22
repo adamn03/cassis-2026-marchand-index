@@ -33,7 +33,7 @@ PLAYERS_CSV = PILOT_DIR / "players.csv"
 # 403 generic agents). NHL + Wikimedia accept any UA.
 BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
-CONTACT_UA = "marchand-index-pilot2/0.1 (research; ana178@sfu.ca)"
+CONTACT_UA = "marchand-index/0.1 (research; ana178@sfu.ca)"
 
 _NEXT_RE = re.compile(
     r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', re.S)
