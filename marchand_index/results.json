@@ -27,10 +27,10 @@
     "V1b": {
       "test": "AUC OAQ_portable discriminating jersey_list_member (1/0)",
       "metric": "auc",
-      "value": 0.9229119504348862,
+      "value": 0.9370904325032765,
       "ci95": [
-        0.847325676469782,
-        0.9819593919439121
+        0.8711401952273965,
+        0.9810776798853196
       ],
       "n_total": 774,
       "n_members": 11,
@@ -39,10 +39,10 @@
     "V2": {
       "test": "AUC OAQ_portable discriminating asg2024_member (1/0)",
       "metric": "auc",
-      "value": 0.7201161946259985,
+      "value": 0.6759622367465504,
       "ci95": [
-        0.45981341060729847,
-        0.9636483512164445
+        0.3989779826170654,
+        0.9420762774806892
       ],
       "n_total": 774,
       "n_members": 9,
@@ -54,10 +54,10 @@
     "V3": {
       "test": "Spearman rho(sum_OAQ_observed_per_team, team_wiki_12mo) across n teams",
       "metric": "spearman_rho",
-      "value": 0.3929618768328445,
+      "value": 0.4109237536656892,
       "ci95": [
-        0.012957288870979598,
-        0.703533758153036
+        0.04416869791706538,
+        0.6897163477001571
       ],
       "n": 32,
       "floor": 0.4,
@@ -127,10 +127,10 @@
       "description": "OAQ_portable aligns with independent fan voting (V2 Spearman >= 0.45)",
       "metric": "spearman_rho (unavailable: asg2024 membership-only)",
       "value": null,
-      "auc_proxy": 0.7201161946259985,
+      "auc_proxy": 0.6759622367465504,
       "auc_ci95": [
-        0.45981341060729847,
-        0.9636483512164445
+        0.3989779826170654,
+        0.9420762774806892
       ],
       "n_members": 9,
       "floor": 0.45,
@@ -140,15 +140,15 @@
     "PD": {
       "description": "Sum of OAQ_observed per team aligns with independent team Wikipedia pageviews (V3 Spearman >= 0.40)",
       "metric": "spearman_rho",
-      "value": 0.3929618768328445,
+      "value": 0.4109237536656892,
       "ci95": [
-        0.012957288870979598,
-        0.703533758153036
+        0.04416869791706538,
+        0.6897163477001571
       ],
       "n": 32,
       "floor": 0.4,
       "underpowered": false,
-      "verdict": "disconfirmed",
+      "verdict": "confirmed",
       "robustness_eng_raw": {
         "rho": 0.45197947214076245,
         "ci95": [
@@ -174,19 +174,18 @@
       ],
       "top10_marchand_index_hybrid": [
         "Ryan Johnson",
-        "Ben Jones",
         "Ian Moore",
-        "Nathan Walker",
         "Max Jones",
+        "Ben Jones",
+        "Nathan Walker",
         "Ben Meyers",
-        "Tyler Tucker",
-        "Jack Finley",
-        "Parker Kelly",
-        "Brent Burns"
-      ],
-      "n_displaced": 10,
-      "displaced_names": [
+        "Brent Burns",
+        "Justin Barron",
         "Jack Hughes",
+        "Arber Xhekaj"
+      ],
+      "n_displaced": 9,
+      "displaced_names": [
         "Alex Ovechkin",
         "Sidney Crosby",
         "Quinn Hughes",

@@ -31,7 +31,8 @@ Method summary (locked):
     renormalization on NULL components.
   Peers: K=10, hard position split via `group`, Mahalanobis distance using the
     inverse WITHIN-GROUP covariance of the standardized skill vector
-    (age, ppg, toi_per_game), group-mean imputation for NULL skill.
+    (age, ppg, toi_per_game, cf_pct, xgf_pct, ozs_pct), group-mean
+    imputation for NULL skill (A13: 5v5 on-ice features).
   OAQ_observed = engagement_raw - mean(engagement_raw over K peers).
   OAQ_portable = (engagement_raw - market_z) - mean over K peers of same.
   expected_cap(P): per-group OLS cap_hit_M ~ PPG + TOI/G prediction, floored
@@ -1065,7 +1066,9 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     lines.append(f"- N skaters: {len(df)} (forwards "
                  f"{(df['group']=='f1').sum()}, defense {(df['group']=='d1').sum()})")
     lines.append(f"- K peers: {K_PEERS} (Mahalanobis, within-group inverse "
-                 "covariance of standardized (age, ppg, toi_per_game))")
+                 "covariance of standardized (age, ppg, toi_per_game, "
+                 "cf_pct, xgf_pct, ozs_pct) [A13 5v5 on-ice features; "
+                 "thin/missing imputed to group mean])")
     lines.append(f"- Bootstrap draws: {BOOTSTRAP_DRAWS}, seed {SEED}")
     lines.append(f"- Market proxy components used: {', '.join(market_used)}")
     lines.append(f"- Reddit availability: {reddit_note}")
