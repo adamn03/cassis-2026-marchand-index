@@ -56,3 +56,47 @@ def test_ozs_pct_formula():
     assert fmp.ozs_pct(120.0, 80.0) == 0.6
     assert fmp.ozs_pct(0.0, 0.0) != fmp.ozs_pct(0.0, 0.0)  # NaN != NaN
     assert np.isnan(fmp.ozs_pct(np.nan, 5.0))
+
+
+def test_aggregate_single_team_passthrough():
+    df = fmp.filter_5v5(pd.DataFrame([
+        _raw_row(1, "5on5", ct=0.55, xt=0.52, ozs=120, dzs=80, ice=1000, gp=20),
+    ]))
+    agg = fmp.aggregate_traded(df)
+    assert len(agg) == 1
+    r = agg.iloc[0]
+    assert r["n_team_rows"] == 1
+    assert r["cf_pct"] == 0.55 and r["xgf_pct"] == 0.52
+    assert r["ozs_pct"] == 0.6
+    assert r["mp_icetime_5v5"] == 1000 and r["mp_games_played_5v5"] == 20
+
+
+def test_aggregate_traded_two_team_rows_icetime_weighted():
+    # Player 7 traded: 900 min @ cf 0.60 on team A, 100 min @ cf 0.40 on team B.
+    # icetime-weighted cf = (0.60*900 + 0.40*100)/1000 = 0.58 (NOT simple 0.50).
+    # ozs from summed counts: (180+20)/((180+20)+(120+80)) = 200/400 = 0.5.
+    df = fmp.filter_5v5(pd.DataFrame([
+        _raw_row(7, "5on5", ct=0.60, xt=0.62, ozs=180, dzs=120, ice=900, gp=45,
+                 team="TOR", name="Traded Guy"),
+        _raw_row(7, "5on5", ct=0.40, xt=0.42, ozs=20, dzs=80, ice=100, gp=5,
+                 team="CGY", name="Traded Guy"),
+    ]))
+    agg = fmp.aggregate_traded(df)
+    assert len(agg) == 1
+    r = agg.iloc[0]
+    assert r["n_team_rows"] == 2
+    assert abs(r["cf_pct"] - 0.58) < 1e-9
+    assert abs(r["xgf_pct"] - 0.60) < 1e-9   # (0.62*900+0.42*100)/1000
+    assert abs(r["ozs_pct"] - 0.5) < 1e-9    # summed-count ratio, NOT averaged
+    assert r["mp_icetime_5v5"] == 1000 and r["mp_games_played_5v5"] == 50
+    assert r["team"] == "TOR"   # max-icetime (primary) team
+
+
+def test_aggregate_one_row_per_player():
+    df = fmp.filter_5v5(pd.DataFrame([
+        _raw_row(1, "5on5", ice=500), _raw_row(1, "5on5", ice=400),
+        _raw_row(2, "5on5", ice=900),
+    ]))
+    agg = fmp.aggregate_traded(df)
+    assert sorted(agg["playerId"].tolist()) == [1, 2]
+    assert agg["playerId"].is_unique

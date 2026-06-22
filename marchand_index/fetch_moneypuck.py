@@ -85,3 +85,44 @@ def filter_5v5(raw: pd.DataFrame) -> pd.DataFrame:
     })
     return df[["playerId", "name", "team", "situation", "icetime",
                "games_played", "cf_pct", "xgf_pct", "ozs_raw", "dzs_raw"]]
+
+
+def _wmean(vals: np.ndarray, weights: np.ndarray) -> float:
+    """Icetime-weighted mean; falls back to simple nanmean if all weight is 0."""
+    m = np.isfinite(vals) & np.isfinite(weights)
+    if not m.any():
+        return float("nan")
+    v, w = vals[m], weights[m]
+    if w.sum() <= 0:
+        return float(np.nanmean(v))
+    return float((v * w).sum() / w.sum())
+
+
+def aggregate_traded(df5v5: pd.DataFrame) -> pd.DataFrame:
+    """Collapse 5v5 rows to one row per playerId (trade aggregation).
+
+    cf_pct/xgf_pct -> icetime-weighted mean across the player's team-rows;
+    ozs_pct -> recomputed from SUMMED zone-start counts (sum then divide);
+    icetime/games summed; n_team_rows records the team-row count (>=2 = traded).
+    """
+    out_rows = []
+    for pid, grp in df5v5.groupby("playerId", sort=True):
+        ice = grp["icetime"].to_numpy(dtype=float)
+        cf = _wmean(grp["cf_pct"].to_numpy(dtype=float), ice)
+        xgf = _wmean(grp["xgf_pct"].to_numpy(dtype=float), ice)
+        sum_ozs = np.nansum(grp["ozs_raw"].to_numpy(dtype=float))
+        sum_dzs = np.nansum(grp["dzs_raw"].to_numpy(dtype=float))
+        primary = grp.sort_values("icetime", ascending=False).iloc[0]
+        out_rows.append({
+            "playerId": int(pid),
+            "name": primary["name"],
+            "team": primary["team"],
+            "cf_pct": cf,
+            "xgf_pct": xgf,
+            "ozs_pct": ozs_pct(sum_ozs, sum_dzs),
+            "mp_icetime_5v5": float(np.nansum(ice)),
+            "mp_games_played_5v5": float(
+                np.nansum(grp["games_played"].to_numpy(dtype=float))),
+            "n_team_rows": int(len(grp)),
+        })
+    return pd.DataFrame(out_rows)
