@@ -97,3 +97,14 @@ def test_load_inputs_has_onice_columns(monkeypatch):
 def test_out_cols_include_onice_features():
     for c in ("cf_pct", "xgf_pct", "ozs_pct", "onice_status"):
         assert c in co.OUT_COLS
+
+
+def test_a13_amendment_appended_after_a12():
+    txt = (Path(__file__).resolve().parents[1] / "preregistration.md").read_text(
+        encoding="utf-8")
+    assert "A13 (2026-06-" in txt
+    assert "MoneyPuck 5v5 on-ice play-driving" in txt
+    assert "ONICE_MIN_ICETIME_5V5 = 150" in txt
+    assert "expected_cap (A4) unchanged" in txt
+    # A13 must come AFTER A12 in the file (append order).
+    assert txt.index("A12 (2026-06-") < txt.index("A13 (2026-06-")
