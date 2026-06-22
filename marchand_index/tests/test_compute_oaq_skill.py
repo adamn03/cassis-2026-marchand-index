@@ -78,3 +78,22 @@ def test_compute_peers_runs_with_six_features():
     groups = df["group"].to_numpy()
     for i, pl in enumerate(peers):
         assert all(groups[j] == groups[i] for j in pl)
+
+
+def test_load_inputs_has_onice_columns(monkeypatch):
+    # Smoke: real load_inputs reads raw/nhl_onice.csv if present; skip if the
+    # raw inputs are not materialized in this checkout.
+    try:
+        df = co.load_inputs()
+    except FileNotFoundError:
+        import pytest
+        pytest.skip("raw inputs not materialized")
+    for c in ("cf_pct", "xgf_pct", "ozs_pct"):
+        assert c in df.columns
+        assert pd.api.types.is_numeric_dtype(df[c])
+    assert "onice_status" in df.columns
+
+
+def test_out_cols_include_onice_features():
+    for c in ("cf_pct", "xgf_pct", "ozs_pct", "onice_status"):
+        assert c in co.OUT_COLS

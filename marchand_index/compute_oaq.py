@@ -168,6 +168,7 @@ def load_inputs() -> pd.DataFrame:
     """
     players = pd.read_csv(PILOT_DIR / "players.csv", dtype={"player_id": int})
     skill = pd.read_csv(RAW_DIR / "nhl_skill.csv", dtype={"player_id": int})
+    onice = pd.read_csv(RAW_DIR / "nhl_onice.csv", dtype={"player_id": int})
     wiki = pd.read_csv(RAW_DIR / "wiki_pageviews.csv", dtype={"player_id": int})
     trends = pd.read_csv(RAW_DIR / "trends.csv", dtype={"player_id": int})
     wiki_intl = pd.read_csv(RAW_DIR / "wiki_intl_pageviews.csv",
@@ -181,6 +182,12 @@ def load_inputs() -> pd.DataFrame:
 
     df = df.merge(
         skill[["player_id", "age", "ppg", "toi_per_game", "games_played"]],
+        on="player_id", how="left",
+    )
+    # A13: MoneyPuck 5v5 on-ice features (peer region). NaN where onice_status
+    # is thin/missing; _standardize_skill's group-mean imputation fills them.
+    df = df.merge(
+        onice[["player_id", "cf_pct", "xgf_pct", "ozs_pct", "onice_status"]],
         on="player_id", how="left",
     )
     df = df.merge(wiki[["player_id", "wiki_12mo", "wiki_match"]], on="player_id", how="left")
@@ -231,6 +238,8 @@ def load_inputs() -> pd.DataFrame:
     for c in ("jersey_list_member", "asg2024_member"):
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
     df["cap_quality"] = df["cap_quality"].astype("string").fillna("low")
+    # A13: default onice_status for any player absent from nhl_onice.csv.
+    df["onice_status"] = df["onice_status"].astype("string").fillna("missing")
 
     # §2/§8 match_quality: identity-resolution flag that ships with every
     # published number. "low" if NHL id is blank (player unresolved on NHL) OR
@@ -1441,7 +1450,8 @@ def _json_safe(obj):
 
 OUT_COLS = [
     "player_id", "full_name", "position", "group", "team_code",
-    "age", "ppg", "toi_per_game", "games_played", "small_sample",
+    "age", "ppg", "toi_per_game", "cf_pct", "xgf_pct", "ozs_pct",
+    "onice_status", "games_played", "small_sample",
     "wiki_12mo", "wiki_intl_12mo", "intl_match",
     "trends_12mo", "reddit_mentions_12mo", "reddit_upvotes_12mo",
     "engagement_raw", "dropped_components",
