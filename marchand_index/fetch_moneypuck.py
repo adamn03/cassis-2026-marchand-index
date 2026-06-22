@@ -29,6 +29,7 @@ Writes:
 from __future__ import annotations
 
 import datetime as dt
+import re
 import sys
 from pathlib import Path
 
@@ -146,4 +147,58 @@ def apply_thin_floor(row: dict) -> dict:
         out["onice_status"] = "thin"
     else:
         out["onice_status"] = "ok"
+    return out
+
+
+def _norm_name(name: str) -> str:
+    return re.sub(r"\s+", " ", str(name).strip().lower())
+
+
+def _blank(s) -> str:
+    return "" if (s is None or (isinstance(s, float) and not np.isfinite(s))) else s
+
+
+def join_pool(players: list[dict], mp: pd.DataFrame, fetch_date: str) -> list[dict]:
+    """Left-join MoneyPuck rows onto the 774 pool on nhl_player_id (name-fallback
+    only where the id is blank). NEVER drops a player; no match -> onice_status
+    =missing with NULL features."""
+    by_id = {int(r["playerId"]): r for _, r in mp.iterrows()} if len(mp) else {}
+    by_name = ({_norm_name(r["name"]): r for _, r in mp.iterrows()}
+               if len(mp) else {})
+    out: list[dict] = []
+    for p in players:
+        pid = (p.get("nhl_player_id") or "").strip()
+        rec = None
+        if pid.isdigit() and int(pid) in by_id:
+            rec = by_id[int(pid)]
+        elif not pid.isdigit():
+            rec = by_name.get(_norm_name(p["full_name"]))
+        if rec is None:
+            out.append({
+                "player_id": p["player_id"],
+                "nhl_player_id": pid,
+                "full_name": p["full_name"],
+                "team_code": p["team_code"],
+                "situation": LOCKED_SITUATION,
+                "cf_pct": "", "xgf_pct": "", "ozs_pct": "",
+                "mp_icetime_5v5": "", "mp_games_played_5v5": "",
+                "n_team_rows": 0, "onice_status": "missing",
+                "fetch_date": fetch_date,
+            })
+            continue
+        out.append({
+            "player_id": p["player_id"],
+            "nhl_player_id": pid,
+            "full_name": p["full_name"],
+            "team_code": p["team_code"],
+            "situation": LOCKED_SITUATION,
+            "cf_pct": _blank(rec["cf_pct"]),
+            "xgf_pct": _blank(rec["xgf_pct"]),
+            "ozs_pct": _blank(rec["ozs_pct"]),
+            "mp_icetime_5v5": _blank(rec["mp_icetime_5v5"]),
+            "mp_games_played_5v5": _blank(rec["mp_games_played_5v5"]),
+            "n_team_rows": int(rec["n_team_rows"]),
+            "onice_status": rec["onice_status"],
+            "fetch_date": fetch_date,
+        })
     return out

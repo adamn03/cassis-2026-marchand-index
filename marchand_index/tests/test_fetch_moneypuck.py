@@ -125,3 +125,54 @@ def test_apply_thin_floor_nan_icetime_is_thin():
          "mp_icetime_5v5": float("nan")})
     assert out["onice_status"] == "thin"
     assert np.isnan(out["cf_pct"])
+
+
+def _agg_df(rows):
+    # rows already aggregated/floored; supply the post-aggregate columns.
+    return pd.DataFrame(rows)
+
+
+def test_join_pool_id_match_and_status():
+    players = [
+        {"player_id": "1", "full_name": "Leo Carlsson", "team_code": "ANA",
+         "nhl_player_id": "8484153"},
+        {"player_id": "2", "full_name": "No Match Guy", "team_code": "BOS",
+         "nhl_player_id": "9999999"},
+    ]
+    mp = _agg_df([
+        {"playerId": 8484153, "name": "Leo Carlsson", "team": "ANA",
+         "cf_pct": 0.55, "xgf_pct": 0.52, "ozs_pct": 0.6,
+         "mp_icetime_5v5": 800.0, "mp_games_played_5v5": 40.0,
+         "n_team_rows": 1, "onice_status": "ok"},
+    ])
+    out = fmp.join_pool(players, mp, "2026-06-20")
+    assert len(out) == 2
+    leo = next(r for r in out if r["player_id"] == "1")
+    assert leo["cf_pct"] == 0.55 and leo["onice_status"] == "ok"
+    assert leo["team_code"] == "ANA" and leo["situation"] == "5on5"
+    miss = next(r for r in out if r["player_id"] == "2")
+    assert miss["onice_status"] == "missing"
+    assert miss["cf_pct"] == "" and miss["n_team_rows"] == 0
+
+
+def test_join_pool_name_fallback_only_when_id_blank():
+    players = [
+        {"player_id": "3", "full_name": "Michael Benning", "team_code": "FLA",
+         "nhl_player_id": ""},  # blank id -> name fallback allowed
+    ]
+    mp = _agg_df([
+        {"playerId": 8480000, "name": "michael  benning", "team": "FLA",
+         "cf_pct": 0.50, "xgf_pct": 0.49, "ozs_pct": 0.45,
+         "mp_icetime_5v5": 600.0, "mp_games_played_5v5": 30.0,
+         "n_team_rows": 1, "onice_status": "ok"},
+    ])
+    out = fmp.join_pool(players, mp, "2026-06-20")
+    assert out[0]["cf_pct"] == 0.50  # matched by normalized name
+
+
+def test_join_pool_never_drops_player():
+    players = [{"player_id": str(i), "full_name": f"P{i}", "team_code": "BOS",
+                "nhl_player_id": str(8000000 + i)} for i in range(5)]
+    out = fmp.join_pool(players, _agg_df([]), "2026-06-20")
+    assert len(out) == 5
+    assert all(r["onice_status"] == "missing" for r in out)
