@@ -95,7 +95,13 @@ WEIGHTS = {
     "trends_12mo": 0.16,
 }
 COMPONENTS = list(WEIGHTS.keys())
-SKILL_COLS = ["age", "ppg", "toi_per_game"]
+# A13 (2026-06-21) — peer (skill) vector expanded 3->6 with MoneyPuck 5v5
+# on-ice play-driving + deployment features (cf_pct, xgf_pct, ozs_pct), so the
+# "skill-controlled" residual is matched against a defensible skill profile.
+# Distance unchanged (K=10, within-group Mahalanobis); _standardize_skill's
+# group-mean NULL imputation fills thin/missing on-ice features to position-
+# group neutral before standardizing. expected_cap (A4) is NOT touched.
+SKILL_COLS = ["age", "ppg", "toi_per_game", "cf_pct", "xgf_pct", "ozs_pct"]
 K_PEERS = 10
 BOOTSTRAP_DRAWS = 1000
 SEED = 20260526
