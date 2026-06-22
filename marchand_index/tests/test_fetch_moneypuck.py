@@ -100,3 +100,28 @@ def test_aggregate_one_row_per_player():
     agg = fmp.aggregate_traded(df)
     assert sorted(agg["playerId"].tolist()) == [1, 2]
     assert agg["playerId"].is_unique
+
+
+def test_apply_thin_floor_nulls_below_150():
+    row = {"cf_pct": 0.65, "xgf_pct": 0.60, "ozs_pct": 0.7,
+           "mp_icetime_5v5": 120.0}
+    out = fmp.apply_thin_floor(row)
+    assert out["onice_status"] == "thin"
+    assert np.isnan(out["cf_pct"]) and np.isnan(out["xgf_pct"])
+    assert np.isnan(out["ozs_pct"])
+
+
+def test_apply_thin_floor_keeps_above_floor():
+    row = {"cf_pct": 0.55, "xgf_pct": 0.52, "ozs_pct": 0.6,
+           "mp_icetime_5v5": 800.0}
+    out = fmp.apply_thin_floor(row)
+    assert out["onice_status"] == "ok"
+    assert out["cf_pct"] == 0.55 and out["ozs_pct"] == 0.6
+
+
+def test_apply_thin_floor_nan_icetime_is_thin():
+    out = fmp.apply_thin_floor(
+        {"cf_pct": 0.5, "xgf_pct": 0.5, "ozs_pct": 0.5,
+         "mp_icetime_5v5": float("nan")})
+    assert out["onice_status"] == "thin"
+    assert np.isnan(out["cf_pct"])

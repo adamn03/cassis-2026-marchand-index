@@ -126,3 +126,24 @@ def aggregate_traded(df5v5: pd.DataFrame) -> pd.DataFrame:
             "n_team_rows": int(len(grp)),
         })
     return pd.DataFrame(out_rows)
+
+
+def apply_thin_floor(row: dict) -> dict:
+    """NULL the three on-ice features below ONICE_MIN_ICETIME_5V5 (thin sample).
+
+    Rate stats are unstable at low ice (a 5-game callup can post 65% CF% on
+    noise). Below the floor the features are NULLed and onice_status='thin';
+    compute_oaq.py's existing group-mean imputation then fills them to
+    position-group neutral before standardizing, so the player is matched on
+    his stable box-score stats. The player is NEVER dropped (A10 pool).
+    """
+    out = dict(row)
+    ice = out.get("mp_icetime_5v5")
+    if ice is None or not np.isfinite(ice) or ice < ONICE_MIN_ICETIME_5V5:
+        out["cf_pct"] = float("nan")
+        out["xgf_pct"] = float("nan")
+        out["ozs_pct"] = float("nan")
+        out["onice_status"] = "thin"
+    else:
+        out["onice_status"] = "ok"
+    return out
