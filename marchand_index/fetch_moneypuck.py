@@ -32,6 +32,7 @@ import datetime as dt
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -53,3 +54,34 @@ OUT_FIELDS = [
     "cf_pct", "xgf_pct", "ozs_pct", "mp_icetime_5v5",
     "mp_games_played_5v5", "n_team_rows", "onice_status", "fetch_date",
 ]
+
+
+def ozs_pct(ozs: float, dzs: float) -> float:
+    """Offensive-zone-start share (neutral starts excluded). NaN if no starts."""
+    if not (np.isfinite(ozs) and np.isfinite(dzs)):
+        return float("nan")
+    denom = ozs + dzs
+    if denom == 0:
+        return float("nan")
+    return ozs / denom
+
+
+def filter_5v5(raw: pd.DataFrame) -> pd.DataFrame:
+    """Keep only situation == '5on5'; coerce numerics; rename to feature cols.
+
+    A13 LOCKED situation. The MoneyPuck CSV stratifies every player by
+    situation; the aggregate 'all' row re-imports the special-teams confound,
+    so it is dropped here before any aggregation.
+    """
+    df = raw[raw["situation"].astype(str) == LOCKED_SITUATION].copy()
+    for src in ("icetime", "onIce_corsiPercentage", "onIce_xGoalsPercentage",
+                "I_F_oZoneShiftStarts", "I_F_dZoneShiftStarts", "games_played"):
+        df[src] = pd.to_numeric(df[src], errors="coerce")
+    df = df.rename(columns={
+        "onIce_corsiPercentage": "cf_pct",
+        "onIce_xGoalsPercentage": "xgf_pct",
+        "I_F_oZoneShiftStarts": "ozs_raw",
+        "I_F_dZoneShiftStarts": "dzs_raw",
+    })
+    return df[["playerId", "name", "team", "situation", "icetime",
+               "games_played", "cf_pct", "xgf_pct", "ozs_raw", "dzs_raw"]]
