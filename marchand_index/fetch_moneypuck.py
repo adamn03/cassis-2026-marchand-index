@@ -29,6 +29,7 @@ Writes:
 from __future__ import annotations
 
 import datetime as dt
+import os
 import re
 import sys
 from pathlib import Path
@@ -202,3 +203,62 @@ def join_pool(players: list[dict], mp: pd.DataFrame, fetch_date: str) -> list[di
             "fetch_date": fetch_date,
         })
     return out
+
+
+def load_raw(s) -> pd.DataFrame:
+    """Read the cached MoneyPuck CSV, downloading once if absent (atomic write)."""
+    if not CACHE_CSV.exists():
+        r = s.get(MP_URL, headers={"User-Agent": CONTACT_UA}, timeout=60)
+        r.raise_for_status()
+        RAW_DIR.mkdir(parents=True, exist_ok=True)
+        tmp = CACHE_CSV.with_suffix(CACHE_CSV.suffix + ".tmp")
+        tmp.write_bytes(r.content)
+        os.replace(tmp, CACHE_CSV)
+    return pd.read_csv(CACHE_CSV)
+
+
+def empirical_group_report(df5v5: pd.DataFrame) -> dict[int, int]:
+    """playerId -> count of 5v5 rows (spec risk #1: branch on the real file,
+    do not trust one-row-per-team). >=2 => in-season trade -> aggregation."""
+    sizes = df5v5.groupby(["playerId", "situation"]).size()
+    out: dict[int, int] = {}
+    for (pid, _sit), cnt in sizes.items():
+        out[int(pid)] = out.get(int(pid), 0) + int(cnt)
+    return out
+
+
+def main() -> None:
+    fetch_date = dt.date.today().isoformat()
+    s = session(expire_hours=24)
+    raw = load_raw(s)
+    # MoneyPuck `icetime` is SECONDS; the pre-registered ONICE_MIN_ICETIME_5V5
+    # floor (150) is MINUTES. Convert at ingest so mp_icetime_5v5 is stored in
+    # minutes and the floor compares like units. (Rate features are unaffected:
+    # icetime-weighted means are scale-invariant.)
+    raw["icetime"] = pd.to_numeric(raw["icetime"], errors="coerce") / 60.0
+    df5v5 = filter_5v5(raw)
+
+    report = empirical_group_report(df5v5)
+    n_traded = sum(1 for n in report.values() if n >= 2)
+    print(f"5v5 rows: {len(df5v5)}; unique playerIds: {len(report)}; "
+          f"playerIds with >=2 5v5 rows (in-season trades): {n_traded}")
+
+    agg = aggregate_traded(df5v5)
+    floored = [apply_thin_floor(r) for r in agg.to_dict("records")]
+    floored_df = pd.DataFrame(floored)
+
+    players = load_players()
+    rows = join_pool(players, floored_df, fetch_date)
+    atomic_write_csv(OUT_CSV, rows, OUT_FIELDS)
+
+    counts = {"ok": 0, "thin": 0, "missing": 0}
+    for r in rows:
+        counts[r["onice_status"]] = counts.get(r["onice_status"], 0) + 1
+    n_agg_traded = sum(1 for r in rows if r["n_team_rows"] >= 2)
+    print(f"Wrote {OUT_CSV}: {len(rows)} rows "
+          f"(ok={counts['ok']}, thin={counts['thin']}, "
+          f"missing={counts['missing']}; trade-aggregated={n_agg_traded})")
+
+
+if __name__ == "__main__":
+    main()

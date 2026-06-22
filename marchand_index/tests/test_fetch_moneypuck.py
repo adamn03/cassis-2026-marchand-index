@@ -176,3 +176,34 @@ def test_join_pool_never_drops_player():
     out = fmp.join_pool(players, _agg_df([]), "2026-06-20")
     assert len(out) == 5
     assert all(r["onice_status"] == "missing" for r in out)
+
+
+def test_load_raw_uses_cache_when_present(tmp_path, monkeypatch):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    (raw / "moneypuck_skaters_2025.csv").write_text(
+        "playerId,name,team,situation,icetime,games_played,"
+        "onIce_corsiPercentage,onIce_xGoalsPercentage,"
+        "I_F_oZoneShiftStarts,I_F_dZoneShiftStarts\n"
+        "8484153,Leo Carlsson,ANA,5on5,800,40,0.55,0.52,120,80\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(fmp, "RAW_DIR", raw)
+    monkeypatch.setattr(fmp, "CACHE_CSV", raw / "moneypuck_skaters_2025.csv")
+
+    class _NoNet:
+        def get(self, *a, **k):
+            raise AssertionError("network hit despite cache present")
+
+    df = fmp.load_raw(_NoNet())
+    assert int(df.iloc[0]["playerId"]) == 8484153
+    assert df.iloc[0]["situation"] == "5on5"
+
+
+def test_empirical_group_report_flags_traded():
+    df = fmp.filter_5v5(pd.DataFrame([
+        _raw_row(7, "5on5", ice=900), _raw_row(7, "5on5", ice=100),
+        _raw_row(9, "5on5", ice=800),
+    ]))
+    rep = fmp.empirical_group_report(df)
+    assert rep[7] == 2 and rep[9] == 1
