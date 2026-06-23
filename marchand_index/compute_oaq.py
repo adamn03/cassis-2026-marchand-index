@@ -57,7 +57,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _common import PILOT_DIR, RAW_DIR  # noqa: E402
+from _common import PILOT_DIR, RAW_DIR, atomic_write_text  # noqa: E402
 
 # scipy is optional; fall back to a manual Spearman if missing.
 try:
@@ -281,20 +281,31 @@ def load_wiki_daily() -> dict[int, np.ndarray]:
     return out
 
 
-def load_wiki_intl_daily_summed() -> dict[int, np.ndarray]:
-    """player_id -> pooled intl daily-view array (all whitelisted editions
-    concatenated) for bootstrap resampling. Empty for anglophone-only players."""
+def load_wiki_intl_daily_by_edition() -> dict[int, list[np.ndarray]]:
+    """player_id -> list of per-edition daily-view arrays (one per whitelisted
+    edition fetched) for a STRATIFIED §10 bootstrap resample.
+
+    Each edition is resampled at its own day-count and the per-edition sums are
+    added (vs. concatenating every edition into one pooled vector and resampling
+    that at full length, which injects between-edition compositional variance —
+    a draw can over-/under-represent the high-traffic de edition vs. low-traffic
+    sk — and over-widens the wiki_intl CI). Empty list for anglophone-only
+    players. The point estimate (wiki_intl_12mo) is unaffected; only the CI
+    resample changes. Faithful to §10's "resample the player's daily pageview
+    vector" for the multi-edition case (A12)."""
     path = RAW_DIR / "wiki_intl_daily.csv"
-    out: dict[int, np.ndarray] = {}
+    out: dict[int, list[np.ndarray]] = {}
     if not path.exists():
         return out
     wd = pd.read_csv(path, dtype={"player_id": int})
     for pid, grp in wd.groupby("player_id"):
-        pool: list[float] = []
+        arrs: list[np.ndarray] = []
         for raw in grp["daily_views"]:
             if isinstance(raw, str) and raw.strip():
-                pool.extend(float(x) for x in raw.split("|") if x.strip() != "")
-        out[int(pid)] = np.array(pool, dtype=float)
+                arrs.append(np.array(
+                    [float(x) for x in raw.split("|") if x.strip() != ""],
+                    dtype=float))
+        out[int(pid)] = arrs
     return out
 
 
@@ -610,7 +621,10 @@ def bootstrap_player_cis(
     # Precompute per-player numpy arrays for resampling (hot loop avoids pandas).
     daily_arrays = [wiki_daily.get(int(p), np.empty(0)) for p in pids]
     reddit_arrays = [reddit_scores.get(int(p), np.empty(0)) for p in pids]
-    intl_arrays = [wiki_intl_daily.get(int(p), np.empty(0)) for p in pids]
+    # Per-edition lists (A12 + #5 stratified resample): each player maps to a
+    # list of per-edition daily arrays, resampled independently at their own
+    # day-counts and summed (not one pooled vector).
+    intl_arrays = [wiki_intl_daily.get(int(p), []) for p in pids]
 
     # Which players legitimately HAVE each resampled component (NULL stays NULL).
     base_wiki = df["wiki_12mo"].to_numpy(dtype=float)
@@ -661,10 +675,14 @@ def bootstrap_player_cis(
                     wiki_draw[i] = samp.sum()
                 # else keep base value (no daily detail) -> effectively fixed
             if intl_present[i]:
-                arr = intl_arrays[i]
-                if arr.size:
-                    samp = arr[rng.integers(0, arr.size, arr.size)]
-                    intl_draw[i] = samp.sum()
+                edition_arrs = intl_arrays[i]
+                # Stratified: resample each edition at its own length, then sum
+                # the per-edition sums (#5 — pooling editions over-widens the CI).
+                if any(a.size for a in edition_arrs):
+                    intl_draw[i] = sum(
+                        a[rng.integers(0, a.size, a.size)].sum()
+                        for a in edition_arrs if a.size)
+                # else keep base value (no daily detail)
             if reddit_present[i]:
                 arr = reddit_arrays[i]
                 if arr.size:
@@ -1417,7 +1435,7 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
         "function of the exact λ.\n"
     )
 
-    path.write_text("\n".join(lines), encoding="utf-8")
+    atomic_write_text(path, "\n".join(lines))
 
 
 def write_results_json(path: Path, external: dict, patterns: dict,
@@ -1433,7 +1451,7 @@ def write_results_json(path: Path, external: dict, patterns: dict,
         "external_validation": external,
         "patterns": {k: _json_safe(v) for k, v in patterns.items()},
     }
-    path.write_text(json.dumps(_json_safe(payload), indent=2), encoding="utf-8")
+    atomic_write_text(path, json.dumps(_json_safe(payload), indent=2))
 
 
 def _json_safe(obj):
@@ -1479,7 +1497,7 @@ def main() -> None:
     df = load_inputs()
     wiki_daily = load_wiki_daily()
     reddit_scores = load_reddit_scores()
-    wiki_intl_daily = load_wiki_intl_daily_summed()
+    wiki_intl_daily = load_wiki_intl_daily_by_edition()
 
     market_z, market_used = compute_market_z(df)
     df["market_z"] = market_z

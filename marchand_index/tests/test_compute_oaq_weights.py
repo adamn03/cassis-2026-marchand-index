@@ -67,7 +67,10 @@ def test_bootstrap_component_dict_has_no_instagram():
     assert "wiki_intl_12mo" in src
 
 
-def test_load_wiki_intl_daily_summed_concats_pool(tmp_path, monkeypatch):
+def test_load_wiki_intl_daily_by_edition_keeps_editions_separate(tmp_path,
+                                                                 monkeypatch):
+    """#5 stratified resample: each edition is a SEPARATE array (not pooled),
+    so the bootstrap resamples each at its own day-count and sums."""
     raw = tmp_path / "raw"
     raw.mkdir()
     (raw / "wiki_intl_daily.csv").write_text(
@@ -78,10 +81,12 @@ def test_load_wiki_intl_daily_summed_concats_pool(tmp_path, monkeypatch):
         encoding="utf-8",
     )
     monkeypatch.setattr(co, "RAW_DIR", raw)
-    out = co.load_wiki_intl_daily_summed()
+    out = co.load_wiki_intl_daily_by_edition()
     assert set(out.keys()) == {1, 2}
-    assert sorted(out[1].tolist()) == [40.0, 50.0, 50.0]  # pooled cs+sv days
-    assert out[2].tolist() == [1.0, 2.0, 3.0]
+    # player 1: two SEPARATE per-edition arrays (cs len2, sv len1), not pooled.
+    p1 = sorted((a.tolist() for a in out[1]), key=len)
+    assert p1 == [[40.0], [50.0, 50.0]]
+    assert len(out[2]) == 1 and out[2][0].tolist() == [1.0, 2.0, 3.0]
 
 
 # --- Task 10: no residual instagram in results writer ---

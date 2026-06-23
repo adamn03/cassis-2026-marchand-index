@@ -1,7 +1,9 @@
-"""Fetch 12-month Wikipedia pageview totals for the 160-skater set (pre-reg §3.1).
+"""Fetch 12-month Wikipedia pageview totals for the 774-skater pool (pre-reg §3.1).
 
-Primary engagement signal (composite weight 0.306). Source: Wikimedia REST API,
-no auth. Window = trailing 365 days, cutoff = D-1 (API has a ~1-day lag).
+Largest engagement component (A12 composite weight 0.29 = wiki_en). Source:
+Wikimedia REST API, no auth. Window = the FIXED A11/A14 interval
+[2025-04-18, 2026-04-17] (regular-season-end boundary, identical for all 774),
+NOT a run-time trailing window — see preregistration.md A14.
 
 Slug resolution (pre-reg §2 as amended by §14 A1, 2026-05-27): the Wikimedia
 pageviews API does NOT follow redirects and counts views to the exact title
@@ -37,11 +39,19 @@ WD = "https://www.wikidata.org/w/api.php"
 ICE_HOCKEY_PLAYER = "Q11774891"
 
 
+# A14 FIXED window, hardcoded (NOT run-time): identical to the A11 / wiki_intl
+# fixed regular-season-end window, so the heaviest composite component
+# (wiki_en, A12 weight 0.29) no longer bakes in the 2026 playoff-selection
+# confound A11 removed elsewhere. [2025-04-18 00:00 UTC, 2026-04-18) — inclusive
+# end day 2026-04-17 (NHL 2025-26 regular-season end). See preregistration.md A14.
+WINDOW_START = "20250418"
+WINDOW_END = "20260417"
+
+
 def window_strings() -> tuple[str, str, str]:
-    today = dt.date.today()
-    end = today - dt.timedelta(days=1)
-    start = end - dt.timedelta(days=365)
-    return start.strftime("%Y%m%d"), end.strftime("%Y%m%d"), today.isoformat()
+    """Return (fixed_start, fixed_end, today_iso). Only fetch_date is dynamic
+    (A14 — was a run-time trailing-365-day window; now the fixed A11 window)."""
+    return WINDOW_START, WINDOW_END, dt.date.today().isoformat()
 
 
 def resolve_page(s, title: str) -> dict:

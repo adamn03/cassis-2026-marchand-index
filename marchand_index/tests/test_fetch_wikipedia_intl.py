@@ -103,11 +103,40 @@ def test_fetch_edition_views_returns_none_on_404():
     assert fwi.fetch_edition_views(s, "fi", "X", "20250418", "20260417") is None
 
 
-# --- Task 4: per-player aggregation ---
+# --- fetch_edition_safe: classify ok / absent (404) / error (transient) ---
+
+def test_fetch_edition_safe_ok(monkeypatch):
+    monkeypatch.setattr(fwi.time, "sleep", lambda *_: None)
+    s = _Session(_Resp(200, {"items": [{"views": 3}, {"views": 5}]}))
+    status, payload = fwi.fetch_edition_safe(s, "sv", "X", "20250418", "20260417")
+    assert status == "ok"
+    assert payload == (8, [3, 5])
+
+
+def test_fetch_edition_safe_absent_on_404(monkeypatch):
+    monkeypatch.setattr(fwi.time, "sleep", lambda *_: None)
+    s = _Session(_Resp(404))
+    status, payload = fwi.fetch_edition_safe(s, "fi", "X", "20250418", "20260417")
+    assert status == "absent" and payload is None
+
+
+def test_fetch_edition_safe_error_on_transient(monkeypatch):
+    """A 5xx (not 404) is a transient error, NOT an absent article."""
+    monkeypatch.setattr(fwi.time, "sleep", lambda *_: None)
+    s = _Session(_Resp(503))
+    status, payload = fwi.fetch_edition_safe(s, "de", "X", "20250418", "20260417")
+    assert status == "error" and payload is None
+
+
+# --- Task 4: per-player aggregation (fetch_fn -> (status, payload)) ---
 
 def test_aggregate_player_sums_fetched_editions():
     sitelinks = {"cs": "P", "sv": "P", "ru": "P"}
-    results = {"cs": (100, [50, 50]), "sv": (40, [40]), "ru": None}  # ru 404
+    results = {  # ru is a genuine 404 (absent), cleanly skipped
+        "cs": ("ok", (100, [50, 50])),
+        "sv": ("ok", (40, [40])),
+        "ru": ("absent", None),
+    }
 
     def fetch_fn(edition, title):
         return results[edition]
@@ -122,7 +151,7 @@ def test_aggregate_player_sums_fetched_editions():
 
 
 def test_aggregate_player_none_when_no_sitelinks():
-    agg = fwi.aggregate_player({}, lambda e, t: (1, [1]))
+    agg = fwi.aggregate_player({}, lambda e, t: ("ok", (1, [1])))
     assert agg["wiki_intl_12mo"] is None
     assert agg["editions_available"] == ""
     assert agg["editions_fetched"] == ""
@@ -130,11 +159,31 @@ def test_aggregate_player_none_when_no_sitelinks():
 
 
 def test_aggregate_player_none_when_all_editions_404():
-    agg = fwi.aggregate_player({"de": "P", "fr": "P"}, lambda e, t: None)
+    agg = fwi.aggregate_player({"de": "P", "fr": "P"}, lambda e, t: ("absent", None))
     assert agg["wiki_intl_12mo"] is None
     assert agg["editions_available"] == "de|fr"
     assert agg["editions_fetched"] == ""
     assert agg["intl_match"] == "none"
+
+
+def test_aggregate_player_partial_flags_transient_error():
+    """One edition fetched, one transient error -> intl_match=partial (the
+    error is NOT silently summed away like a 404)."""
+    results = {"cs": ("ok", (100, [100])), "de": ("error", None)}
+    agg = fwi.aggregate_player({"cs": "P", "de": "P"},
+                               lambda e, t: results[e])
+    assert agg["wiki_intl_12mo"] == 100
+    assert agg["editions_fetched"] == "cs"
+    assert agg["intl_match"] == "partial"
+
+
+def test_aggregate_player_error_when_all_editions_transient():
+    """0 fetched but a transient error occurred -> intl_match=error, NOT none
+    (the value is lost to flakiness, not a genuine anglophone-only player)."""
+    agg = fwi.aggregate_player({"de": "P", "fr": "P"}, lambda e, t: ("error", None))
+    assert agg["wiki_intl_12mo"] is None
+    assert agg["editions_fetched"] == ""
+    assert agg["intl_match"] == "error"
 
 
 # --- Task 5: row builders ---

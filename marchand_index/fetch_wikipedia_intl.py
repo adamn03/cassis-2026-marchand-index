@@ -72,6 +72,7 @@ def fetch_edition_views(s, edition: str, title: str, start: str,
     """Return (12-mo total, daily vector) for one edition; None on 404 (skip).
 
     The daily vector is kept so the §10 bootstrap can resample intl signal.
+    Raises on any non-404 HTTP / network error (caller classifies it).
     """
     url = edition_pv_url(edition, title, start, end)
     r = s.get(url, headers={"User-Agent": CONTACT_UA}, timeout=30)
@@ -82,35 +83,79 @@ def fetch_edition_views(s, edition: str, title: str, start: str,
     return sum(daily), daily
 
 
+def fetch_edition_safe(s, edition: str, title: str, start: str,
+                       end: str) -> tuple[str, tuple[int, list[int]] | None]:
+    """Fetch one edition and CLASSIFY the outcome (the real fetch_fn for main).
+
+      ('ok',     (total, daily))  successful fetch
+      ('absent', None)            404 — the player has no article in this edition
+      ('error',  None)            transient failure (5xx / timeout / network)
+
+    `absent` and `error` are NOT collapsed: a transient error must not be summed
+    away identically to a genuine 404 (that would let a flaky network silently
+    change the headline intl total with intl_match still 'ok'). aggregate_player
+    surfaces any 'error' in intl_match (partial/error). Sleeps 0.2s after the
+    call (polite). Shared here so the en/intl 404+sleep logic is not re-derived
+    as a per-iteration closure."""
+    try:
+        res = fetch_edition_views(s, edition, title, start, end)
+        status = "absent" if res is None else "ok"
+    except Exception as e:
+        print(f"  views {edition}:{title!r}: {e!r}", file=sys.stderr)
+        res, status = None, "error"
+    time.sleep(0.2)
+    return status, res
+
+
 def aggregate_player(sitelinks: dict[str, str], fetch_fn) -> dict:
     """Sum pageviews over whitelisted editions for one player.
 
-    fetch_fn(edition, title) -> (total, daily) | None (None = edition skipped).
+    fetch_fn(edition, title) -> (status, payload):
+      'ok' -> payload=(total, daily); 'absent' -> 404 (clean skip);
+      'error' -> transient failure (the edition's true value is unknown).
     wiki_intl_12mo is NULL (None) when no edition was successfully fetched, so
     the §4/§5 sentinel renorm drops the component for that player.
+
+    intl_match distinguishes the four states so a transient drop is visible:
+      ok      every available edition fetched cleanly
+      partial >=1 edition fetched AND >=1 edition hit a transient error
+      error   0 fetched, but >=1 transient error (value lost to flakiness, NOT
+              a genuine anglophone-only player)
+      none    0 fetched, 0 errors (genuinely no whitelisted article)
     """
     available = sorted(sitelinks.keys())
     fetched: list[str] = []
+    errored: list[str] = []
     per_edition: dict[str, int] = {}
     daily_by_edition: dict[str, list[int]] = {}
     total = 0
     for ed in available:
-        res = fetch_fn(ed, sitelinks[ed])
-        if res is None:
-            continue
-        ed_total, daily = res
-        fetched.append(ed)
-        per_edition[ed] = ed_total
-        daily_by_edition[ed] = daily
-        total += ed_total
+        status, res = fetch_fn(ed, sitelinks[ed])
+        if status == "ok":
+            ed_total, daily = res
+            fetched.append(ed)
+            per_edition[ed] = ed_total
+            daily_by_edition[ed] = daily
+            total += ed_total
+        elif status == "error":
+            errored.append(ed)
+        # 'absent' (404) -> clean skip
     has = len(fetched) > 0
+    if has and errored:
+        match = "partial"
+    elif has:
+        match = "ok"
+    elif errored:
+        match = "error"
+    else:
+        match = "none"
     return {
         "editions_available": "|".join(available),
         "editions_fetched": "|".join(fetched),
         "wiki_intl_12mo": total if has else None,
         "per_edition": per_edition,
         "daily_by_edition": daily_by_edition,
-        "intl_match": "ok" if has else "none",
+        "intl_match": match,
     }
 
 
@@ -188,17 +233,9 @@ def main() -> None:
             entity = {"entities": {}}
         time.sleep(0.15)
         sitelinks = parse_sitelinks(entity, qid)
-
-        def fetch_fn(edition, title):
-            try:
-                res = fetch_edition_views(s, edition, title, start, end)
-            except Exception as e:
-                print(f"  views {edition}:{title!r}: {e!r}", file=sys.stderr)
-                res = None
-            time.sleep(0.2)
-            return res
-
-        agg = aggregate_player(sitelinks, fetch_fn)
+        agg = aggregate_player(
+            sitelinks,
+            lambda ed, title: fetch_edition_safe(s, ed, title, start, end))
         print(f"{p['full_name']:<28} {agg['editions_fetched']:<20} "
               f"{agg['wiki_intl_12mo']} ({agg['intl_match']})")
         summary_rows.append(
