@@ -41,11 +41,10 @@ CARRY-FORWARD (still valid):
 - compute_oaq deterministic (seed 20260526, 1000 bootstrap, ~2-3 min run). _common.py forces UTF-8; Windows console cp1252 (no non-ASCII in ad-hoc python -c). Scrapes share one sqlite cache/http_cache -> run SEQUENTIALLY.
 - YouTube = Gate-4 validation ONLY, never a composite input (anti-circularity).
 
-PARKED IDEA (owner-liked, explore AFTER all data/metrics land — do NOT build yet):
-- **Attention → player contracts (economic-benefit angle).** Test whether attention surplus predicts contract value beyond production — the "do players get paid for being talked about?" question. Owner wants this as a payoff story for why the metric matters.
-- **Caveats to design around when picked up (these decide if it's publishable vs. a reviewer kill-shot):**
-  1. CIRCULARITY (biggest): `cap_hit` already feeds the MI denominator (A4 expected_cap) AND the §7/A5 market correction. Regressing contracts on OAQ/MI as-is = predicting contracts with a metric partly built from contracts. Need a contracts-OUT OAQ variant or strict temporal split.
-  2. CAUSAL framing: CLAUDE.md bans causal/revenue claims we can't back. "Affects contracts" → must be "associated with contract premiums." No "the index drives pay."
-  3. Clean publishable form (captures ~80% of the idea, avoids both traps): does `OAQ_portable` at season T predict the RESIDUAL of the player's NEXT contract (T+1) after controlling for production (PPG/TOI/on-ice)? Temporal hold-out + production control = a legit 4th validation pathway (criterion 2) and a quotable economic finding (criterion 5), not a circular one. Needs next-contract data (CapWages/PuckPedia, free) — out of current scope.
+DOWNSTREAM VALUE-PROP BACKLOG (owner-liked, build AFTER all data + 5 validation gates land — do NOT build yet):
+- **Top-5 ranked ideas banked in `marchand_index/value_propositions.md`** (full briefs: mechanism, $0 data + verified feasibility tier, anti-circularity ID, quotable, build difficulty, why-worth-it, kill condition). Produced via analyst→leader→manager funnel, ranked STRENGTH-first then feasibility.
+- Order: **#1 Sentencing Gap** (DoPS suspension vs published rubric; AMBER, LLM rubric-coding gated F1/κ) · **#2 Superstar Whistle** (penalty drawn-up/taken-down asymmetry + ref FE; GREEN, data verified) · **#3 Road Tax** (visiting-player OAQ → opponent home attendance, Hausman-Leonard; GREEN, ESPN attendance verified) · **#4 Contracts** (next-contract residual; owner's economic CLOSER — ranks #4 on strength only because cap feeds the OAQ denominator → needs contracts-OUT variant + temporal split) · **#5 DFS Price-vs-Crowd** (ownership residual at fixed DK salary; AMBER-RED, free ownership data is the existential risk — de-risk data FIRST).
+- Each = an extra independent validation arm (criterion 2), NOT an index change. Feasibility tiers verified live 2026-06-26 (NHL API play-by-play/broadcast flags, ESPN attendance+refs, Wikimedia hist — all GREEN; card-price/DFS-ownership/betting-odds = RED).
+- Cut-list (don't re-propose) recorded at the bottom of value_propositions.md.
 
 Deadline: abstract accepted for poster. Poster session 2026-09-12 (~12 wk runway). Roster snapshot locked; no live perishability.
