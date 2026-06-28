@@ -11,7 +11,7 @@ See `preregistration.md` — committed at git `9774a68` (2026-05-20), **before a
 ## Setup (one-time, ~5 min owner effort)
 
 ```powershell
-cd "C:\Local Only\Ai projects\Sports Analytics Conference Projeccts\pilot"
+cd "C:\Local Only\Ai projects\Sports Analytics Conference Projeccts\Pilot Files\pilot"
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt

@@ -11,9 +11,9 @@ __pycache__/
 venv/
 *.egg-info/
 
-# HTTP cache (regenerable)
-pilot/cache/
-marchand_index/cache/
+# HTTP cache (regenerable) — match the cache dir wherever it lives (post-2026-06-28 reorg moved
+# pilot/ -> "Pilot Files/pilot/" and marchand_index/ -> "Full Project Files/marchand_index/")
+**/cache/
 **/requests_cache.sqlite
 **/http_cache*
 
