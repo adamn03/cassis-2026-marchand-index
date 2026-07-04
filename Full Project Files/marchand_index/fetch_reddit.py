@@ -40,17 +40,29 @@ Robustness (2026-05-27, not a pre-reg change — transport hardening only):
   * 429s get escalating backoff (5/10/20/40s) so popular players are not falsely
     NULLed by late-run rate limiting.
 
+Attribution (pre-reg A15, 2026-07-03 — logged before the production fetch):
+last-name search misattributes attention wherever >=2 pool players share a
+surname (a "Hughes" search pools Jack/Quinn/Luke). For SHARED surnames a
+matched submission is attributed only if its title/selftext carries first-name
+evidence (word starting with the folded first name, or a pool-unique
+"<initial>. <surname>" pattern); surname-only matches are counted in a
+disclosed `ambiguous_mentions` column and excluded from mentions/upvotes and
+the bootstrap detail pool. Unique surnames keep the A2 rule unchanged.
+
 Writes: marchand_index/raw/reddit_counts.csv
   player_id, full_name, subreddits, reddit_mentions_12mo, reddit_upvotes_12mo,
-  unique_authors, reddit_capped, reddit_status, fetch_date
+  unique_authors, reddit_capped, reddit_status, ambiguous_mentions,
+  surname_shared, fetch_date
   + marchand_index/raw/reddit_detail.csv (player_id, submission_id, score) for the §10 bootstrap
 """
 from __future__ import annotations
 
 import datetime as dt
 import os
+import re
 import sys
 import time
+import unicodedata
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -76,7 +88,7 @@ BACKOFF = [5.0, 10.0, 20.0, 40.0]  # escalating sleep on 429 / transient 5xx
 COUNTS_FIELDS = [
     "player_id", "full_name", "subreddits", "reddit_mentions_12mo",
     "reddit_upvotes_12mo", "unique_authors", "reddit_capped", "reddit_status",
-    "fetch_date",
+    "ambiguous_mentions", "surname_shared", "fetch_date",
 ]
 DETAIL_FIELDS = ["player_id", "submission_id", "score"]
 
@@ -98,6 +110,73 @@ TEAM_SUB = {
 
 def last_name(full_name: str) -> str:
     return full_name.split()[-1]
+
+
+# --------------------------------------------------------------------------- #
+# A15 — within-pool surname-collision attribution                              #
+# --------------------------------------------------------------------------- #
+def fold(s: str) -> str:
+    """Accent-fold + case-fold for name matching (Fehérváry -> fehervary)."""
+    nfkd = unicodedata.normalize("NFKD", s)
+    return "".join(c for c in nfkd if not unicodedata.combining(c)).casefold()
+
+
+def build_surname_map(players: list[dict]) -> dict[str, list[str]]:
+    """Folded surname -> list of folded first names of pool players sharing it.
+
+    A surname is SHARED (A15) iff its list has length >= 2.
+    """
+    out: dict[str, list[str]] = {}
+    for p in players:
+        parts = p["full_name"].split()
+        if not parts:
+            continue
+        sn = fold(parts[-1])
+        fn = fold(parts[0])
+        out.setdefault(sn, []).append(fn)
+    return out
+
+
+def make_evidence_check(full_name: str, surname_map: dict[str, list[str]]):
+    """Return (checker, shared) for a player. checker(title, selftext) -> bool.
+
+    checker is None when the surname is unique in the pool (A2 rule unchanged).
+    For shared surnames a submission is attributed only if:
+      (a) a word in the folded text STARTS WITH the folded first name
+          (len >= 3; shorter first names require an exact word match), or
+      (b) the text matches "<initial>. <surname>" / "<initial> <surname>" and
+          that initial is unique among pool players sharing the surname.
+    """
+    parts = full_name.split()
+    sn = fold(parts[-1])
+    fn = fold(parts[0])
+    sharers = surname_map.get(sn, [fn])
+    shared = len(sharers) >= 2
+    if not shared:
+        return None, False
+
+    initial = fn[:1]
+    initial_unique = sum(1 for f in sharers if f[:1] == initial) == 1
+    initial_re = (
+        re.compile(rf"\b{re.escape(initial)}\.?\s+{re.escape(sn)}\b")
+        if initial_unique else None
+    )
+    word_re = re.compile(r"[a-z0-9']+")
+
+    def check(title: str, selftext: str) -> bool:
+        text = fold(f"{title} {selftext}")
+        tokens = word_re.findall(text)
+        if len(fn) >= 3:
+            if any(t.startswith(fn) for t in tokens):
+                return True
+        else:
+            if fn in tokens:
+                return True
+        if initial_re is not None and initial_re.search(text):
+            return True
+        return False
+
+    return check, True
 
 
 _ENV_MAP = {
@@ -197,13 +276,18 @@ def get_page(sess, sub: str, query: str, after: str | None) -> tuple[list, str |
     return [], None, False
 
 
-def search_sub(sess, sub: str, query: str, lower_cutoff: float, upper_cutoff: float):
+def search_sub(sess, sub: str, query: str, lower_cutoff: float, upper_cutoff: float,
+               evidence=None):
     """Paginate one subreddit over the window [lower_cutoff, upper_cutoff).
 
     Results are newest-first (sort=new, t=all). Posts NEWER than the window end
     are skipped (e.g. the 2026 playoff run); once a post OLDER than the window
     start appears, paging stops since everything beyond is older still.
-    Returns (id->score dict, authors set, capped, ok).
+
+    `evidence` (A15): optional checker(title, selftext) -> bool for shared
+    surnames. In-window posts failing the check are tallied as ambiguous and
+    NOT attributed (excluded from scores/authors and the bootstrap detail).
+    Returns (id->score dict, authors set, capped, ok, ambiguous_count).
     """
     scores: dict[str, int] = {}
     authors: set[str] = set()
@@ -211,6 +295,7 @@ def search_sub(sess, sub: str, query: str, lower_cutoff: float, upper_cutoff: fl
     capped = False
     any_ok = False
     reached_floor = False
+    ambiguous = 0
     while len(scores) < MAX_RESULTS:
         children, after, ok = get_page(sess, sub, query, after)
         any_ok = any_ok or ok
@@ -228,6 +313,10 @@ def search_sub(sess, sub: str, query: str, lower_cutoff: float, upper_cutoff: fl
             sid = d.get("name") or d.get("id")
             if not sid:
                 continue
+            if evidence is not None and not evidence(
+                    d.get("title") or "", d.get("selftext") or ""):
+                ambiguous += 1        # A15: surname-only match, not attributed
+                continue
             scores[sid] = int(d.get("score", 0) or 0)
             if d.get("author"):
                 authors.add(d["author"])
@@ -238,7 +327,7 @@ def search_sub(sess, sub: str, query: str, lower_cutoff: float, upper_cutoff: fl
         if len(scores) >= MAX_RESULTS:
             capped = True
             break
-    return scores, authors, capped, any_ok
+    return scores, authors, capped, any_ok, ambiguous
 
 
 def load_resume() -> tuple[dict[str, dict], dict[str, list[dict]]]:
@@ -296,6 +385,11 @@ def main() -> None:
 
     players = load_players()
     order = [p["player_id"] for p in players]
+    surname_map = build_surname_map(players)
+    n_shared = sum(1 for p in players
+                   if len(surname_map.get(fold(p["full_name"].split()[-1]), [])) >= 2)
+    print(f"A15 surname-collision filter: {n_shared}/{len(players)} players "
+          "share a surname within the pool (first-name evidence required).")
     counts_by_pid, detail_by_pid = load_resume()
     if counts_by_pid:
         print(f"Resume: {len(counts_by_pid)} players already done on disk; "
@@ -306,18 +400,22 @@ def main() -> None:
         if pid in counts_by_pid:
             continue  # already fetched (ok/partial) in a prior run
         ln = last_name(p["full_name"])
+        evidence, shared = make_evidence_check(p["full_name"], surname_map)
         tsub = TEAM_SUB.get(p["team_code"], "")
         subs = ["hockey"] + ([tsub] if tsub and tsub != "hockey" else [])
         all_scores: dict[str, int] = {}
         authors: set[str] = set()
         capped = False
         ok_count = 0
+        ambiguous_total = 0
         for sub in subs:
-            sc, au, cap, ok = search_sub(sess, sub, ln, lower_cutoff, upper_cutoff)
+            sc, au, cap, ok, amb = search_sub(
+                sess, sub, ln, lower_cutoff, upper_cutoff, evidence=evidence)
             all_scores.update(sc)        # dedup submission ids across subs
             authors |= au
             capped = capped or cap
             ok_count += int(ok)
+            ambiguous_total += amb
         if ok_count == 0:
             status, mentions, upvotes = "null", "", ""
         elif ok_count < len(subs):
@@ -327,7 +425,8 @@ def main() -> None:
             status = "ok"
             mentions, upvotes = len(all_scores), sum(all_scores.values())
         print(f"{p['full_name']:<24} subs={subs} mentions={mentions} "
-              f"upvotes={upvotes} authors={len(authors)} cap={capped} {status}")
+              f"upvotes={upvotes} authors={len(authors)} cap={capped} "
+              f"shared={shared} amb={ambiguous_total} {status}")
         counts_by_pid[pid] = {
             "player_id": pid,
             "full_name": p["full_name"],
@@ -337,6 +436,8 @@ def main() -> None:
             "unique_authors": len(authors) if status != "null" else "",
             "reddit_capped": str(capped).lower(),
             "reddit_status": status,
+            "ambiguous_mentions": ambiguous_total if status != "null" else "",
+            "surname_shared": str(shared).lower(),
             "fetch_date": fetch_date,
         }
         if status != "null":

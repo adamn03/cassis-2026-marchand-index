@@ -322,6 +322,55 @@ A11 moved the attention window off run-time and onto the fixed regular-season-en
 
 **Anti-tuning compliance (§13):** A14 is a uniform, mechanical data-collection alignment decided on confound-removal grounds (it propagates A11's already-locked fixed window to the one component that was missed), logged **before** the en-Wikipedia re-fetch; the window endpoints are objective external calendar dates (NHL-API regular-season end, already fixed by A11), not chosen after inspecting any player's resulting pageviews or rank. Composite weights (§4/A12), peer features (§6/A13), market-proxy (§7), λ (A5), denominators (A4/A8), OAuth transport (A9), the §2/A10 774-pool, the A11 window definition, and all validation floors (§9, A6/V3) are unchanged. The pre-A14 run-time-window en-Wikipedia CSV is retained in git history per §13. The headline en-Wikipedia magnitude stays comparable (the window length is unchanged at 365 days; only the endpoint moves), and the same prior-season-overlap residual A11 disclosed (the window's oldest ~2 months touch the 2024-25 playoffs) applies identically and is disclosed on the poster.
 
+**A15 (2026-07-03) — Reddit attribution: within-pool surname-collision filter. Logged BEFORE the 774-set production Reddit fetch (OAuth credentials not yet provisioned; no production Reddit data exists).**
+
+§3.3/A2 count a submission toward player P if it matches a search for P's **last name** in `r/hockey` + P's team subreddit. Within the 774-pool this misattributes attention wherever two or more pool players share a surname: a "Hughes" search in `r/hockey` pools Jack, Quinn, and Luke Hughes; "Tkachuk" pools Matthew and Brady; Jones/Smith/Johnson pool stars with depth namesakes. The error is structured — it inflates the measured attention of a depth player who shares a surname with a star, which is exactly the OAQ-positive signature the index is built to detect — so it must be removed before the production fetch, not diagnosed after.
+
+**Corrected attribution rule (applied identically to all 774):**
+
+1. A surname is **shared** iff ≥ 2 players in the locked 774 pool have the same accent-folded, case-folded last token of `full_name`. The shared-surname list is derived mechanically from `players.csv` and recorded per player in a new `surname_shared` column.
+2. For a player with a **unique** surname, attribution is unchanged (last-name search match suffices — the A2 rule).
+3. For a player with a **shared** surname, a matched submission is attributed to P **only if** the submission's title or selftext (accent-folded, case-folded) also contains (a) a word starting with P's folded first name (so "Will" credits "William"; minimum 3 characters, exact match required for shorter first names), or (b) the pattern `<first-initial>. <surname>` / `<first-initial> <surname>` where that initial is unique among the pool players sharing the surname. Submissions matching the surname but no first-name evidence are counted in a new **`ambiguous_mentions`** column — disclosed, attributed to no one, excluded from `reddit_mentions_12mo` / `reddit_upvotes_12mo` and from the §10 bootstrap detail pool.
+
+**Honest residuals (disclosed in advance):** (i) the rule lowers recall for shared-surname players relative to unique-surname players (team-subreddit posts often use bare surnames); the `surname_shared` flag ships in `reddit_counts.csv` so a sensitivity cut excluding shared-surname players can be reported. (ii) Nicknames ("Tkachuk brothers", "Chucky") are not resolved — mechanical rule only. (iii) Collisions with non-pool people (retired players, non-NHL public figures) are out of scope of this amendment and remain a disclosed limitation.
+
+**Anti-tuning compliance (§13):** logged before any production Reddit data exists (0/774 fetched), so no player's resulting count could have influenced the rule; the rule is mechanical (pool-derived surname list + fixed textual-evidence test), applied uniformly; subreddits, query, window (A11), dedup, 1,000-result cap, transport (A9), composite weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8), and all validation floors (§9, A6/V3) are unchanged.
+
+**A16 (2026-07-03) — Google Trends: entity-topic queries with a fixed mid-tier anchor, replacing single-term raw-string queries. Logged BEFORE the corrective re-fetch; the existing `trends.csv` is superseded and retained in git history.**
+
+Two measurement defects in §3.2 as implemented (`fetch_trends.py`, single-term `build_payload`):
+
+1. **No cross-player comparability.** Google Trends normalizes a *single-term* series to that term's own peak = 100 within the window. The stored `trends_12mo` mean is therefore a within-player *shape* statistic (how spiky a player's own curve is), not a measure of relative search volume; z-scoring it across the 774 compares quantities that are not on a common scale. This affects §4/A12 weight 0.16.
+2. **Homonym contamination.** The raw string `"<First> <Last>"` measures everyone with that name — "Will Smith" measures the actor, not the Sharks forward. No entity resolution exists on the string path.
+
+**Corrected fetch (applied identically to all 774):**
+
+1. **Entity resolution:** each player's query is the Google Trends **topic MID** returned by the pytrends `suggestions("<First> <Last>")` endpoint — the first suggestion whose type string contains "hockey" (case-insensitive). If no hockey-typed topic exists, the raw string is used and the row is flagged `trends_method = string` (vs `topic`); the flag ships in `trends.csv` for a disclosed sensitivity cut.
+2. **Common-scale anchoring:** every fetch is a **two-term payload** `[ANCHOR, player]` over the fixed A11 window `2025-04-18 .. 2026-04-17`, worldwide. Google scales the pair jointly, so `trends_12mo := mean(player series) / mean(anchor series)` is comparable across players. The anchor is fixed in advance as the topic entity for **"Brad Marchand"** — a mid-magnitude, hockey-native term chosen so that neither depth players (quantized to 0 against a mega-term) nor superstars (that would quantize a tiny anchor to 0) lose resolution. If the anchor series mean is 0 in a batch (throttle artifact), the batch is retried; a player whose own series is empty is NULL per the §4 sentinel, unchanged.
+3. Recorded per row: `query`, `query_mid`, `trends_method`, `player_mean_scaled`, `anchor_mean_scaled`, `trends_12mo` (the ratio), `n_weeks`, `fetch_date`.
+
+**Honest residuals (disclosed in advance):** Trends integer quantization (0–100) leaves depth players coarse relative to the anchor; the ratio inherits Google's sampling noise (~±5% observed in V-A11-Trends); topic-MID coverage may be incomplete for low-profile players (`trends_method = string` fallback carries the homonym risk explicitly).
+
+**Anti-tuning compliance (§13):** decided on measurement-validity grounds (the stored quantity is not the pre-registered construct "12-month search interest"); logged before the corrective re-fetch; anchor choice and MID rule are fixed in advance and identical for all 774, not chosen after inspecting any player's value; window (A11), weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8), and all validation floors (§9, A6/V3) are unchanged. The superseded single-term `trends.csv` remains in git history per §13.
+
+**A17 (2026-07-03) — log1p robustness lens on the engagement composite. Logged BEFORE the final (Reddit-era) compute; primary method unchanged.**
+
+Attention components (pageviews, mention counts, upvote sums, search-interest ratios) are heavy-right-tailed across a whole-league pool: z-scores of raw sums are dominated by the star tier (observed: engagement_raw up to ≈ +7.5 on a weighted sum of z-scores), so depth-tier differences are compressed toward zero and OAQ residual variance is strongly tier-dependent. To show the headline is not an artifact of the raw scale, the final compute additionally reports a **log lens**: each §4/A12 component is transformed `x → log1p(x)` **before** z-scoring; weights, sentinel renormalization, peer sets (skill-side, untouched), λ (A5), and denominators (A4/A8) are identical. Reported: log-lens `engagement_raw` / `OAQ_portable` / Marchand-Index leaderboards, Spearman rank agreement between primary and log lens on each quantity, and the §9/A6 external-validation statistics (V1b, V2, V3) recomputed under the log lens as **point estimates**.
+
+**Status rule (fixed in advance):** the raw-scale composite remains the locked primary and the only basis for gate pass/fail verdicts (PA/PB/PC/PD). The log lens is robustness, reported regardless of direction. If primary and log lens disagree materially (rank agreement on OAQ_portable < 0.8), that disagreement is itself reported as a finding and a stated limitation — it does not license switching the headline to whichever lens reads better.
+
+**Anti-tuning compliance (§13):** logged while Reddit is 0/774 fetched and no final composite exists, on distributional-reasoning grounds, not after inspecting any final number; the primary method, weights, floors, and verdict logic are unchanged; the lens adds reporting only.
+
+**A18 (2026-07-03) — V3 baseline-comparison interpretation rule, pre-declared. No numeric or method change.**
+
+V3 reports two team-level correlations: the gate predictor (sum of peer-matched `OAQ_observed`) and a mechanical baseline (sum of `engagement_raw`, no skill control). The interpretation of their comparison is fixed now, before the final (Reddit-era) numbers exist:
+
+1. The **PD verdict** is determined solely by the OAQ-based ρ against the unchanged 0.40 floor. The baseline plays no role in the verdict.
+2. The outcome (team Wikipedia pageviews) responds to *total* fame — skill-driven and surplus alike — so the mechanical baseline is **expected** to correlate at least as strongly as the skill-stripped predictor. `baseline ρ ≥ OAQ ρ` is therefore *not* evidence against the OAQ construct and will not be presented as such; conversely, it will also not be spun away if OAQ fails its own floor.
+3. What the comparison informs is a **narrower claim**: whether attention surplus *beyond skill* still aggregates to a team-level attention signal. If OAQ ρ ≥ 0.40, that claim is supported regardless of the baseline's value. If OAQ ρ < 0.40, PD is reported as an honest disconfirmation with exactly this reading: skill-stripped attention surplus did not aggregate to the team level at gate strength on this outcome. No other post-hoc reframing is permitted.
+
+**Anti-tuning compliance (§13):** interpretation-only; declared while Reddit is 0/774 and the final V3 is uncomputed; floors, outcome construction, and predictor are unchanged from A6.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
