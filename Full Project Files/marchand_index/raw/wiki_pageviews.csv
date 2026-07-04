@@ -67,7 +67,7 @@ player_id,full_name,wikipedia_slug_tried,wikipedia_slug_chosen,wikidata_qid,wiki
 66,Jason Zucker,Jason_Zucker,Jason_Zucker,Q1684008,occupation,51776,2026-06-23,20250418,20260417
 67,Bowen Byram,Bowen_Byram,Bowen_Byram,Q64736735,occupation,55898,2026-06-23,20250418,20260417
 68,Rasmus Dahlin,Rasmus_Dahlin,Rasmus_Dahlin,Q27839454,occupation,108222,2026-06-23,20250418,20260417
-69,Ryan Johnson,Ryan_Johnson,,,none,,2026-06-23,20250418,20260417
+69,Ryan Johnson,Ryan_Johnson,"Ryan_Johnson_(ice_hockey,_born_2001)",Q65030547,nhl_id,12249,2026-07-03,20250418,20260417
 70,Michael Kesselring,Michael_Kesselring,Michael_Kesselring,Q116977379,occupation,49251,2026-06-23,20250418,20260417
 71,Zach Metsa,Zach_Metsa,Zach_Metsa,Q111547990,occupation,24907,2026-06-23,20250418,20260417
 72,Owen Power,Owen_Power,Owen_Power,Q102226150,occupation,91248,2026-06-23,20250418,20260417
@@ -254,7 +254,7 @@ player_id,full_name,wikipedia_slug_tried,wikipedia_slug_chosen,wikidata_qid,wiki
 253,Vasily Podkolzin,Vasily_Podkolzin,Vasily_Podkolzin,Q58755513,occupation,62500,2026-06-23,20250418,20260417
 254,Jack Roslovic,Jack_Roslovic,Jack_Roslovic,Q20727776,occupation,107146,2026-06-23,20250418,20260417
 255,Josh Samanski,Josh_Samanski,Josh_Samanski,Q115593838,occupation,15914,2026-06-23,20250418,20260417
-256,Matt Savoie,Matt_Savoie,,,none,,2026-06-23,20250418,20260417
+256,Matt Savoie,Matt_Savoie,Matthew_Savoie_(ice_hockey),Q81906752,nhl_id,82632,2026-07-03,20250418,20260417
 257,Evan Bouchard,Evan_Bouchard,Evan_Bouchard,Q50347957,occupation,123841,2026-06-23,20250418,20260417
 258,Mattias Ekholm,Mattias_Ekholm,Mattias_Ekholm,Q3062859,occupation,51349,2026-06-23,20250418,20260417
 259,Ty Emberson,Ty_Emberson,Ty_Emberson,Q123003338,occupation,18804,2026-06-23,20250418,20260417
@@ -319,7 +319,7 @@ player_id,full_name,wikipedia_slug_tried,wikipedia_slug_chosen,wikidata_qid,wiki
 318,Nick Foligno,Nick_Foligno,Nick_Foligno,Q943363,occupation,125218,2026-06-23,20250418,20260417
 319,Hunter Haight,Hunter_Haight,Hunter_Haight,Q136470517,occupation,9619,2026-06-23,20250418,20260417
 320,Ryan Hartman,Ryan_Hartman,Ryan_Hartman,Q13581452,occupation,37014,2026-06-23,20250418,20260417
-321,Marcus Johansson,Marcus_Johansson,,,none,,2026-06-23,20250418,20260417
+321,Marcus Johansson,Marcus_Johansson,"Marcus_Johansson_(ice_hockey,_born_1990)",Q1859905,nhl_id,30947,2026-07-03,20250418,20260417
 322,Ben Jones,Ben_Jones,Ben_Jones_(ice_hockey),Q109660586,occupation,9616,2026-06-23,20250418,20260417
 323,Kirill Kaprizov,Kirill_Kaprizov,Kirill_Kaprizov,Q20164618,occupation,202808,2026-06-23,20250418,20260417
 324,Michael McCarron,Michael_McCarron,Michael_McCarron,Q13580957,occupation,39230,2026-06-23,20250418,20260417
@@ -424,11 +424,11 @@ player_id,full_name,wikipedia_slug_tried,wikipedia_slug_chosen,wikidata_qid,wiki
 423,Scott Mayfield,Scott_Mayfield,Scott_Mayfield,Q6380406,occupation,15396,2026-06-23,20250418,20260417
 424,Adam Pelech,Adam_Pelech,Adam_Pelech,Q16229469,occupation,15300,2026-06-23,20250418,20260417
 425,Ryan Pulock,Ryan_Pulock,Ryan_Pulock,Q7384450,occupation,14847,2026-06-23,20250418,20260417
-426,Alexander Romanov,Alexander_Romanov,,,none,,2026-06-23,20250418,20260417
+426,Alexander Romanov,Alexander_Romanov,"Alexander_Romanov_(ice_hockey,_born_2000)",Q56723122,nhl_id,20034,2026-07-03,20250418,20260417
 427,Matthew Schaefer,Matthew_Schaefer,Matthew_Schaefer,Q130416868,occupation,648965,2026-06-23,20250418,20260417
 428,Carson Soucy,Carson_Soucy,Carson_Soucy,Q51403345,occupation,31998,2026-06-23,20250418,20260417
 429,Jonny Brodzinski,Jonny_Brodzinski,Jonny_Brodzinski,Q20087670,occupation,14128,2026-06-23,20250418,20260417
-430,Jaroslav Chmelar,Jaroslav_Chmelar,,,none,,2026-06-23,20250418,20260417
+430,Jaroslav Chmelar,Jaroslav_Chmelar,Jaroslav_Chmelař,Q120638131,nhl_id,12474,2026-07-03,20250418,20260417
 431,Will Cuylle,Will_Cuylle,Will_Cuylle,Q112133947,occupation,29832,2026-06-23,20250418,20260417
 432,Adam Edstrom,Adam_Edstrom,Adam_Edström,Q64853087,occupation,9146,2026-06-23,20250418,20260417
 433,Tye Kartye,Tye_Kartye,Tye_Kartye,Q117865206,occupation,22599,2026-06-23,20250418,20260417
@@ -624,7 +624,7 @@ player_id,full_name,wikipedia_slug_tried,wikipedia_slug_chosen,wikidata_qid,wiki
 623,J.J. Moser,J.J._Moser,J._J._Moser,Q63457572,occupation,13590,2026-06-23,20250418,20260417
 624,Darren Raddysh,Darren_Raddysh,Darren_Raddysh,Q98755073,occupation,46659,2026-06-23,20250418,20260417
 625,Max Domi,Max_Domi,Max_Domi,Q13581451,occupation,225584,2026-06-23,20250418,20260417
-626,Bo Groulx,Bo_Groulx,,,none,,2026-06-23,20250418,20260417
+626,Bo Groulx,Bo_Groulx,Benoit-Olivier_Groulx,Q50377306,nhl_id,35636,2026-07-03,20250418,20260417
 627,Luke Haymes,Luke_Haymes,,,none,,2026-06-23,20250418,20260417
 628,Calle Jarnkrok,Calle_Jarnkrok,Calle_Järnkrok,Q961358,occupation,28690,2026-06-23,20250418,20260417
 629,Dakota Joshua,Dakota_Joshua,Dakota_Joshua,Q19519917,occupation,78800,2026-06-23,20250418,20260417
@@ -693,7 +693,7 @@ player_id,full_name,wikipedia_slug_tried,wikipedia_slug_chosen,wikidata_qid,wiki
 692,Filip Hronek,Filip_Hronek,Filip_Hronek,Q20057354,occupation,27745,2026-06-23,20250418,20260417
 693,Pierre-Olivier Joseph,Pierre-Olivier_Joseph,Pierre-Olivier_Joseph,Q30596054,occupation,34120,2026-06-23,20250418,20260417
 694,Victor Mancini,Victor_Mancini,Victor_Mancini,Q130470301,occupation,23672,2026-06-23,20250418,20260417
-695,Elias Pettersson,Elias_Pettersson,Elias_Pettersson,Q28057083,occupation,120173,2026-06-23,20250418,20260417
+695,Elias Pettersson,Elias_Pettersson,"Elias_Pettersson_(ice_hockey,_born_2004)",Q114003684,nhl_id,21666,2026-07-03,20250418,20260417
 696,Marcus Pettersson,Marcus_Pettersson,Marcus_Pettersson,Q16224651,occupation,23366,2026-06-23,20250418,20260417
 697,Tom Willander,Tom_Willander,Tom_Willander,Q119997633,occupation,23836,2026-06-23,20250418,20260417
 698,Ivan Barbashev,Ivan_Barbashev,Ivan_Barbashev,Q16147074,occupation,23700,2026-06-23,20250418,20260417
@@ -768,7 +768,7 @@ player_id,full_name,wikipedia_slug_tried,wikipedia_slug_chosen,wikidata_qid,wiki
 767,Dylan DeMelo,Dylan_DeMelo,Dylan_DeMelo,Q15727578,occupation,19347,2026-06-23,20250418,20260417
 768,Haydn Fleury,Haydn_Fleury,Haydn_Fleury,Q16228754,occupation,68126,2026-06-23,20250418,20260417
 769,Ville Heinola,Ville_Heinola,Ville_Heinola,Q56402321,occupation,9877,2026-06-23,20250418,20260417
-770,Colin Miller,Colin_Miller,,,none,,2026-06-23,20250418,20260417
+770,Colin Miller,Colin_Miller,"Colin_Miller_(ice_hockey,_born_1992)",Q16229782,nhl_id,17921,2026-07-03,20250418,20260417
 771,Josh Morrissey,Josh_Morrissey,Josh_Morrissey,Q13581454,occupation,55424,2026-06-23,20250418,20260417
 772,Neal Pionk,Neal_Pionk,Neal_Pionk,Q48568980,occupation,34405,2026-06-23,20250418,20260417
 773,Elias Salomonsson,Elias_Salomonsson,Elias_Salomonsson,Q112998981,occupation,6832,2026-06-23,20250418,20260417
