@@ -4,6 +4,29 @@
 
 ---
 
+> ## IMPLEMENTATION STATUS (2026-07-03) — read this first
+>
+> This document is the **original design spec**. The build has since evolved through
+> pre-registered amendments; where this doc and the amendments disagree, the
+> **canonical source is `marchand_index/preregistration.md` (A1–A20)** plus
+> `docs/preregistration.md` (H1–H4 + Gate-4 YouTube §5–§8). Key deltas:
+>
+> | Spec (below) | Current locked state | Amendment |
+> |---|---|---|
+> | 160-player Tier-1 set | **774-player whole-league pool** (497 F / 277 D, snapshot 2026-06-17) | A10 |
+> | Composite = 0.7×CES + 0.3×BDS, IG follower weight | **BDS never enters the composite; Instagram removed.** Flow weights: wiki_en 0.29, wiki_intl 0.11, reddit_mentions 0.27, reddit_upvotes 0.17, trends 0.16 | §4, A12 |
+> | Rolling / career time windows | **Fixed window [2025-04-18 → 2026-04-17]** for all flow components | A11, A14 |
+> | Peer vector (age, PPG, TOI/G) | **+ MoneyPuck 5v5 cf_pct, xgf_pct, ozs_pct** (6 features, Mahalanobis, K=10) | A13 |
+> | `marchand_index = OAQ_portable / cap_hit_M` | **Denominator = `expected_cap`** (market-rate OLS, position-wise; raw-cap kept as audit lens) | A4, A8 |
+> | Full market-baseline subtraction | **One-sided damped subtraction, λ = 0.5** | A5 |
+> | Trends = raw name string | **Topic-MID entity queries, fixed Brad-Marchand-anchor two-term payload, ratio scale** | A16 |
+> | Reddit last-name search | **+ within-pool surname-collision evidence filter** (`ambiguous_mentions`) | A15 |
+> | Jersey list "not retrievable" | **2025-26 NHL-PR top-10 retrieved (2026-04-17/18 release)** → V1a powered (n=10), V1b union of 3 official lists (12 in pool) | A3, A20 |
+> | — | log1p robustness lens (reporting-only); V3 baseline interpretation pre-declared | A17, A18 |
+>
+> Sections below are retained as design history + rationale; numbers in them are
+> **not** load-bearing.
+
 ## Project branding
 
 | Element | Value |
@@ -306,6 +329,11 @@ Before any theme-based finding is reported:
 
 Per-player z-scored composite within `(position, season)`:
 
+> **SUPERSEDED (A12):** live weights are wiki_en 0.29, wiki_intl 0.11,
+> reddit_mentions 0.27, reddit_upvotes 0.17, trends 0.16. Instagram, NHL
+> official engagement, and cross-subreddit counts were never built into the
+> production composite. See the Implementation-status banner.
+
 | Component | Weight | Source |
 |---|---|---|
 | Reddit mention count | 0.18 | reddit.sqlite |
@@ -336,6 +364,11 @@ Skill leakage in BDS (All-Star + service years) is acceptable because BDS is *me
 ### Composite engagement raw
 
 `engagement_raw = 0.7 × CES + 0.3 × BDS`
+
+> **SUPERSEDED (§4 prereg + A12):** BDS never enters the production
+> `engagement_raw` — its components (jersey lists, All-Star, captaincy)
+> overlap the §9 validation outcomes and must stay out of the predictor.
+> `engagement_raw` = the A12-weighted sum of flow z-scores only.
 
 ### OAQ — Off-Ice Attention Quotient (THE METRIC)
 
@@ -371,6 +404,11 @@ The methodological pushback worth addressing head-on: Toronto / Montreal / Bosto
 ### Marchand Index (the cap-adjusted output)
 
 `marchand_index = OAQ_portable / cap_hit_M`
+
+> **SUPERSEDED (A4/A8):** the production denominator is `expected_cap`
+> (position-wise OLS market-rate cap, floored at league minimum) — raw
+> cap-hit rewards the CBA rookie-scale artifact, not attention efficiency.
+> `marchand_index_rawcap` is retained as an audit lens.
 
 Reported with **bootstrap 95% confidence interval** per player. Bootstrap procedure: resample player's mention pool with replacement 1000 times, recompute peer-group mean from resampled peer mentions, recompute OAQ_portable, take 2.5th and 97.5th percentiles.
 
