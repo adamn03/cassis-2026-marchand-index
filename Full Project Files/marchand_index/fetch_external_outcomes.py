@@ -1,5 +1,5 @@
-"""Map TWO independent published fan-attention outcomes onto the 160-player set
-(pre-reg pilot2 §9 external validation).
+"""Map TWO independent published fan-attention outcomes onto the locked
+774-player pool (pre-reg §9 external validation).
 
 V1 (primary): most-recent published NHL/NHLPA top-selling player-jersey list.
 V2 (secondary): 2024 NHL All-Star Game (Toronto, Feb 2024) fan-vote selections.
@@ -10,20 +10,22 @@ invented. Source URLs, raw lists, and overlap counts are recorded in
 external_outcomes_sources.md, and any component without verifiable published data
 is reported as missing / underpowered rather than fabricated.
 
-V1 status (pre-reg §14 A3): the NHLPA/NHL "most popular jerseys" pages are
-client-rendered SPAs (the --discover probes document this). The two official
-best-seller lists used here were retrieved in the parent session via web search
-and are hard-coded with their source URLs below: the 2024-25 NHL-PR top-5 and
-the NHL.com 2023-10-10 top-10. V1a (Spearman) uses the 2024-25 ranks; V1b (AUC)
-uses union membership across both lists. Overlap n is reported; <10 -> underpowered.
+V1 status (pre-reg §14 A3, updated A20): the NHLPA/NHL "most popular jerseys"
+pages are client-rendered SPAs (the --discover probes document this). The three
+official best-seller lists used here were retrieved via web search and are
+hard-coded with their source URLs below: the 2025-26 NHL-PR top-10 (published
+2026-04-17/18, covering exactly the A11/A14 attention window), the 2024-25
+NHL-PR top-5, and the NHL.com 2023-10-10 top-10. V1a (Spearman) uses the
+2025-26 ranks (A3's most-recent rule); V1b (AUC) uses union membership across
+all three lists. Overlap n is reported; <10 -> underpowered.
 
 V2 status: the NHL announced the 12 fan-vote selections (8 skaters + 4 goalies) as
 membership only -- it never published per-player vote totals for 2024. So V2 is
-membership-based (asg2024_votes blank for everyone). On this 160 set only 4 of the
-12 fall in-sample (4 < 10) -> V2 is also underpowered per §9. Expected/acceptable.
+membership-based (asg2024_votes blank for everyone). Only the skaters can fall
+in-sample; overlap < 10 -> V2 is underpowered per §9. Expected/acceptable.
 
 Writes:
-  marchand_index/external_outcomes.csv          160 rows
+  marchand_index/external_outcomes.csv          774 rows
 
 Run modes:
   python fetch_external_outcomes.py             build the CSV
@@ -90,34 +92,51 @@ ASG2024_FOLD = {fold(nm) for nm, _, _ in ASG2024_FAN_VOTE}
 
 
 # ---------------------------------------------------------------------------
-# V1 -- official NHL/Fanatics top-selling player-jersey lists (pre-reg §14 A3).
-# Retrieved in the parent session via web search (the NHLPA/NHL pages are
-# client-rendered SPAs). Two strongly-sourced official lists:
+# V1 -- official NHL/Fanatics top-selling player-jersey lists (pre-reg §14
+# A3, updated A20). Retrieved via web search (the NHLPA/NHL pages are
+# client-rendered SPAs). Three strongly-sourced official lists:
 #
-#  (a) 2024-25 SEASON, most recent, NHL League PR -- via Russian Machine Never
+#  (a) 2025-26 SEASON, most recent, NHL Public Relations, released
+#      2026-04-17/18 (ranking only; the NHL publishes no unit figures).
+#      Identical top-10 re-reported by three independent outlets:
+#      https://www.hockeyfeed.com/nhl-news/nhl-reveals-the-top-10-selling-jerseys-of-2025-26-season (2026-04-18)
+#      https://thehockeynews.com/nhl/chicago-blackhawks/community/connor-bedard-has-the-nhls-highest-selling-jersey-for-2025-26 (2026-04-18)
+#      https://www.nhltraderumor.com/top-selling-nhl-jersey-connor-bedard-2026/ (2026-04-19, cites NHL PR)
+#  (b) 2024-25 SEASON, NHL League PR -- via Russian Machine Never
 #      Breaks, 2025-10-13: https://russianmachineneverbreaks.com/2025/10/13/
 #      alex-ovechkin-best-selling-jersey-nhl-shop-fanatics-2024-25-season/
-#  (b) NHL.com, 2023-10-10 ("...top-selling-nhl-jerseys-since-june"):
+#  (c) NHL.com, 2023-10-10 ("...top-selling-nhl-jerseys-since-june"):
 #      https://www.nhl.com/news/bedard-hughes-marchand-top-selling-nhl-jerseys-since-june
 #
-# V1a (secondary, rank): Spearman uses the most-recent (2024-25) ranks below.
+# V1a (secondary, rank): Spearman uses the most-recent (2025-26) ranks below
+# (A3's most-recent rule; A20 logged before the final V1 computation). This
+# list covers exactly the A11/A14 attention window [2025-04-18, 2026-04-17].
 # V1b (primary, membership/AUC): "appeared on an official best-selling list in
-# 2023-24 or 2024-25" = the UNION of (a) and (b). No soft-sourced names added.
+# 2023-24, 2024-25 or 2025-26" = the UNION of (a)+(b)+(c). No soft names added.
 
-# (rank, display_name) -- most recent (2024-25); drives jersey_rank + V1a.
+# (rank, display_name) -- most recent (2025-26); drives jersey_rank + V1a.
+JERSEY_2025_26 = [
+    (1, "Connor Bedard"), (2, "Alex Ovechkin"), (3, "Sidney Crosby"),
+    (4, "Jack Hughes"), (5, "Connor McDavid"), (6, "Nathan MacKinnon"),
+    (7, "Cale Makar"), (8, "David Pastrnak"), (9, "Auston Matthews"),
+    (10, "Macklin Celebrini"),
+]
+# 2024-25 NHL League PR top-5 (previous most-recent; stays in the V1b union).
 JERSEY_2024_25 = [
     (1, "Alex Ovechkin"), (2, "Connor Bedard"), (3, "Auston Matthews"),
     (4, "Connor McDavid"), (5, "Sidney Crosby"),
 ]
-# NHL.com 2023-10-10 top-10 (the second verified official list).
+# NHL.com 2023-10-10 top-10 (the third verified official list).
 JERSEY_2023 = [
     "Connor Bedard", "Jack Hughes", "Brad Marchand", "Sidney Crosby",
     "David Pastrnak", "Patrice Bergeron", "Alex Ovechkin", "Kirill Kaprizov",
     "Nathan MacKinnon", "Cale Makar",
 ]
 # Union membership set (folded names) -> jersey_list_member + V1b AUC.
-JERSEY_UNION_FOLD = {fold(nm) for _, nm in JERSEY_2024_25} | {fold(nm) for nm in JERSEY_2023}
-JERSEY_RANK_FOLD = {fold(nm): rank for rank, nm in JERSEY_2024_25}
+JERSEY_UNION_FOLD = ({fold(nm) for _, nm in JERSEY_2025_26}
+                     | {fold(nm) for _, nm in JERSEY_2024_25}
+                     | {fold(nm) for nm in JERSEY_2023})
+JERSEY_RANK_FOLD = {fold(nm): rank for rank, nm in JERSEY_2025_26}
 
 
 # ---------------------------------------------------------------------------
@@ -203,8 +222,8 @@ def verify_asg_ids() -> None:
 
 def build_rows() -> list[dict]:
     players = load_players()
-    if len(players) != 160:
-        print(f"WARNING: expected 160 players, got {len(players)}", file=sys.stderr)
+    if len(players) != 774:
+        print(f"WARNING: expected 774 players, got {len(players)}", file=sys.stderr)
 
     rows = []
     for p in players:
@@ -214,19 +233,19 @@ def build_rows() -> list[dict]:
         fn = fold(name)
         notes: list[str] = []
 
-        # ---- V1 jersey list (pre-reg §14 A3) ----
-        # member (V1b) = appeared on an official 2023-24 or 2024-25 best-seller
-        # list; rank (V1a) = most-recent (2024-25) rank if present.
+        # ---- V1 jersey list (pre-reg §14 A3, updated A20) ----
+        # member (V1b) = appeared on an official 2023-24, 2024-25 or 2025-26
+        # best-seller list; rank (V1a) = most-recent (2025-26) rank if present.
         jersey_member = 1 if fn in JERSEY_UNION_FOLD else 0
         jersey_rank: object = JERSEY_RANK_FOLD.get(fn, "")
 
         # ---- V2 ASG-2024 fan vote (membership only; no published totals) ----
-        # Match by NHL id first (stable), fall back to folded name.
-        asg_member = 0
-        if nhl_id and nhl_id in ASG2024_IDS:
-            asg_member = 1
-        elif fn in ASG2024_FOLD:
-            asg_member = 1
+        # NHL id decides whenever present (the pool contains namesakes, e.g.
+        # two Elias Petterssons); folded name is a backup for blank-id rows only.
+        if nhl_id:
+            asg_member = 1 if nhl_id in ASG2024_IDS else 0
+        else:
+            asg_member = 1 if fn in ASG2024_FOLD else 0
 
         # ---- ambiguous-name note: Sebastian Aho ----
         if fn == "sebastian aho":
@@ -264,8 +283,8 @@ def main() -> None:
     nj = sum(r["jersey_list_member"] for r in rows)
     na = sum(r["asg2024_member"] for r in rows)
     print(f"Wrote {OUT_CSV.name}: {len(rows)} rows")
-    print(f"  V1 jersey-list members in 160 (union 2023-24 + 2024-25): {nj}")
-    print(f"  V2 ASG-2024 fan-vote members in 160: {na}")
+    print(f"  V1 jersey-list members in pool (union 2023-24 + 2024-25 + 2025-26): {nj}")
+    print(f"  V2 ASG-2024 fan-vote members in pool: {na}")
     if nj < 10:
         print(f"  NOTE: V1 overlap {nj} < 10 -> inconclusive/underpowered (pre-reg §9)")
     if na < 10:

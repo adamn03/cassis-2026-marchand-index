@@ -384,6 +384,21 @@ An identity audit of all 774 resolved rows (`audit_wiki_identity.py` → `raw/wi
 
 **Anti-tuning compliance (§13):** the repair rule keys exclusively on identity evidence (NHL-ID equality on Wikidata), never on any pageview magnitude, rank, or downstream score; scope (the 11 rows) is fixed by the audit verdicts before the repair fetch runs; the window (A14), weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8), pool (§2/A10), and all validation floors (§9, A6/V3) are unchanged. The pre-A19 `wiki_pageviews.csv` / `wiki_daily.csv` are retained in git history per §13. Reddit remains 0/774 fetched; no final composite exists.
 
+**A20 (2026-07-03) — V1 jersey outcome: the newly published 2025-26 NHL top-selling-jersey list is adopted under A3's unchanged "most-recent" rule. Logged BEFORE the final (Reddit-era) V1 computation.**
+
+A3 operationalized V1a on "the most-recent published official list" — at A3's logging date that was the 2024-25 NHL-PR top-5. The **2025-26 season list has since been published**: NHL Public Relations released the top-10 selling jerseys of the 2025-26 regular season on **2026-04-17/18** (retrieved 2026-07-03 via web search; the NHL-PR X post is re-reported with an identical top-10 by at least three independent outlets — HockeyFeed 2026-04-18, The Hockey News 2026-04-18, NHLTradeRumor 2026-04-19; the NHL does not publish unit figures, ranking only):
+
+1 Bedard, 2 Ovechkin, 3 Crosby, 4 J. Hughes, 5 McDavid, 6 MacKinnon, 7 Makar, 8 Pastrnak, 9 Matthews, 10 Celebrini.
+
+**Application (mechanical, per A3):**
+- **V1a (rank; secondary):** the Spearman rank source becomes the 2025-26 top-10 (the most-recent list — A3's rule, not a new rule). All 10 names are in the locked 774 pool, so the overlap is n = 10, meeting the §9 n ≥ 10 threshold for the first time (V1a was structurally underpowered on the top-5 list).
+- **V1b (membership; primary AUC):** the union definition extends to "appeared on an official NHL/Fanatics best-selling-jersey list in **2023-24, 2024-25 or 2025-26**" — the same union-of-official-lists construction, now over three verified lists. No soft-sourced names are added.
+- **Window alignment (new, disclosed):** the 2025-26 list covers exactly the A11/A14 attention window [2025-04-18, 2026-04-17] — the first V1 outcome measured *within* the window rather than before it. The prior two lists remain in the V1b union as A3 defined; V1a's within-window alignment is a strengthening of construct match, not a floor change.
+
+**V2 namesake guard (same rebuild, disclosed):** rebuilding `external_outcomes.csv` on the 774 pool exposed a join defect in the ASG-2024 membership match: the folded-name *backup* fired even when a row carried a non-matching `nhl_player_id`, so the pool's second Elias Pettersson (D, 8483678) inherited the center's (8480012) fan-vote membership. Corrected rule: the NHL id decides whenever present; the name backup applies only to blank-id rows. V2 in-pool overlap is the 8 skater fan-vote picks (goalies excluded by pool construction), still < 10 → underpowered per §9, exactly as pre-declared.
+
+**Anti-tuning compliance (§13):** the list is published by NHL PR, independent of all model inputs (wiki/Reddit/Trends); its adoption is the mechanical application of A3's pre-locked most-recent rule to data that did not exist when A3 was logged; logged while Reddit is 0/774 fetched and before the final V1 is computed; floors (§9: ρ ≥ 0.40, AUC), verdict logic (PA), and all other components are unchanged. The pre-A20 `external_outcomes.csv` is retained in git history per §13.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**

@@ -3,6 +3,40 @@
 Built by `marchand_index/fetch_external_outcomes.py` -> `marchand_index/external_outcomes.csv` (160 rows).
 Run date: 2026-05-27.
 
+---
+
+## ADDENDUM 2026-07-03 (full build, 774 pool — prereg A20)
+
+Everything below this addendum describes the 2026-05-27 pilot-era run (160 set,
+V1 not yet retrieved). Current state:
+
+**V1 — RETRIEVED.** NHL Public Relations released the **2025-26 season top-10
+selling jerseys** on 2026-04-17/18 (ranking only; the NHL publishes no unit
+figures). Retrieved 2026-07-03 via web search; identical top-10 re-reported by
+three independent outlets:
+
+- https://www.hockeyfeed.com/nhl-news/nhl-reveals-the-top-10-selling-jerseys-of-2025-26-season (2026-04-18)
+- https://thehockeynews.com/nhl/chicago-blackhawks/community/connor-bedard-has-the-nhls-highest-selling-jersey-for-2025-26 (2026-04-18)
+- https://www.nhltraderumor.com/top-selling-nhl-jersey-connor-bedard-2026/ (2026-04-19, cites NHL PR)
+
+List: 1 Connor Bedard (CHI), 2 Alex Ovechkin (WSH), 3 Sidney Crosby (PIT),
+4 Jack Hughes (NJD), 5 Connor McDavid (EDM), 6 Nathan MacKinnon (COL),
+7 Cale Makar (COL), 8 David Pastrnak (BOS), 9 Auston Matthews (TOR),
+10 Macklin Celebrini (SJS).
+
+This list covers exactly the A11/A14 attention window [2025-04-18, 2026-04-17].
+Per A3's most-recent rule (prereg A20): **V1a** Spearman uses these ranks —
+all 10 names are in the 774 pool, n = 10, powered for the first time. **V1b**
+membership union is now three official lists (2023-24, 2024-25, 2025-26):
+12 members in-pool (13 union names; Patrice Bergeron retired, not in pool).
+
+**V2 on the 774 pool:** 8 of the 12 fan-vote picks are in-sample (the 8
+skaters; 4 goalies excluded by pool construction) — still < 10, underpowered
+per §9 as pre-declared. Namesake guard (A20): the NHL id decides membership
+whenever present; the folded-name backup applies only to blank-id rows
+(prevents the pool's second Elias Pettersson, D 8483678, inheriting the
+center's membership).
+
 These are the two **independent, published** fan-attention targets the Marchand Index
 (OAQ_portable) is validated against. They are independent of all model inputs
 (Wikipedia pageviews, Reddit, Google Trends, Instagram). **No rank or vote total was
