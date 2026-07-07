@@ -2,21 +2,27 @@
 Date: 2026-07-07
 Active: NHL_Marchand_Index — FULL BUILD. Branch: `marchand-index-full-build`.
 
-STATUS: working — no production results yet (Reddit 0/774, blocked on creds). Trends re-fetch STALLED at 331/774 (4 null); background job from 07-03 is dead, resume needed.
+STATUS: working — no production results (Reddit 0/774). Trends STALLED at 331/774 (4 null); resume with `python fetch_trends.py` (resumable, ~443 left at ~9s/player).
 
-THIS SESSION (2026-07-07) — design audit + airtight execution plan, NO code/prereg changes made:
+THIS SESSION (2026-07-07 pm, Fable final day) — NO code/prereg changes; wrote two executable supplement plans for weaker models (Opus/GPT). Both supplement `docs/airtight_execution_plan.md` v1.1, overlap nothing in it, claim amendment numbers A36–A39:
 
-1. **Full logic audit of the model** (spec + prereg A1–A20 + code spot-checks) → internal findings E1–E9. Code-confirmed bugs: Reddit A15 filter double-attributes identical-name pairs (two Elias Petterssons both VAN, two Sebastian Ahos — `fetch_reddit.py:140-179`); expected_cap OLS fit includes ELC rows (`compute_oaq.py:491`, biases rookie MI up); V3 team-outcome window is RUN-ANCHORED (`fetch_team_outcomes.py:89` — playoff contamination, same class A14 fixed); V1b (only powered validation) has NO pre-registered AUC floor.
-2. **3-judge CASSIS panel (subagents: hostile statistician, NHL club practitioner, validation methodologist) + panel-chair review** → consolidated, APPROVED plan. Three headline attacks closed: (a) poster headline (MI hybrid) was never touched by any validation gate; (b) honest independent-pathway count = 1 (jersey family) — Gate-4 now load-bearing + V2 powered via ASG 2022+2023+2024 union + V3 relabeled consistency-check; (c) Reddit 0.44 weight measures "plays for Canadian team" — market proxy rebuild w/ team-sub subscribers via OAuth.
-3. **DELIVERABLE: `Full Project Files/docs/airtight_execution_plan.md` v1.1** — amendments A21–A35 + G4-A1–A3 fully specified (mechanical rules, file targets, tests, acceptance criteria), Phase 0 (amendments) → Phase 1 (data hygiene) → Phase 2 (one-shot compute) → Phase 3 (Gate-4). Written to be executable by a weaker model. §G = complete poster-limitations list; §H = forking-paths labeling rule; A31 shipping matrix skeleton.
+1. `Full Project Files/docs/superpowers/plans/2026-07-07-free-data-improvements.md`
+   - **A36** player-wiki redirect-title pageview summation, en+intl (code-confirmed gap: `fetch_wikipedia.py` fetches canonical title only; A29 gave teams redirect summation, players never got it; A1 measured Ovechkin redirect at 7,059 dropped views). Full amendment text + augmenter script spec + tests.
+   - **A37** V1b union-completion sweep: pre-declared all-or-none retrieval of ALL official jersey lists in the locked 3-season class → more positives for the sole confirmatory primary (n=12 now). Fixed search manifest + 5-clause qualification.
+   - Pre-chews: **A31 shipping-matrix rows 3–7 written verbatim** (airtight plan left them "fill in amendment" — do NOT let a weaker model invent them), BH permutation mechanics pins, Gate-4 quota manifest spec, Wayback archival of outcome-source URLs, abstract→poster conformance crosswalk (incl. reconciling abstract's "hybrid MI = headline metric" with A31's validation-finding headline).
+2. `Full Project Files/docs/superpowers/plans/2026-07-07-cross-domain-improvements.md`
+   - **A38** empirical λ anchor: event study on in-window team-changers vs their K=10 peers (λ=0.5 is "unanchored" per §G — weakest assumption on poster). Descriptive diagnostic only; primary λ untouched under every outcome. Estimator fully pinned (λ̂=clip(β̂/γ̂,0,1), windows, exclusions, bootstrap seed 20260526).
+   - **A39** attention-concentration descriptive panel (Gini, top-1%/10% shares, payroll contrast, between-team ANOVA R²; Rosen/Adler superstar-econ framing) — criterion-5 quotable-number insurance, pre-registered.
+   - 12-citation framing kit (`docs/poster_related_work.md` content) with mandatory verification protocol — weaker model must verify, never generate citations. Rejected-ideas tables in both plans.
+   - Consistency patch to plan 1: A36 rewrites `wiki_daily.csv` as zero-filled 365-day date-indexed vectors (A26 block bootstrap already assumes 365-day rings; A38 requires the date index).
 
 NEXT (exact order):
-1. **OWNER: make the 3 §D decisions in the plan** — (1) Gate-4 GO (panel: mandatory), (2) A30 market-proxy rebuild yes/no (recommend yes), (3) headline structure sign-off. Record in prereg.
-2. **Execute plan Phase 0**: amendments A21–A35 + G4-A1–A3 in order per `docs/airtight_execution_plan.md` §B — amendment text committed BEFORE code, convention `marchand_index: A<N> <summary>`. A30 only after decision #2. Everything must land while Reddit is 0/774.
-3. **Phase 1 in parallel**: resume trends (`python fetch_trends.py`, 331→774), cap_quality triage (121 low, OWNER-ASSISTED), duplicate-vector scan (Jones/Walker), MID-duplicate check, MoneyPuck audit, case-card roster verify (Marner/Reaves), Reddit dry-run readiness, V3 re-fetch after A29.
-4. **Reddit creds (USER ACTION)** → Phase 2 one-shot compute per plan §E.
-5. **Gate-4 fetch launches right after G4 amendments** (~8 fetch-days, long-lead, independent of Reddit).
+1. OWNER: 3 §D decisions in `docs/airtight_execution_plan.md` (Gate-4 GO — panel says mandatory; A30 market-proxy rebuild yes/no — recommend yes; A31 headline sign-off). Record in prereg.
+2. Execute airtight Phase 0 (A21–A35 + G4-A1..A3) exactly as written, then supplement Phase-0 tail (A36 → A37 → A38 → A39; amendment text committed BEFORE code; ALL while Reddit is 0/774). When writing A31, paste the pre-chewed content from supplement plan 1 Task 5.
+3. Phase 1 in parallel: resume trends 331→774 FIRST (longest pole besides Reddit), cap_quality triage (OWNER-ASSISTED), duplicate-vector + MID-dupe scans, MoneyPuck audit, case-card roster verify, Reddit dry-run readiness, V3 re-fetch after A29, A38 mover-date lookups (supplement plan 2 Task 2), Wayback archival (plan 1 Task 7).
+4. Reddit creds (USER ACTION) → Phase 2 one-shot compute → §E diagnostics, now also `diagnostics/lambda_portability.py` + `diagnostics/attention_concentration.py` (register in §E/§H/§I per plan 2 sequencing note).
+5. Gate-4 fetch right after G4 amendments (~8 fetch-days; use plan 1 Task 6 quota manifest).
 
-CARRY-FORWARD: 774 locked pool (497F/277D, snapshot 2026-06-17); fixed window [2025-04-18, 2026-04-17]; A12 weights (wiki_en .29 / wiki_intl .11 / r_mentions .27 / r_upvotes .17 / trends .16); seed 20260526; tests 102 passing; MoneyPuck cached; UTF-8 forced in _common. Prior open MEDIUMs (bootstrap understatement, reddit cap censoring, star-boundary diagnostic, cap_quality triage) are ALL absorbed into the plan (A26, A23, A27, Phase 1.2) — the plan supersedes the old carry-forward list as the source of truth for open work.
+CARRY-FORWARD: 774 locked pool (497F/277D, snapshot 2026-06-17); fixed window [2025-04-18, 2026-04-17]; A12 weights (wiki_en .29 / wiki_intl .11 / r_mentions .27 / r_upvotes .17 / trends .16); seed 20260526; tests 102 passing; MoneyPuck cached; UTF-8 forced in _common. Source-of-truth stack for open work: `airtight_execution_plan.md` v1.1 + the two 2026-07-07 supplement plans (this order). A36–A39 numbering is claimed — any new amendment starts at A40.
 
 Deadline: poster session 2026-09-12 (~9.5 wk runway).
