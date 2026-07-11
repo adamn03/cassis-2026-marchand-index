@@ -1,28 +1,25 @@
 # Session Handoff
-Date: 2026-07-07
+Date: 2026-07-11
 Active: NHL_Marchand_Index — FULL BUILD. Branch: `marchand-index-full-build`.
 
-STATUS: working — no production results (Reddit 0/774). Trends STALLED at 331/774 (4 null); resume with `python fetch_trends.py` (resumable, ~443 left at ~9s/player).
+STATUS: working — paused mid-run (usage limit). No production results (Reddit 0/774). Trends 425/774 — fetch process killed cleanly, resumable: `python fetch_trends.py` from inside `marchand_index/` (~349 left at ~9s/player ≈ 55 min). Note: `raw/_trends_rerun.log` tail line "774 rows, 745 non-null" is from an OLD pilot2-era run — ignore it; `raw/trends.csv` row count is truth.
 
-THIS SESSION (2026-07-07 pm, Fable final day) — NO code/prereg changes; wrote two executable supplement plans for weaker models (Opus/GPT). Both supplement `docs/airtight_execution_plan.md` v1.1, overlap nothing in it, claim amendment numbers A36–A39:
+THIS SESSION (2026-07-11): 4 parallel subagents (data / verification / idea-max / application). 2 finished, 2 stopped at pause:
+1. DONE — idea-max red-team → `Full Project Files/docs/superpowers/plans/2026-07-11-idea-maximization-review.md`. Upgrades U1–U8, top 5: U1 Gate-4 fail-fast dry-run (3–5h, do first); U2 V1b power statement + paired ΔAUC — free ONLY if folded into A31 before A31 is written; U3 "A40" descriptive-measurement batch (draft text in report, NOT committed); U4 amendment-timeline poster figure from git log; U5 criterion-7 artifact package (criterion 7 currently has ZERO scheduled deliverable — poster footer promises repo URL nothing produces). Verdict: loss mode = "rigor without memorable discovery"; highest-leverage counter = elevate A38 λ̂ event study to titled second finding ("fame is X% portable").
+2. DONE — application plan → `Full Project Files/docs/superpowers/plans/2026-07-11-application-plan.md`. Poster-day artifact = single-file offline `marchand_explorer.html` (new `output/build_explorer.py`, ≤2 days, all inputs from existing compute_oaq.py emits; A31 headline auto-selected from verdicts JSON; observed↔portable toggle; CI bars + match-quality badge on case cards). Post-conf top 2: #2 Superstar Whistle (score 42.0), #6 Sticky Minutes (32.4) — ranking conditional on A31 matrix row 1.
+3. STOPPED mid-run — verification agent. pytest + scans INCOMPLETE, no final report. Partial signals: first MID-dupe scan invalidated (trends fetch changed file underneath — Colton pid 368 gained MID mid-scan); agent had flagged `ozs_pct` formula for re-check. RE-RUN full verification next session AFTER trends completes (no concurrent writes): pytest (expect 102), MID-dupe scan, duplicate-vector scan, MoneyPuck audit incl. ozs_pct, case-card roster verify, prereg conformance (weights/seed/K/774).
+4. STOPPED — data agent (was running the trends fetch; Reddit-readiness check + data-inventory table NOT delivered).
 
-1. `Full Project Files/docs/superpowers/plans/2026-07-07-free-data-improvements.md`
-   - **A36** player-wiki redirect-title pageview summation, en+intl (code-confirmed gap: `fetch_wikipedia.py` fetches canonical title only; A29 gave teams redirect summation, players never got it; A1 measured Ovechkin redirect at 7,059 dropped views). Full amendment text + augmenter script spec + tests.
-   - **A37** V1b union-completion sweep: pre-declared all-or-none retrieval of ALL official jersey lists in the locked 3-season class → more positives for the sole confirmatory primary (n=12 now). Fixed search manifest + 5-clause qualification.
-   - Pre-chews: **A31 shipping-matrix rows 3–7 written verbatim** (airtight plan left them "fill in amendment" — do NOT let a weaker model invent them), BH permutation mechanics pins, Gate-4 quota manifest spec, Wayback archival of outcome-source URLs, abstract→poster conformance crosswalk (incl. reconciling abstract's "hybrid MI = headline metric" with A31's validation-finding headline).
-2. `Full Project Files/docs/superpowers/plans/2026-07-07-cross-domain-improvements.md`
-   - **A38** empirical λ anchor: event study on in-window team-changers vs their K=10 peers (λ=0.5 is "unanchored" per §G — weakest assumption on poster). Descriptive diagnostic only; primary λ untouched under every outcome. Estimator fully pinned (λ̂=clip(β̂/γ̂,0,1), windows, exclusions, bootstrap seed 20260526).
-   - **A39** attention-concentration descriptive panel (Gini, top-1%/10% shares, payroll contrast, between-team ANOVA R²; Rosen/Adler superstar-econ framing) — criterion-5 quotable-number insurance, pre-registered.
-   - 12-citation framing kit (`docs/poster_related_work.md` content) with mandatory verification protocol — weaker model must verify, never generate citations. Rejected-ideas tables in both plans.
-   - Consistency patch to plan 1: A36 rewrites `wiki_daily.csv` as zero-filled 365-day date-indexed vectors (A26 block bootstrap already assumes 365-day rings; A38 requires the date index).
+No prereg/code/plan-file edits this session — the two 2026-07-11 files are new advisory reports only. A40 numbering: U3's draft claims it but nothing committed; A40+ still free until owner commits.
 
 NEXT (exact order):
-1. OWNER: 3 §D decisions in `docs/airtight_execution_plan.md` (Gate-4 GO — panel says mandatory; A30 market-proxy rebuild yes/no — recommend yes; A31 headline sign-off). Record in prereg.
-2. Execute airtight Phase 0 (A21–A35 + G4-A1..A3) exactly as written, then supplement Phase-0 tail (A36 → A37 → A38 → A39; amendment text committed BEFORE code; ALL while Reddit is 0/774). When writing A31, paste the pre-chewed content from supplement plan 1 Task 5.
-3. Phase 1 in parallel: resume trends 331→774 FIRST (longest pole besides Reddit), cap_quality triage (OWNER-ASSISTED), duplicate-vector + MID-dupe scans, MoneyPuck audit, case-card roster verify, Reddit dry-run readiness, V3 re-fetch after A29, A38 mover-date lookups (supplement plan 2 Task 2), Wayback archival (plan 1 Task 7).
-4. Reddit creds (USER ACTION) → Phase 2 one-shot compute → §E diagnostics, now also `diagnostics/lambda_portability.py` + `diagnostics/attention_concentration.py` (register in §E/§H/§I per plan 2 sequencing note).
-5. Gate-4 fetch right after G4 amendments (~8 fetch-days; use plan 1 Task 6 quota manifest).
+1. Resume trends 425→774: `python fetch_trends.py` (background it; ~55 min). Report null list at completion.
+2. Re-run verification suite clean (list in item 3 above).
+3. OWNER: 3 §D decisions in `docs/airtight_execution_plan.md` (Gate-4 GO — panel says mandatory; A30 market-proxy rebuild — recommend yes; A31 headline sign-off) AND read both 2026-07-11 reports, decide which of U1–U8 get slotted. U2 decision must precede writing A31.
+4. Then 2026-07-07 plan unchanged: airtight Phase 0 (A21–A35 + G4-A1..A3) → supplement tail A36→A37→A38→A39; amendment text committed BEFORE code; all while Reddit 0/774. A31 paste-content = supplement plan 1 Task 5.
+5. Reddit creds (USER ACTION) → Phase 2 one-shot compute → §E diagnostics (+ lambda_portability.py, attention_concentration.py per plan 2).
+6. Gate-4 fetch right after G4 amendments (~8 fetch-days; plan 1 Task 6 quota manifest).
 
-CARRY-FORWARD: 774 locked pool (497F/277D, snapshot 2026-06-17); fixed window [2025-04-18, 2026-04-17]; A12 weights (wiki_en .29 / wiki_intl .11 / r_mentions .27 / r_upvotes .17 / trends .16); seed 20260526; tests 102 passing; MoneyPuck cached; UTF-8 forced in _common. Source-of-truth stack for open work: `airtight_execution_plan.md` v1.1 + the two 2026-07-07 supplement plans (this order). A36–A39 numbering is claimed — any new amendment starts at A40.
+CARRY-FORWARD: 774 locked pool (497F/277D, snapshot 2026-06-17); fixed window [2025-04-18, 2026-04-17]; A12 weights (wiki_en .29 / wiki_intl .11 / r_mentions .27 / r_upvotes .17 / trends .16); seed 20260526; tests 102 passing (NOT re-verified this session); MoneyPuck cached; UTF-8 forced in _common. Source-of-truth stack: `airtight_execution_plan.md` v1.1 + two 2026-07-07 supplement plans; the two 2026-07-11 reports are advisory until owner slots them. A36–A39 claimed; next amendment starts A40.
 
-Deadline: poster session 2026-09-12 (~9.5 wk runway).
+Deadline: poster session 2026-09-12 (~9 wk runway).
