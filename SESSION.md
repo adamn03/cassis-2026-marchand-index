@@ -1,24 +1,19 @@
 # Session Handoff
-Date: 2026-07-11 (evening session)
+Date: 2026-07-13
 Active: NHL_Marchand_Index — FULL BUILD. Branch: `marchand-index-full-build`.
 
-STATUS: working — paused mid-fetch (owner left). No production results (Reddit 0/774).
+LAST: Reddit source SWITCHED OAuth → Arctic Shift archive (creds blocker DEAD, verified live: full window coverage, 67/67 two-archive id agreement; PullPush not viable — dead since 2025-05-19). A21+A22+A23 texts committed to impl prereg §14 BEFORE code (112c5fe / ab165c6 / 146aaeb); corpus puller `fetch_reddit_corpus.py` + local-matcher rewrite of `fetch_reddit.py` shipped (ece1c68); tests 102 → 122 green. Corpus pull started: **r/hockey COMPLETE (52,252 posts)**, r/nhl in flight when session closed — resumable. Discovered: trends.csv is COMPLETE 774/774 (prior cut-off session finished it; 5 nulls: Marchand [anchor degeneracy — pending A35 Crosby anchor], Holloway, Groulx, But, Lamoureux).
 
-THIS SESSION:
-1. Trends fetch resumed 425→~538/774; process dies with session close — RESUMABLE, script skips existing rows. ~236 left ≈ 35 min.
-2. Data inventory delivered: all per-player sources 774/774 complete (cap_hits, instagram, nhl_skill, nhl_onice, wiki_pageviews, players, external_outcomes); wiki_intl 764/774 (10 nulls KNOWN — matches results.md null table); market_proxy + team_outcomes 32 team rows. Only gaps: trends (in flight), Reddit (0).
-3. Reddit-readiness: `.env` creds EMPTY — confirmed blocked on owner.
-4. NEW FILE (uncommitted at write time, committed in handoff): `Full Project Files/docs/superpowers/plans/2026-07-11-decision-sheet.md` — one-page owner checkbox sheet distilling §D + U1–U8. Recommendations: D-1 GO + U1 rider; D-2 rebuild primary; D-3 sign off with U2 folded in; U1–U7 yes, U8 conditional skip. ADVISORY until owner checks boxes.
-5. Verification suite NOT run (correctly deferred — trends still writing).
+STATUS: working
 
-NEXT (exact order):
-1. Resume trends 538→774: `python fetch_trends.py` from `Full Project Files/marchand_index/` (background; ~35 min). Report null list at completion.
-2. AFTER trends done (no concurrent writes): full verification suite — pytest (expect 102), MID-dupe scan, duplicate-vector scan, MoneyPuck audit incl. ozs_pct, case-card roster verify (plan §1.7), prereg conformance (weights/seed/K/774).
-3. OWNER: read `2026-07-11-decision-sheet.md` (~10 min), check boxes. U2 decision MUST precede writing A31.
-4. OWNER: fill Reddit creds in `marchand_index/.env` + get YouTube API key (for U1 dry-run). Two 10-min tasks.
-5. Then decision-sheet Part 4 order: record §D in prereg → write+commit A21–A29, A30 (per D-2), A31 (with U2 per D-3), A32–A35, G4-A1..3 → U1 dry-run → A36–A39 → U3's A40 batch → Gate-4 launch → Phase 2 on creds.
-   Offered-but-not-picked this session: drafting A21–A29/A32–A35 texts as proposals pre-decision (owner interrupted before choosing — still valid option).
+NEXT: 1) Resume corpus pull: `python fetch_reddit_corpus.py` from `Full Project Files/marchand_index/` (skips finished subs; ~35 remain, r/hockey was the big one; transient 422s auto-backoff — only investigate if a sub ABORTS after 5 retries). 2) After pull completes: integrity scan (36 subs × 13 months, zero empty months; McDavid r/hockey [2025-04-18, 2025-05-17] local-match count ≥ 65) → `python fetch_reddit.py` (~2 min, offline, deterministic) → `raw/reddit_counts.csv` (774 rows, no reddit_capped col) + `raw/reddit_detail.csv` → dry-load via compute_oaq `load_inputs()`. Do NOT run production compute_oaq (still gated on decision sheet + A24+ batch).
 
-CARRY-FORWARD: 774 locked pool (497F/277D, snapshot 2026-06-17); fixed window [2025-04-18, 2026-04-17]; A12 weights (wiki_en .29 / wiki_intl .11 / r_mentions .27 / r_upvotes .17 / trends .16); seed 20260526; tests 102 (NOT re-verified since 2026-07-07); MoneyPuck cached; UTF-8 forced in _common. Source-of-truth stack: `airtight_execution_plan.md` v1.1 + two 2026-07-07 supplement plans; 2026-07-11 reports (idea-max, application, decision-sheet) advisory until owner slots. A36–A39 claimed; next amendment A40 (U3 draft claims it, nothing committed). Ignore `raw/_trends_rerun.log` tail — old pilot2 run; trends.csv row count is truth.
+OWNER (4 items):
+(a) Eyeball `marchand_index/raw/reddit_identity_pairs.md` (A21 acceptance step) — 4 non-discriminable groups, prefix-collisions, ~60 multi-sub traded players (spot-checked sane: Marner TOR+VEG, all UTA dual-sub).
+(b) POOL DUPES decision: Andrae / Benoit / Colton each appear TWICE in the 774 (same nhl_player_id, two snapshot teams — confirmed MID-dupe scan). A21 mechanically zeroes their Reddit rows until a pool-dedup amendment (774→771). See supplement doc §4b. Matcher re-run after decision ≈ 2 min.
+(c) 2026-07-11 decision sheet (D-1..3, U1–U8) still unchecked — gates A24–A35 batch, A30/A31, Gate-4.
+(d) YouTube API key (U1 dry-run) — now the ONLY external prerequisite left in the project.
 
-Deadline: poster session 2026-09-12 (~9 wk runway).
+CARRY-FORWARD: 774 locked pool (3 dupe rows pending owner decision); fixed window [2025-04-18, 2026-04-17]; A12 weights unchanged (r_mentions .27 / r_upvotes .17 intact — descriptive cols reddit_mentions_allsubs / reddit_mentions_fantasy NEVER enter composite); seed 20260526; tests 122; corpus lives in `marchand_index/cache/reddit_corpus/` — GITIGNORED, LOCAL SOURCE OF RECORD, do not delete (archive-longevity insurance per A23 residual i); A23 supersedes A9 — no Reddit creds ever needed; A30 transport note (subscriber counts) open in supplement doc §5, resolve when D-2 decided; A24–A35 + G4-A1..3 drafts ready in `2026-07-12-amendment-proposals.md` (A30/A31 deliberately undrafted, await D-2/D-3); A36–A39 + A40 reserved by supplements/idea-max. Source-of-truth stack: airtight plan v1.1 + 2026-07-07 supplements + `2026-07-13-arctic-shift-source-switch.md` (records v1.1 supersessions: §B A23 spec, Task 1.8, §E "after creds").
+
+Deadline: poster session 2026-09-12 (~8.5 wk runway).
