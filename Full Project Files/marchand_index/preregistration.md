@@ -399,6 +399,24 @@ A3 operationalized V1a on "the most-recent published official list" — at A3's 
 
 **Anti-tuning compliance (§13):** the list is published by NHL PR, independent of all model inputs (wiki/Reddit/Trends); its adoption is the mechanical application of A3's pre-locked most-recent rule to data that did not exist when A3 was logged; logged while Reddit is 0/774 fetched and before the final V1 is computed; floors (§9: ρ ≥ 0.40, AUC), verdict logic (PA), and all other components are unchanged. The pre-A20 `external_outcomes.csv` is retained in git history per §13.
 
+**A21 (2026-07-13) — Reddit identity: non-discriminable first names + team-subreddit attribution. Logged BEFORE the 774-set production Reddit fetch (Reddit remains 0/774; no production Reddit data exists).**
+
+A15 attributes a shared-surname submission to player P only when the text also carries first-name evidence for P. Two structural failure cases remain, found by the internal audit (E1) and panel review (J2-F5):
+
+1. **Non-discriminable first names.** When two pool sharers' first names collide — identical ("Elias Pettersson" ×2) or prefix-nested ("Matt"/"Matthew") — A15's first-name test matches both players and discriminates nothing, silently double-attributing or misattributing.
+2. **Team-context evidence unused.** A bare-surname post in a TEAM subreddit carries strong identity evidence (the team) that A15 ignores, needlessly discarding recall for shared-surname players — the same players A15 already dented.
+
+**Corrected attribution rules (applied identically to all 774; extends A15, supersedes nothing):**
+
+1. **Prefix-collision definition.** Within a shared-surname group, first names `a`, `b` PREFIX-COLLIDE iff `a.startswith(b) or b.startswith(a)` after accent-folding and case-folding. If a player's first name prefix-collides with another sharer's, first-name evidence is NON-DISCRIMINATING for that pair (it can no longer attribute a post between them).
+2. **Team-subreddit context rule.** Within a TEAM subreddit, if exactly ONE pool sharer of the surname is on that team, bare-surname submissions attribute to him. "On that team" = the **A22 window-roster set** (the NHL-API `seasonTotals` derivation defined in A22), NOT the 2026-06-17 snapshot roster — a traded sharer counts for every team sub he was window-rostered in. If MORE than one pool sharer of the surname is window-rostered on that team, bare-surname submissions in that team's sub go to `ambiguous_mentions`. (This resolves the two Sebastian Ahos — CAR vs NYI — inside their respective team subs.)
+3. **Fully non-discriminable pairs.** Where sharers collide on BOTH surname and (prefix-folded) first name AND the team rule cannot separate them (the two Elias Petterssons, both window-rostered on VAN): ALL matching submissions → `ambiguous_mentions`, attributed to NO ONE; both rows get a new flag `reddit_identity_ambiguous = true`; the discarded count is disclosed in `results.md`.
+4. **r/hockey nickname-token rule.** In r/hockey, for prefix-colliding pairs, first-name evidence is non-discriminating (rule 1), so a matching submission is ambiguous UNLESS a TEAM NICKNAME token for exactly one sharer's team appears in the title/selftext. Token definition (mechanical): the final word of the team's full name from `raw/teams.csv`, accent/case-folded, matched as a whole token (e.g. "hurricanes", "islanders", "canucks"). 2–3 letter team codes are NOT used as tokens (false-positive prone: "LA", "SJ"). If nicknames of BOTH sharers' teams appear, the submission is ambiguous.
+
+**Honest residuals (disclosed in advance):** (i) rules 3–4 lower recall further for the affected players — the count of discarded ambiguous submissions ships in `results.md`, and the A15 `surname_shared` sensitivity cut already covers the class; (ii) nickname tokens cover team names only, not player nicknames — unchanged from A15(ii); (iii) non-pool namesakes remain out of scope per A15(iii).
+
+**Anti-tuning compliance (§13):** logged while Reddit is 0/774 fetched, so no player's resulting count could have influenced any rule; every rule is mechanical (string prefix test, pool-derived roster sets, fixed token definition), applied uniformly to all 774; subreddits, query, window (A11), dedup, transport (A9 as superseded by A23), composite weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8), and all validation floors (§9, A6/V3) are unchanged.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
