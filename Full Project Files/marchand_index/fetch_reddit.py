@@ -1,98 +1,92 @@
-"""Fetch 12-month Reddit mention + upvote counts per player (pre-reg §3.3-3.4,
-window amended A11 2026-06-19).
+"""Compute 12-month Reddit mention + upvote counts per player from the local
+Arctic Shift corpus (pre-reg §3.3-3.4; window A11; identity A15/A21; sub
+selection A22; source + local matching A23).
 
-Composite weights 0.250 (mentions) + 0.167 (upvotes). Searches r/hockey + the
-team subreddit for the player's last name over a FIXED trailing-365-day window
-ENDING the last day of the 2025-26 NHL regular season (2026-04-17 inclusive;
-api-web.nhle.com standingsEnd), dedups by submission id, counts matches and
-sums their `score`.
+Composite weights 0.27 (mentions) + 0.17 (upvotes) per A12. Counts submissions
+in r/hockey + the player's A22 window-roster team subreddits whose folded
+title+selftext contains the player's surname as a whole token, over the FIXED
+window [2025-04-18, 2026-04-18) UTC (A11), deduped by submission id across
+subs, upvotes = sum of `score`.
 
-Window (pre-reg A11, 2026-06-19): was a trailing 365 days anchored to the
-fetch moment (A2/§3.3-3.4). Anchoring to run-time baked the 2026 playoff run
-into "attention" while OAQ matches REGULAR-SEASON production -> a made-the-
-playoffs confound. The window now ends on the last reg-season day, is identical
-for every player, and is independent of when the scrape runs. Reddit `t` is
-therefore `all` (not `year`): from a June fetch `t:year` only reaches ~12 months
-back and would clip the window's early edge. With sort=new we page newest-first,
-SKIP posts newer than the window end, collect the window, and STOP once a post
-falls below the window start.
+Source lineage (A2 -> A9 -> A23): live Reddit search (capped at 1,000 results,
+no date filter, OAuth creds) is replaced by the Arctic Shift archive. The
+corpus is pulled once by fetch_reddit_corpus.py into cache/reddit_corpus/;
+THIS script never touches the network for Reddit data and is deterministic
+and re-runnable from the corpus. The 1,000-cap / `reddit_capped` machinery is
+removed (A23 rule 1 — the flag was disclosure-only, no downstream consumer).
 
-Mechanism (pre-reg §14 A2, 2026-05-27; transport amended A9, 2026-05-28):
-authenticated Reddit OAuth search (`oauth.reddit.com/r/<sub>/search` with an
-app-only bearer token), after the unauthenticated `www.reddit.com/.../search.json`
-endpoint hard-403'd this IP. Transport only: same source, subreddits, query,
-window, dedup, and 1,000-result cap as A2. A sub that rate-limits or 404s
-contributes 0 and sets reddit_status=partial; if every request fails the row is
-NULL (reddit_status=null) and the §4 sentinel renormalizes.
+Matching (A23 rule 3): NFKD accent-fold, case-fold, every non-alphanumeric
+character (incl. curly apostrophes) mapped to a space, whole-token surname
+match on title + selftext. The archive's own query search is NOT used
+(verified recall misses: possessives, edited posts).
 
-Credentials: a free Reddit "script" app's client_id + client_secret, read from
-env (REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET) or marchand_index/.env (gitignored). App-only
-`client_credentials` grant is used by default (id + secret only, no account
-password); if REDDIT_USERNAME + REDDIT_PASSWORD are also present the more-permissive
-`password` grant is used instead.
+Attribution (A15, extended by A21) for shared surnames, per submission:
+  1. First-name evidence (A15 checker) counts only for sharers whose folded
+     first name does NOT prefix-collide with another sharer's (A21 rule 1).
+     Exactly one such claimant -> attributed; two -> ambiguous.
+  2. No evidence claimant, TEAM subreddit: exactly one sharer window-rostered
+     on that team -> attributed to him (A21 rule 2); several -> ambiguous.
+  3. No evidence claimant, league-wide sub: among prefix-colliding sharers,
+     a team-nickname token (final word of the team's full name, from
+     raw/teams.csv) naming exactly one sharer's team -> attributed (A21
+     rule 4); both teams named or none -> ambiguous.
+  4. Fully non-discriminable pairs (identical folded first names AND identical
+     window-team sets — the two VAN Elias Petterssons) can never be separated:
+     every matching submission is ambiguous and both rows carry
+     `reddit_identity_ambiguous = true` (A21 rule 3).
+Ambiguous submissions are counted in `ambiguous_mentions` (for every group
+member whose counting subs include that subreddit) and excluded from
+mentions/upvotes and the bootstrap detail pool.
 
-Robustness (2026-05-27, not a pre-reg change — transport hardening only):
-  * Both CSVs are SNAPSHOT-written after every player, so a killed/detached run
-    keeps its progress instead of losing everything at the final write.
-  * On restart the script RESUMES: players already on disk with status ok/partial
-    are kept (with their detail rows); only missing or NULL players are refetched
-    (a NULL is almost always transient throttling, so it earns another attempt).
-  * 429s get escalating backoff (5/10/20/40s) so popular players are not falsely
-    NULLed by late-run rate limiting.
+Sub selection (A22): r/hockey + the team subreddit of EVERY team the player
+was rostered on inside the window, derived from NHL-API landing seasonTotals
+(seasons 20242025 + 20252026, gameTypeId 2, leagueAbbrev NHL; cached HTTP).
+UTA includes predecessor sub r/UtahHockey (A22 sub-rename rule). Landing
+failure falls back to the snapshot team_code (logged).
 
-Attribution (pre-reg A15, 2026-07-03 — logged before the production fetch):
-last-name search misattributes attention wherever >=2 pool players share a
-surname (a "Hughes" search pools Jack/Quinn/Luke). For SHARED surnames a
-matched submission is attributed only if its title/selftext carries first-name
-evidence (word starting with the folded first name, or a pool-unique
-"<initial>. <surname>" pattern); surname-only matches are counted in a
-disclosed `ambiguous_mentions` column and excluded from mentions/upvotes and
-the bootstrap detail pool. Unique surnames keep the A2 rule unchanged.
+Descriptive columns (A23 rule 5, never composite): `reddit_mentions_allsubs`
+(attributed matches over the full 36-sub corpus incl. r/nhl + r/fantasyhockey)
+and `reddit_mentions_fantasy` (r/fantasyhockey only).
 
 Writes: marchand_index/raw/reddit_counts.csv
-  player_id, full_name, subreddits, reddit_mentions_12mo, reddit_upvotes_12mo,
-  unique_authors, reddit_capped, reddit_status, ambiguous_mentions,
-  surname_shared, fetch_date
-  + marchand_index/raw/reddit_detail.csv (player_id, submission_id, score) for the §10 bootstrap
+  player_id, full_name, reddit_subs_searched, reddit_mentions_12mo,
+  reddit_upvotes_12mo, unique_authors, reddit_status, ambiguous_mentions,
+  surname_shared, reddit_identity_ambiguous, reddit_mentions_allsubs,
+  reddit_mentions_fantasy, fetch_date
+  + marchand_index/raw/reddit_detail.csv (player_id, submission_id, score)
+    for the §10 bootstrap
 """
 from __future__ import annotations
 
 import datetime as dt
-import os
+import json
 import re
 import sys
-import time
 import unicodedata
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _common import RAW_DIR, atomic_write_csv, load_csv, load_players  # noqa: E402
+from _common import (CONTACT_UA, RAW_DIR, atomic_write_csv, load_csv,  # noqa: E402
+                     load_players, session)
 
-import requests  # noqa: E402
-from requests.auth import HTTPBasicAuth  # noqa: E402
+NHL_API = "https://api-web.nhle.com/v1"
+WINDOW_SEASONS = {"20242025", "20252026"}   # A22: seasons overlapping the window
 
-UA = "marchand-index/0.2 (research; contact ana178@sfu.ca)"
-OAUTH_BASE = "https://oauth.reddit.com"           # authenticated host (A9)
-TOKEN_URL = "https://www.reddit.com/api/v1/access_token"
-# Fixed attention window (pre-reg A11, 2026-06-19): trailing WINDOW_DAYS ending
-# the last day of the 2025-26 reg season (inclusive). api-web.nhle.com
-# standingsEnd for season 20252026 = 2026-04-17. Decoupled from fetch time.
-WINDOW_END = dt.date(2026, 4, 17)                 # last reg-season day, inclusive
+# Fixed attention window (pre-reg A11) — identical to fetch_reddit_corpus.py.
+WINDOW_END = dt.date(2026, 4, 17)           # last reg-season day, inclusive
 WINDOW_DAYS = 365
-MAX_RESULTS = 1000          # pre-registered search cap
-PAGE = 100
-SLEEP = 2.0                 # OAuth allows ~100 req/min; 2s spacing (~30/min) is polite and safe
-RETRIES = 4                 # attempts per page before a sub is declared failed
-BACKOFF = [5.0, 10.0, 20.0, 40.0]  # escalating sleep on 429 / transient 5xx
+
+CORPUS_DIR = Path(__file__).parent / "cache" / "reddit_corpus"
 
 COUNTS_FIELDS = [
-    "player_id", "full_name", "subreddits", "reddit_mentions_12mo",
-    "reddit_upvotes_12mo", "unique_authors", "reddit_capped", "reddit_status",
-    "ambiguous_mentions", "surname_shared", "fetch_date",
+    "player_id", "full_name", "reddit_subs_searched", "reddit_mentions_12mo",
+    "reddit_upvotes_12mo", "unique_authors", "reddit_status",
+    "ambiguous_mentions", "surname_shared", "reddit_identity_ambiguous",
+    "reddit_mentions_allsubs", "reddit_mentions_fantasy", "fetch_date",
 ]
 DETAIL_FIELDS = ["player_id", "submission_id", "score"]
 
-# DailyFaceoff team_code -> team subreddit (r/hockey is always searched too).
+# DailyFaceoff team_code -> team subreddit (r/hockey is always counted too).
 TEAM_SUB = {
     "ANA": "anaheimducks", "BOS": "BostonBruins", "BUF": "sabres",
     "CGY": "CalgaryFlames", "CAR": "canes", "CHI": "hawks",
@@ -106,6 +100,10 @@ TEAM_SUB = {
     "UTA": "utahmammoth", "VAN": "canucks", "VEG": "goldenknights",
     "WAS": "caps", "WPG": "winnipegjets",
 }
+# A22 sub-rename rule: predecessor subs still active inside the window.
+PREDECESSOR_SUB = {"UTA": "UtahHockey"}
+LEAGUE_SUBS = ["hockey", "nhl", "fantasyhockey"]   # non-team subs in the corpus
+ALL_SUBS = LEAGUE_SUBS + ["UtahHockey"] + sorted(TEAM_SUB.values())
 
 
 def last_name(full_name: str) -> str:
@@ -113,7 +111,7 @@ def last_name(full_name: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# A15 — within-pool surname-collision attribution                              #
+# A15 — within-pool surname-collision attribution (unchanged by A23)           #
 # --------------------------------------------------------------------------- #
 def fold(s: str) -> str:
     """Accent-fold + case-fold for name matching (Fehérváry -> fehervary)."""
@@ -179,283 +177,290 @@ def make_evidence_check(full_name: str, surname_map: dict[str, list[str]]):
     return check, True
 
 
-_ENV_MAP = {
-    "REDDIT_CLIENT_ID": "client_id", "REDDIT_CLIENT_SECRET": "client_secret",
-    "REDDIT_USERNAME": "username", "REDDIT_PASSWORD": "password",
-}
+# --------------------------------------------------------------------------- #
+# A23 rule 3 — local corpus matching                                           #
+# --------------------------------------------------------------------------- #
+_NON_ALNUM = re.compile(r"[^a-z0-9]+")
 
 
-def load_creds() -> dict:
-    """Reddit OAuth creds from env, falling back to marchand_index/.env (gitignored).
+def match_fold(s: str) -> str:
+    """A23 fold: accent-fold, case-fold, non-alphanumerics (incl. curly
+    apostrophes) to spaces — "McDavid's" folds to "mcdavid s"."""
+    return _NON_ALNUM.sub(" ", fold(s)).strip()
 
-    Requires client_id + client_secret. username + password are optional (enable
-    the password grant); absent them the app-only client_credentials grant is used.
+
+def match_tokens(title: str, selftext: str) -> set[str]:
+    """Whole-token set of the folded submission text."""
+    return set(match_fold(f"{title} {selftext}").split())
+
+
+def prefix_collides(a: str, b: str) -> bool:
+    """A21 rule 1: folded first names collide iff one prefixes the other."""
+    return a.startswith(b) or b.startswith(a)
+
+
+# --------------------------------------------------------------------------- #
+# A22 — window-roster team derivation                                          #
+# --------------------------------------------------------------------------- #
+def load_team_maps() -> tuple[dict[str, str], dict[str, str]]:
+    """(folded full team name -> team_code, team_code -> nickname token).
+
+    Team names come from raw/teams.csv `team_slug` (e.g. "st-louis-blues");
+    the nickname token is the final word (A21 rule 4). The 2024-25 Utah
+    franchise name is aliased per the A22 rename rule.
     """
-    creds = {"client_id": "", "client_secret": "", "username": "", "password": ""}
-    for env_key, field in _ENV_MAP.items():
-        if os.environ.get(env_key):
-            creds[field] = os.environ[env_key].strip()
-    env_file = Path(__file__).parent / ".env"
-    if env_file.exists():
-        for line in env_file.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, val = line.split("=", 1)
-            field = _ENV_MAP.get(key.strip())
-            if field and not creds[field]:
-                creds[field] = val.strip().strip('"').strip("'")
-    if not creds["client_id"] or not creds["client_secret"]:
-        sys.exit("Reddit OAuth creds missing. Set REDDIT_CLIENT_ID and "
-                 "REDDIT_CLIENT_SECRET in env or marchand_index/.env (see module header).")
-    return creds
+    name_to_code: dict[str, str] = {}
+    nickname: dict[str, str] = {}
+    for t in load_csv(RAW_DIR / "teams.csv"):
+        words = match_fold(t["team_slug"].replace("-", " ")).split()
+        name_to_code[" ".join(words)] = t["team_code"]
+        nickname[t["team_code"]] = words[-1]
+    name_to_code["utah hockey club"] = "UTA"
+    return name_to_code, nickname
 
 
-# Mutable token cache shared across pages; refreshed on expiry or 401.
-_TOKEN = {"value": None, "expires_at": 0.0}
-_CREDS: dict = {}
-
-
-def ensure_token(sess, force: bool = False) -> str:
-    """Return a valid app-only/user bearer token, fetching/refreshing as needed."""
-    if not force and _TOKEN["value"] and time.time() < _TOKEN["expires_at"] - 60:
-        return _TOKEN["value"]
-    auth = HTTPBasicAuth(_CREDS["client_id"], _CREDS["client_secret"])
-    if _CREDS.get("username") and _CREDS.get("password"):
-        data = {"grant_type": "password",
-                "username": _CREDS["username"], "password": _CREDS["password"]}
-    else:
-        data = {"grant_type": "client_credentials"}
-    r = sess.post(TOKEN_URL, auth=auth, data=data,
-                  headers={"User-Agent": UA}, timeout=25)
-    r.raise_for_status()
-    j = r.json()
-    if "access_token" not in j:
-        sys.exit(f"Reddit token request returned no access_token: {j}")
-    _TOKEN["value"] = j["access_token"]
-    _TOKEN["expires_at"] = time.time() + int(j.get("expires_in", 3600))
-    return _TOKEN["value"]
-
-
-def get_page(sess, sub: str, query: str, after: str | None) -> tuple[list, str | None, bool]:
-    """One search page. Returns (children, next_after, ok)."""
-    params = {"q": query, "restrict_sr": 1, "sort": "new",
-              "t": "all", "limit": PAGE, "raw_json": 1}
-    if after:
-        params["after"] = after
-    for attempt in range(RETRIES):
+def window_teams(sess, p: dict, name_to_code: dict[str, str]) -> set[str]:
+    """Team codes the player was NHL-rostered on inside the window (A22)."""
+    codes: set[str] = set()
+    pid = str(p.get("nhl_player_id", "") or "")
+    if pid.isdigit():
         try:
-            tok = ensure_token(sess)
-            r = sess.get(f"{OAUTH_BASE}/r/{sub}/search",
-                         params=params,
-                         headers={"User-Agent": UA, "Authorization": f"bearer {tok}"},
-                         timeout=25)
-            # 401 => token expired/revoked: refresh once and retry this attempt.
-            if r.status_code == 401:
-                print(f"  r/{sub} '{query}': HTTP 401, refreshing token "
-                      f"(attempt {attempt + 1}/{RETRIES})", file=sys.stderr)
-                ensure_token(sess, force=True)
-                time.sleep(1.0)
-                continue
-            # 429 (throttle) and transient 5xx are worth a longer wait + retry;
-            # any other non-200 (404 dead sub, 403) is permanent for this sub.
-            if r.status_code == 429 or 500 <= r.status_code < 600:
-                wait = BACKOFF[min(attempt, len(BACKOFF) - 1)]
-                print(f"  r/{sub} '{query}': HTTP {r.status_code}, backoff {wait}s "
-                      f"(attempt {attempt + 1}/{RETRIES})", file=sys.stderr)
-                time.sleep(wait)
-                continue
-            if r.status_code != 200:
-                return [], None, False
-            data = r.json().get("data", {})
-            return data.get("children", []), data.get("after"), True
+            r = sess.get(f"{NHL_API}/player/{pid}/landing",
+                         headers={"User-Agent": CONTACT_UA}, timeout=20)
+            r.raise_for_status()
+            for row in (r.json().get("seasonTotals") or []):
+                if (str(row.get("season")) in WINDOW_SEASONS
+                        and row.get("gameTypeId") == 2
+                        and row.get("leagueAbbrev") == "NHL"):
+                    nm = (row.get("teamName") or {}).get("default", "")
+                    code = name_to_code.get(match_fold(nm))
+                    if code:
+                        codes.add(code)
         except Exception as e:
-            print(f"  r/{sub} '{query}': {e!r} (attempt {attempt + 1}/{RETRIES})",
-                  file=sys.stderr)
-            time.sleep(BACKOFF[min(attempt, len(BACKOFF) - 1)])
-    return [], None, False
+            print(f"  landing {pid}: {e!r}", file=sys.stderr)
+    if not codes and p.get("team_code"):
+        # Fallback to the snapshot roster team; logged so the run is auditable.
+        print(f"  window_teams fallback to snapshot team for "
+              f"{p.get('full_name', pid)}", file=sys.stderr)
+        codes = {p["team_code"]}
+    return codes
 
 
-def search_sub(sess, sub: str, query: str, lower_cutoff: float, upper_cutoff: float,
-               evidence=None):
-    """Paginate one subreddit over the window [lower_cutoff, upper_cutoff).
+def counting_subs(codes: set[str]) -> list[str]:
+    """A22 counting set: r/hockey + every window team's sub (+ predecessors)."""
+    subs = ["hockey"]
+    for c in sorted(codes):
+        if c in TEAM_SUB:
+            subs.append(TEAM_SUB[c])
+        if c in PREDECESSOR_SUB:
+            subs.append(PREDECESSOR_SUB[c])
+    return subs
 
-    Results are newest-first (sort=new, t=all). Posts NEWER than the window end
-    are skipped (e.g. the 2026 playoff run); once a post OLDER than the window
-    start appears, paging stops since everything beyond is older still.
 
-    `evidence` (A15): optional checker(title, selftext) -> bool for shared
-    surnames. In-window posts failing the check are tallied as ambiguous and
-    NOT attributed (excluded from scores/authors and the bootstrap detail).
-    Returns (id->score dict, authors set, capped, ok, ambiguous_count).
+# --------------------------------------------------------------------------- #
+# A21 — group-level attribution                                                #
+# --------------------------------------------------------------------------- #
+def build_groups(players: list[dict], wteams: dict[str, set[str]],
+                 nickname: dict[str, str],
+                 surname_map: dict[str, list[str]]) -> dict[str, list[dict]]:
+    """Folded surname -> attribution group (one member per pool player)."""
+    groups: dict[str, list[dict]] = {}
+    for p in players:
+        parts = p["full_name"].split()
+        sn, fn = fold(parts[-1]), fold(parts[0])
+        checker, shared = make_evidence_check(p["full_name"], surname_map)
+        groups.setdefault(sn, []).append({
+            "pid": p["player_id"], "fn": fn, "shared": shared,
+            "teams": wteams[p["player_id"]],
+            "nicks": {nickname[c] for c in wteams[p["player_id"]] if c in nickname},
+            "checker": checker,
+        })
+    for group in groups.values():
+        for m in group:
+            others = [o for o in group if o is not m]
+            m["discriminating"] = not any(prefix_collides(m["fn"], o["fn"])
+                                          for o in others)
+            # A21 rule 3: colliding first name AND identical window-team set
+            # -> the pair is fully non-discriminable (the two VAN Petterssons).
+            m["identity_ambiguous"] = any(
+                prefix_collides(m["fn"], o["fn"]) and m["teams"] == o["teams"]
+                for o in others)
+    return groups
+
+
+def attribute(group: list[dict], title: str, selftext: str,
+              tokens: set[str], sub_team: str | None) -> str | None:
+    """Attribute one surname-matching submission. Returns the winning pid,
+    or None for ambiguous (A21). Single-member groups always win (A2 rule)."""
+    if len(group) == 1:
+        return group[0]["pid"]
+    # 1. Discriminating first-name evidence (A15 gated by A21 rule 1).
+    claimants = [m for m in group
+                 if m["discriminating"] and m["checker"] is not None
+                 and m["checker"](title, selftext)]
+    if len(claimants) == 1:
+        return claimants[0]["pid"]
+    if len(claimants) > 1:
+        return None
+    # 2. Team-subreddit context (A21 rule 2).
+    if sub_team is not None:
+        rostered = [m for m in group if sub_team in m["teams"]]
+        if len(rostered) == 1:
+            return rostered[0]["pid"]
+        return None
+    # 3. League-wide sub: nickname token among prefix-colliding sharers
+    #    (A21 rule 4). Tokens naming both sharers' teams -> ambiguous.
+    colliding = [m for m in group if not m["discriminating"]]
+    hits = [m for m in colliding if m["nicks"] & tokens]
+    if len(hits) == 1:
+        return hits[0]["pid"]
+    return None
+
+
+# --------------------------------------------------------------------------- #
+# Matcher                                                                      #
+# --------------------------------------------------------------------------- #
+def sub_team_code(sub: str) -> str | None:
+    """Team code a subreddit belongs to, None for league-wide subs."""
+    for code, s in TEAM_SUB.items():
+        if s == sub:
+            return code
+    for code, s in PREDECESSOR_SUB.items():
+        if s == sub:
+            return code
+    return None
+
+
+def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
+                corpus_dir: Path = CORPUS_DIR):
+    """Stream every corpus file once, distributing matches to players.
+
+    Returns (acc by pid, missing_subs). acc fields: scores (id->score, counting
+    subs, deduped), authors, ambiguous, allsubs_ids, fantasy_ids.
     """
-    scores: dict[str, int] = {}
-    authors: set[str] = set()
-    after = None
-    capped = False
-    any_ok = False
-    reached_floor = False
-    ambiguous = 0
-    while len(scores) < MAX_RESULTS:
-        children, after, ok = get_page(sess, sub, query, after)
-        any_ok = any_ok or ok
-        time.sleep(SLEEP)
-        if not ok:
-            break
-        for c in children:
-            d = c.get("data", {})
-            ts = d.get("created_utc", 0) or 0
-            if ts >= upper_cutoff:
-                continue              # newer than window end -> not yet in window
-            if ts < lower_cutoff:
-                reached_floor = True  # older than window start; stop after this page
-                continue
-            sid = d.get("name") or d.get("id")
-            if not sid:
-                continue
-            if evidence is not None and not evidence(
-                    d.get("title") or "", d.get("selftext") or ""):
-                ambiguous += 1        # A15: surname-only match, not attributed
-                continue
-            scores[sid] = int(d.get("score", 0) or 0)
-            if d.get("author"):
-                authors.add(d["author"])
-        if reached_floor:
-            break
-        if not after or len(children) < PAGE:
-            break
-        if len(scores) >= MAX_RESULTS:
-            capped = True
-            break
-    return scores, authors, capped, any_ok, ambiguous
+    acc: dict[str, dict] = {}
+    for group in groups.values():
+        for m in group:
+            acc[m["pid"]] = {"scores": {}, "authors": set(), "ambiguous": 0,
+                             "allsubs_ids": set(), "fantasy_ids": set()}
+    count_pids: dict[str, set[str]] = {}   # sub -> pids counting it
+    for pid, subs in counting.items():
+        for s in subs:
+            count_pids.setdefault(s, set()).add(pid)
 
-
-def load_resume() -> tuple[dict[str, dict], dict[str, list[dict]]]:
-    """Read any on-disk progress. Returns (counts_by_pid, detail_by_pid).
-
-    Only ok/partial rows are treated as done; NULL rows are dropped so the
-    re-run gets another attempt (their NULL is almost always transient throttle).
-    """
-    counts_path = RAW_DIR / "reddit_counts.csv"
-    detail_path = RAW_DIR / "reddit_detail.csv"
-    counts_by_pid: dict[str, dict] = {}
-    detail_by_pid: dict[str, list[dict]] = {}
-    if counts_path.exists():
-        for r in load_csv(counts_path):
-            if r.get("reddit_status") in ("ok", "partial"):
-                counts_by_pid[r["player_id"]] = r
-    if detail_path.exists():
-        for r in load_csv(detail_path):
-            detail_by_pid.setdefault(r["player_id"], []).append(
-                {"player_id": r["player_id"], "submission_id": r["submission_id"],
-                 "score": int(r["score"]) if str(r["score"]).strip() else 0})
-    # Keep detail only for players we are actually resuming.
-    detail_by_pid = {pid: d for pid, d in detail_by_pid.items() if pid in counts_by_pid}
-    return counts_by_pid, detail_by_pid
-
-
-def snapshot(order: list[str], counts_by_pid: dict[str, dict],
-             detail_by_pid: dict[str, list[dict]]) -> None:
-    """Atomic-write both CSVs from current state, in player order."""
-    rows = [counts_by_pid[pid] for pid in order if pid in counts_by_pid]
-    atomic_write_csv(RAW_DIR / "reddit_counts.csv", rows, COUNTS_FIELDS)
-    detail_rows = [d for pid in order for d in detail_by_pid.get(pid, [])]
-    atomic_write_csv(RAW_DIR / "reddit_detail.csv", detail_rows, DETAIL_FIELDS)
+    missing: list[str] = []
+    surnames = frozenset(groups)
+    for sub in ALL_SUBS:
+        path = corpus_dir / f"{sub}.jsonl"
+        if not path.exists():
+            missing.append(sub)
+            continue
+        steam = sub_team_code(sub)
+        n_posts = 0
+        with path.open("r", encoding="utf-8") as fh:
+            for line in fh:
+                try:
+                    post = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                n_posts += 1
+                title = post.get("title") or ""
+                selftext = post.get("selftext") or ""
+                tokens = match_tokens(title, selftext)
+                hit_surnames = tokens & surnames
+                if not hit_surnames:
+                    continue
+                for sn in hit_surnames:
+                    group = groups[sn]
+                    winner = attribute(group, title, selftext, tokens, steam)
+                    if winner is None:
+                        # Ambiguous: disclosed for every member counting this sub.
+                        for m in group:
+                            if sub in counting[m["pid"]]:
+                                acc[m["pid"]]["ambiguous"] += 1
+                        continue
+                    a = acc[winner]
+                    a["allsubs_ids"].add(post["id"])
+                    if sub == "fantasyhockey":
+                        a["fantasy_ids"].add(post["id"])
+                    if sub in counting[winner]:
+                        a["scores"][post["id"]] = int(post.get("score") or 0)
+                        if post.get("author"):
+                            a["authors"].add(post["author"])
+        print(f"r/{sub}: scanned {n_posts} posts")
+    return acc, missing
 
 
 def main() -> None:
-    global _CREDS
     fetch_date = dt.date.today().isoformat()
-    # Fixed window: end = last reg-season day inclusive -> exclusive bound is the
-    # next UTC midnight; start = WINDOW_DAYS earlier. Identical for every player,
-    # independent of when the scrape runs (pre-reg A11).
-    upper_cutoff = dt.datetime(WINDOW_END.year, WINDOW_END.month, WINDOW_END.day,
-                               tzinfo=dt.timezone.utc).timestamp() + 86400.0
-    lower_cutoff = upper_cutoff - WINDOW_DAYS * 86400.0
-    sess = requests.Session()
-
-    _CREDS = load_creds()
-    grant = "password" if (_CREDS.get("username") and _CREDS.get("password")) else "client_credentials"
-    ensure_token(sess)  # validate creds up-front; exits clearly if they are wrong
-    print(f"Reddit OAuth token acquired ({grant} grant).")
-    win_lo = dt.datetime.fromtimestamp(lower_cutoff, dt.timezone.utc).date()
-    win_hi = dt.datetime.fromtimestamp(upper_cutoff, dt.timezone.utc).date()
-    print(f"Window: {win_lo.isoformat()} .. {win_hi.isoformat()} (end exclusive), "
-          f"{WINDOW_DAYS}d, ending reg-season {WINDOW_END.isoformat()}")
-
     players = load_players()
     order = [p["player_id"] for p in players]
     surname_map = build_surname_map(players)
-    n_shared = sum(1 for p in players
-                   if len(surname_map.get(fold(p["full_name"].split()[-1]), [])) >= 2)
-    print(f"A15 surname-collision filter: {n_shared}/{len(players)} players "
-          "share a surname within the pool (first-name evidence required).")
-    counts_by_pid, detail_by_pid = load_resume()
-    if counts_by_pid:
-        print(f"Resume: {len(counts_by_pid)} players already done on disk; "
-              f"{len(order) - len(counts_by_pid)} to fetch.")
+    name_to_code, nickname = load_team_maps()
 
-    for p in players:
-        pid = p["player_id"]
-        if pid in counts_by_pid:
-            continue  # already fetched (ok/partial) in a prior run
-        ln = last_name(p["full_name"])
-        evidence, shared = make_evidence_check(p["full_name"], surname_map)
-        tsub = TEAM_SUB.get(p["team_code"], "")
-        subs = ["hockey"] + ([tsub] if tsub and tsub != "hockey" else [])
-        all_scores: dict[str, int] = {}
-        authors: set[str] = set()
-        capped = False
-        ok_count = 0
-        ambiguous_total = 0
-        for sub in subs:
-            sc, au, cap, ok, amb = search_sub(
-                sess, sub, ln, lower_cutoff, upper_cutoff, evidence=evidence)
-            all_scores.update(sc)        # dedup submission ids across subs
-            authors |= au
-            capped = capped or cap
-            ok_count += int(ok)
-            ambiguous_total += amb
-        if ok_count == 0:
+    sess = session(expire_hours=24 * 7)   # landing JSONs are already cached
+    wteams = {p["player_id"]: window_teams(sess, p, name_to_code) for p in players}
+    counting = {p["player_id"]: counting_subs(wteams[p["player_id"]]) for p in players}
+
+    groups = build_groups(players, wteams, nickname, surname_map)
+    n_shared = sum(1 for g in groups.values() if len(g) >= 2 for _ in g)
+    print(f"A15/A21 identity: {n_shared}/{len(players)} players share a surname; "
+          f"{sum(1 for g in groups.values() for m in g if m['identity_ambiguous'])} "
+          "flagged fully non-discriminable (A21 rule 3).")
+    multi = {p['player_id']: counting[p['player_id']] for p in players
+             if len(counting[p['player_id']]) > 2}
+    print(f"A22 multi-sub players: {len(multi)}")
+
+    acc, missing = scan_corpus(groups, counting)
+    if missing:
+        print(f"WARNING: corpus missing for {missing} — affected players get "
+              "partial/null status.", file=sys.stderr)
+
+    counts_rows, detail_rows = [], []
+    by_pid = {p["player_id"]: p for p in players}
+    for pid in order:
+        p = by_pid[pid]
+        a = acc[pid]
+        subs = counting[pid]
+        present = [s for s in subs if s not in missing]
+        if not present:
             status, mentions, upvotes = "null", "", ""
-        elif ok_count < len(subs):
+        elif len(present) < len(subs):
             status = "partial"
-            mentions, upvotes = len(all_scores), sum(all_scores.values())
+            mentions, upvotes = len(a["scores"]), sum(a["scores"].values())
         else:
             status = "ok"
-            mentions, upvotes = len(all_scores), sum(all_scores.values())
-        print(f"{p['full_name']:<24} subs={subs} mentions={mentions} "
-              f"upvotes={upvotes} authors={len(authors)} cap={capped} "
-              f"shared={shared} amb={ambiguous_total} {status}")
-        counts_by_pid[pid] = {
+            mentions, upvotes = len(a["scores"]), sum(a["scores"].values())
+        sn = fold(p["full_name"].split()[-1])
+        me = next(m for m in groups[sn] if m["pid"] == pid)
+        counts_rows.append({
             "player_id": pid,
             "full_name": p["full_name"],
-            "subreddits": "|".join(subs),
+            "reddit_subs_searched": "|".join(subs),
             "reddit_mentions_12mo": mentions,
             "reddit_upvotes_12mo": upvotes,
-            "unique_authors": len(authors) if status != "null" else "",
-            "reddit_capped": str(capped).lower(),
+            "unique_authors": len(a["authors"]) if status != "null" else "",
             "reddit_status": status,
-            "ambiguous_mentions": ambiguous_total if status != "null" else "",
-            "surname_shared": str(shared).lower(),
+            "ambiguous_mentions": a["ambiguous"] if status != "null" else "",
+            "surname_shared": str(me["shared"]).lower(),
+            "reddit_identity_ambiguous": str(me["identity_ambiguous"]).lower(),
+            "reddit_mentions_allsubs": len(a["allsubs_ids"]) if status != "null" else "",
+            "reddit_mentions_fantasy": len(a["fantasy_ids"]) if status != "null" else "",
             "fetch_date": fetch_date,
-        }
+        })
         if status != "null":
-            detail_by_pid[pid] = [
+            detail_rows.extend(
                 {"player_id": pid, "submission_id": sid, "score": score}
-                for sid, score in all_scores.items()
-            ]
-        # Snapshot after every player so a kill never loses progress.
-        snapshot(order, counts_by_pid, detail_by_pid)
+                for sid, score in a["scores"].items())
 
-    snapshot(order, counts_by_pid, detail_by_pid)
-    rows = [counts_by_pid[pid] for pid in order if pid in counts_by_pid]
-    n_ok = sum(1 for r in rows if r["reddit_status"] == "ok")
-    n_part = sum(1 for r in rows if r["reddit_status"] == "partial")
-    n_null = sum(1 for r in rows if r["reddit_status"] == "null")
-    n_cap = sum(1 for r in rows if r["reddit_capped"] == "true")
-    print(f"\nWrote reddit_counts.csv ({len(rows)} rows; {n_ok} ok, "
-          f"{n_part} partial, {n_null} null, {n_cap} capped)")
+    atomic_write_csv(RAW_DIR / "reddit_counts.csv", counts_rows, COUNTS_FIELDS)
+    atomic_write_csv(RAW_DIR / "reddit_detail.csv", detail_rows, DETAIL_FIELDS)
+    n_ok = sum(1 for r in counts_rows if r["reddit_status"] == "ok")
+    n_part = sum(1 for r in counts_rows if r["reddit_status"] == "partial")
+    n_null = sum(1 for r in counts_rows if r["reddit_status"] == "null")
+    print(f"\nWrote reddit_counts.csv ({len(counts_rows)} rows; {n_ok} ok, "
+          f"{n_part} partial, {n_null} null) + reddit_detail.csv "
+          f"({len(detail_rows)} rows)")
 
 
 if __name__ == "__main__":

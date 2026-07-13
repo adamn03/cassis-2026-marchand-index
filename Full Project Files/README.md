@@ -22,5 +22,7 @@ accepted abstract — keep it open as the reference target when building poster 
 
 ## Status
 
-Active branch `marchand-index-full-build`. Only remaining data task: the Reddit track (add OAuth
-creds to `marchand_index/.env`, fetch, re-run `compute_oaq.py` + diagnostics). See root `SESSION.md`.
+Active branch `marchand-index-full-build`. Only remaining data task: the Reddit track — now
+credential-free per prereg A23 (Arctic Shift archive): `fetch_reddit_corpus.py` pulls the 36-sub
+corpus, `fetch_reddit.py` matches locally, then re-run `compute_oaq.py` + diagnostics. No OAuth
+creds needed. See root `SESSION.md`.
