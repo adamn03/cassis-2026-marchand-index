@@ -417,6 +417,18 @@ A15 attributes a shared-surname submission to player P only when the text also c
 
 **Anti-tuning compliance (§13):** logged while Reddit is 0/774 fetched, so no player's resulting count could have influenced any rule; every rule is mechanical (string prefix test, pool-derived roster sets, fixed token definition), applied uniformly to all 774; subreddits, query, window (A11), dedup, transport (A9 as superseded by A23), composite weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8), and all validation floors (§9, A6/V3) are unchanged.
 
+**A22 (2026-07-13) — Reddit sub-selection: every window-rostered team's subreddit, derived from NHL-API seasonTotals; sub-rename rule. Logged BEFORE the 774-set production Reddit fetch.**
+
+§3.3/A2 search `r/hockey` + the player's (single, snapshot-date) team subreddit. For a player traded inside the attention window, the months of discussion in his former team's sub are invisible — a structured undercount that hits exactly the players whose attention the index should measure across a move (J2-F3, HIGH).
+
+**Corrected rule (applied identically to all 774):** for each player, count the team subreddits of EVERY team he was rostered on inside the window [2025-04-18, 2026-04-17], derived mechanically from the NHL API `seasonTotals` rows with season IDs `20242025` and `20252026`, `leagueAbbrev == "NHL"`, `gameTypeId == 2`, mapped to team subs via the existing team→subreddit mapping already used by `fetch_reddit.py` (in/derived from `raw/teams.csv` — reuse it, do not build a new one). 2024-25 season rows are included because the window's first ~2 months (Apr–Jun 2025) fall in that season's playoffs/offseason, when a player is still discussed in his then-current (now former) sub. `r/hockey` participation is unchanged. Submissions are deduplicated by submission id ACROSS subs, so a crosspost counts once. A new column `reddit_subs_searched` records the exact list per player.
+
+**Sub-rename rule:** a team's subreddit SET additionally includes any predecessor subreddit its fan community used inside the window following a franchise rebrand. Known case, fixed here: UTA = {`r/utahmammoth`, `r/UtahHockey`} — verified 2026-07-13 via archive probes: `r/UtahHockey` (the pre-rebrand community) was active from at least 2025-04-19 while `r/utahmammoth`'s earliest in-window post is 2025-04-30, so the window's first ~2 weeks of Utah discussion live only in the predecessor sub. Mechanical and identity-keyed; applies to whichever players this amendment window-rosters to UTA. This is the team-level analogue of the traded-player rule.
+
+**Honest residual (disclosed in advance):** a mid-season stint that produced no NHL `seasonTotals` row (e.g. an AHL loan sandwiched between NHL stretches with a team we'd otherwise miss) can still hide former-sub attention; disclosed, not repaired — the rule stays mechanical.
+
+**Anti-tuning compliance (§13):** logged while Reddit is 0/774 fetched; the sub list is derived from an objective NHL-API quantity fixed by history, not chosen per player; the rename rule keys on a public franchise event, not on any player's data; query, window (A11), dedup, identity rules (A15/A21), weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8), and all validation floors (§9, A6/V3) are unchanged.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
