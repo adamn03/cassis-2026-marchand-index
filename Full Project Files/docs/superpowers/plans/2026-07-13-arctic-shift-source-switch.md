@@ -37,6 +37,22 @@ Unchanged: A21 identity rules; A22 roster-derivation rule (extended with the UTA
 - **Submissions-only stands.** Reddit COMMENTS remain rejected per the 2026-07-07 free-data supplement (construct change on 0.44 locked A12 weight). The corpus architecture makes a comments pull cheap later (H1/H4/Gate-5 are post-poster future work) — but it is not part of this switch.
 - **Composite counting subs unchanged:** r/hockey + the player's A22 team-sub set. r/nhl + r/fantasyhockey enter only `reddit_mentions_allsubs` / `reddit_mentions_fantasy` (descriptive, never composite — A12 weights locked).
 
+## 4b. Finding — pool duplicate rows (OWNER DECISION NEEDED, pre-existing)
+
+The A21 acceptance dry-run (`diagnostics/reddit_identity_dryrun.py`, output
+`raw/reddit_identity_pairs.md`) confirmed the MID-dupe suspicion SESSION.md had
+queued: the locked 774 pool contains **3 duplicate persons** — identical
+`nhl_player_id` under two snapshot teams (mid-move rows): Emil Andrae (pids
+499/637, PHI+TOR), Simon Benoit (500/638, PHI+TOR), Ross Colton (152/368,
+COL+NAS). The two Elias Petterssons are NOT dupes (distinct ids — real pair).
+
+Effect on Reddit: A21 rule 3 mechanically flags each dupe pair fully
+non-discriminable → all their mentions land in `ambiguous_mentions`, zeroing
+both rows. Honest per the rules, but it zeroes 3 real players because of a
+pool defect, not true ambiguity. Fix is a POOL amendment (774 → 771 dedup) —
+touches N everywhere, so it is an owner decision, not made here. The matcher
+is deterministic from the corpus: re-run after the pool decision costs ~2 min.
+
 ## 5. Open item — A30 transport
 
 A30 (market-proxy rebuild, pending owner decision D-2) specified team-sub subscriber counts via the A9 OAuth transport (`oauth.reddit.com/r/<sub>/about`). A9 is now superseded. If D-2 = rebuild: source subscriber counts from Arctic Shift's subreddits endpoint or unauthenticated `www.reddit.com/r/<sub>/about.json` — probe at A30 implementation time, record in A30's text. Not blocking anything today.
