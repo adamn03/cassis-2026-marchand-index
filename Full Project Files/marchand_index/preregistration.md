@@ -446,6 +446,16 @@ A9's OAuth transport inherits three structural limits of Reddit's live search AP
 
 **Anti-tuning compliance (§13):** logged while Reddit is 0/774 fetched, so no player's resulting count could have influenced any rule; the sub list, matching rule, and semantics are fixed in advance, mechanical, and uniform across all 774; query construct (surname), window (A11 fixed dates), submission-id dedup, identity rules (A15/A21), sub-selection (A22), weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8), and all validation floors (§9, A6/V3) are unchanged. The A9/A10 credentials prerequisite is void.
 
+**Decision record (2026-07-13) — owner decisions per `docs/airtight_execution_plan.md` §D and the 2026-07-11 decision sheet (§I checklist item "Owner decisions §D recorded in prereg"). Not an amendment; recorded for the audit trail. Logged while Reddit is 0/774 fetched (corpus pull in flight; no per-player production Reddit counts exist).**
+
+- **D-1: Gate-4 GO, with the U1 rider** (10-player fail-fast dry-run after the G4-A1..A3 commits and the YouTube API key). Gate-4 is executed for the poster run as load-bearing pathway #3.
+- **D-2: A30 market-proxy REBUILD PRIMARY** (sensitivity-only fallback declined). A30 text follows in this file; A32's `[D-2 CONDITIONAL]` clauses are retained.
+- **D-3: A31 headline structure SIGNED OFF, with U2 folded into A31 before commit** (Hanley–McNeil precision statement + paired bootstrap ΔAUC).
+- **U-slate: recommended slate accepted** — U1–U7 yes; U8 default-skip unless the U1 dry-run signals thin depth-band coverage.
+- **Pool dedup APPROVED: 774 → 771** (supplement 2026-07-13 §4b — three duplicate persons: Andrae, Benoit, Colton, each one `nhl_player_id` under two snapshot teams). Logged as amendment A41 in this file before the production matcher run.
+
+Owner actions still pending (not decisions): (a) eyeball `raw/reddit_identity_pairs.md` (A21 acceptance step); (d) YouTube API key (U1/Gate-4 prerequisite).
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**

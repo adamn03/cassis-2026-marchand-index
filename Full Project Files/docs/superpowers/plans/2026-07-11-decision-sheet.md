@@ -1,6 +1,6 @@
 # Owner Decision Sheet — §D + U1–U8 slotting
 
-**Date:** 2026-07-11. **Status:** ADVISORY — synthesized from `airtight_execution_plan.md` §D, the idea-maximization review, and the application plan (both 2026-07-11). Owner marks each box; decisions get recorded in prereg per §I. Nothing below is committed until marked.
+**Date:** 2026-07-11. **Status:** DECIDED — owner approved all recommended options 2026-07-13 (verbal approval: "all are approved"). Boxes marked below; decisions recorded in impl prereg §14 decision record (same date). The two owner ACTIONS remain pending: (a) identity-pairs eyeball, (d) YouTube API key.
 
 ---
 
@@ -9,18 +9,18 @@
 ### D-1: Gate-4 GO/NO-GO
 **Recommend: GO.** Panel verdict says mandatory — without it the ≥3-pathways criterion fails (J3-F2) and criterion 2 collapses. ~8 fetch-days of free quota, long-lead, independent of Reddit.
 **Rider:** approve U1 with it (fail-fast 10-player dry-run, 3–5h, no amendment needed, ~1.5k quota units). If depth-band yield is thin you learn in July, not the last fetch-week; §6.2.2 escalation rule already pre-registers the response.
-- [ ] GO + U1 rider (recommended)
+- [x] GO + U1 rider (recommended) — **owner, 2026-07-13**
 - [ ] GO without U1
 - [ ] NO-GO (accept 2-pathway cap — fails criterion 2; not viable for best-in-show)
 
 ### D-2: A30 market-proxy rebuild
 **Recommend: REBUILD PRIMARY.** Canada confound is first-order on 0.44 of composite weight; no results exist yet so the rebuild is free of tuning suspicion; sensitivity-only fallback stays documented in A30.
-- [ ] Rebuild primary (recommended)
+- [x] Rebuild primary (recommended) — **owner, 2026-07-13**
 - [ ] Sensitivity-only
 
 ### D-3: A31 headline structure sign-off
 **Recommend: SIGN OFF, with U2 folded in before A31 is committed.** Validation-finding headline, MI demoted to panel — unchanged from plan. U2 adds (a) Hanley–McNeil pre-computed power statement (kills "test you can't fail" attack), (b) paired bootstrap ΔAUC vs baselines (same 1,000 draws, same seed — two-line code change). Free ONLY while A31 is unwritten; after commit it costs an A40 clause.
-- [ ] Sign off + U2 folded in (recommended)
+- [x] Sign off + U2 folded in (recommended) — **owner, 2026-07-13**
 - [ ] Sign off without U2
 - [ ] Rework headline structure (specify)
 
@@ -39,8 +39,10 @@
 | U7 | Elevate A38 λ̂ to titled second finding ("fame is X% portable") | ~2h layout | none | **YES** — the single highest-leverage counter to the identified loss mode (rigor without memorable discovery) | poster phase |
 | U8 | Merch/usage outcome sweep | 3–4h | YES (A41-class) | **DEFAULT SKIP** — only if U1 dry-run comes back worrying | conditional |
 
-- [ ] Accept recommended slate (U1–U7 yes, U8 conditional)
+- [x] Accept recommended slate (U1–U7 yes, U8 conditional) — **owner, 2026-07-13**
 - [ ] Modifications: ______________
+
+**Additional owner decision (2026-07-13, same approval):** pool dedup 774 → 771 APPROVED (supplement §4b finding — Andrae/Benoit/Colton duplicate persons). Logged as amendment A41.
 
 **Budget check:** pre-compute adds U1+U2+U3 ≈ 2 working days; U4–U7 land in poster phase where plans are thinnest. Nothing touches weights, window, λ, K, seed, pool, floors, or headline definition.
 
