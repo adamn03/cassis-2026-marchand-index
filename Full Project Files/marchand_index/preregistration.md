@@ -461,6 +461,18 @@ A4/A8 key `is_rookie_deal` on a price+age proxy (`cap_hit_M ≤ $0.975M AND age 
 
 **Anti-tuning compliance (§13):** the flag keys on an external structural fact of the contract (its registered type), never on any player's attention, rank, or index value; the discovery procedure and its fallback were fixed in the 2026-07-12 proposals draft before the probe ran, and the probe result is recorded verbatim above; fit-set restriction and log/Duan mechanics are standard econometric practice adopted on reasoning grounds while Reddit is 0/774 and no final composite exists; peer features (§6/A13), λ (A5), the A8 hybrid headline pointer, weights (§4/A12), and all validation floors (§9, A6/V3) are unchanged. Prior expected_cap columns remain in git history per §13.
 
+**A25 (2026-07-13) — Missingness taxonomy: `no_entity_exists` imputes raw 0; `fetch_failed` keeps sentinel renorm. Logged BEFORE the final compute.**
+
+§4's sentinel handling renormalizes weights over surviving components for ANY null. That treats two different situations identically (E3): (a) the source was blocked/failed — missingness unrelated to the player (MCAR; renorm defensible); (b) the entity does not exist — no Wikipedia article, no Trends topic and an empty series. Case (b) is itself attention information: absence of a page IS the low-fame signal, and renorming it away systematically overstates the engagement of exactly the low-attention players.
+
+**Rules (applied identically to all 774):**
+
+1. Every fetcher writes a per-component `null_reason ∈ {no_entity_exists, fetch_failed}` for each null it produces. Classification is mechanical: `wiki_match = none` with a confirmed no-page verdict → `no_entity_exists`; Trends with no topic MID AND an empty series → `no_entity_exists`; HTTP failures, blocks, rate-limits, parse errors → `fetch_failed`.
+2. `fetch_failed` (and blocked-source) nulls → weight renorm, current behavior, unchanged.
+3. `no_entity_exists` nulls → impute the RAW value 0 for that component BEFORE z-scoring; no renorm for that component. (The player's z-score on that component is then the z-score of zero raw attention — strongly negative, as it should be.)
+
+**Anti-tuning compliance (§13):** logged while Reddit is 0/774 and no final composite exists; the taxonomy keys on fetch-outcome facts, never on any resulting score; weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8/A24), and all validation floors (§9, A6/V3) are unchanged.
+
 **Decision record (2026-07-13) — owner decisions per `docs/airtight_execution_plan.md` §D and the 2026-07-11 decision sheet (§I checklist item "Owner decisions §D recorded in prereg"). Not an amendment; recorded for the audit trail. Logged while Reddit is 0/774 fetched (corpus pull in flight; no per-player production Reddit counts exist).**
 
 - **D-1: Gate-4 GO, with the U1 rider** (10-player fail-fast dry-run after the G4-A1..A3 commits and the YouTube API key). Gate-4 is executed for the poster run as load-bearing pathway #3.
