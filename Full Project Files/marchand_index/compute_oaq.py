@@ -44,9 +44,10 @@ Method summary (locked):
   marchand_index = OAQ_portable / expected_cap   (intrinsic-efficiency lens;
     was A4 headline, demoted by A8)
   marchand_index_rawcap = OAQ_portable / cap_hit_M  (audit / §8-original)
-  Bootstrap: 1000 draws, resample each player's wiki daily vector + reddit
-    submission pool with replacement; trends/IG/cap/market fixed; peer SETS
-    fixed; recompute z-scores + everything per draw; 2.5/97.5 percentile CIs.
+  Bootstrap: 1000 draws; wiki daily vectors (en + per-intl-edition) resampled
+    in 7-day CIRCULAR blocks (A26, Politis–Romano); reddit submission pool
+    resampled iid; trends/IG/cap/market fixed; peer SETS fixed; recompute
+    z-scores + everything per draw; 2.5/97.5 percentile CIs.
 """
 from __future__ import annotations
 
@@ -338,6 +339,24 @@ def load_reddit_scores() -> dict[int, np.ndarray]:
 # --------------------------------------------------------------------------- #
 # Core math                                                                    #
 # --------------------------------------------------------------------------- #
+def block_resample(arr: np.ndarray, rng: np.random.Generator,
+                   block: int = 7) -> np.ndarray:
+    """A26: circular block bootstrap draw (Politis–Romano convention).
+
+    Treat `arr` as a ring; sample ceil(n/block) uniformly-random start
+    indices, concatenate the length-`block` blocks, truncate to n. For the
+    365-day wiki vector this is exactly the pre-registered 53x7 procedure.
+    Preserves within-week autocorrelation that iid day resampling destroys.
+    """
+    n = arr.size
+    if n == 0:
+        return arr
+    n_blocks = -(-n // block)
+    starts = rng.integers(0, n, n_blocks)
+    idx = (starts[:, None] + np.arange(block)[None, :]) % n
+    return arr[idx.ravel()[:n]]
+
+
 def zscore_array(v: np.ndarray) -> np.ndarray:
     """Sample z-score (ddof=1), NaN passes through. Constant -> zeros."""
     finite = v[np.isfinite(v)]
@@ -855,16 +874,17 @@ def bootstrap_player_cis(
             if wiki_present[i]:
                 arr = daily_arrays[i]
                 if arr.size:
-                    samp = arr[rng.integers(0, arr.size, arr.size)]
-                    wiki_draw[i] = samp.sum()
+                    # A26: 7-day circular block resample (was iid by day).
+                    wiki_draw[i] = block_resample(arr, rng).sum()
                 # else keep base value (no daily detail) -> effectively fixed
             if intl_present[i]:
                 edition_arrs = intl_arrays[i]
                 # Stratified: resample each edition at its own length, then sum
                 # the per-edition sums (#5 — pooling editions over-widens the CI).
+                # A26: block resample per edition.
                 if any(a.size for a in edition_arrs):
                     intl_draw[i] = sum(
-                        a[rng.integers(0, a.size, a.size)].sum()
+                        block_resample(a, rng).sum()
                         for a in edition_arrs if a.size)
                 # else keep base value (no daily detail)
             if reddit_present[i]:
@@ -1273,7 +1293,19 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
                  "covariance of standardized (age, ppg, toi_per_game, "
                  "cf_pct, xgf_pct, ozs_pct) [A13 5v5 on-ice features; "
                  "thin/missing imputed to group mean])")
-    lines.append(f"- Bootstrap draws: {BOOTSTRAP_DRAWS}, seed {SEED}")
+    lines.append(f"- Bootstrap draws: {BOOTSTRAP_DRAWS}, seed {SEED}; wiki "
+                 "daily vectors resampled in 7-day CIRCULAR blocks (A26, "
+                 "Politis–Romano); Reddit pool resampled iid (unchanged)")
+    lines.append("")
+    lines.append("### A26 propagated-uncertainty table\n")
+    lines.append("| Uncertainty source | Propagated into the CIs? |")
+    lines.append("|---|---|")
+    lines.append("| Wikipedia daily vectors (en + intl) | YES — 7-day circular block bootstrap |")
+    lines.append("| Reddit submission pool | YES — iid pool resample |")
+    lines.append("| Peer-set composition (K=10 matching) | NO — peer sets fixed across draws |")
+    lines.append("| Google Trends values | NO — fixed at point estimate |")
+    lines.append("| Market proxy (market_z) | NO — fixed |")
+    lines.append("| expected_cap OLS fit | NO — fixed |")
     lines.append(f"- Market proxy components used: {', '.join(market_used)}")
     lines.append(f"- Reddit availability: {reddit_note}")
     n_mq_low = int((df["match_quality"].astype(str) == "low").sum())
