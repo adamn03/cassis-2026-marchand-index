@@ -485,6 +485,18 @@ A4/A8 key `is_rookie_deal` on a price+age proxy (`cap_hit_M ≤ $0.975M AND age 
 
 **Anti-tuning compliance (§13):** logged before the final compute on variance-honesty grounds; block length (7 days) is fixed in advance by news-cycle reasoning, not chosen for any interval's resulting width; seed, draw count (1,000), weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8/A24), and all validation floors (§9, A6/V3) are unchanged. Wider CIs are the expected and accepted consequence.
 
+**A27 (2026-07-13) — Star-boundary matching-bias diagnostic (`peer_skill_gap`) + bias-corrected reporting lens (`OAQ_bc`). Primary unchanged. Logged BEFORE the final compute.**
+
+K-nearest matching at a distribution boundary is biased: a player at the skill frontier has peers strictly below him, so any convex attention-in-skill relationship mechanically inflates his OAQ residual (E5; J1 CONFIRM — textbook boundary bias, Abadie & Imbens 2011). No results exist yet; the remedy is a pre-registered diagnostic + corrected LENS, with the primary untouched.
+
+**Rules:**
+
+1. **Diagnostic.** Every row ships `peer_skill_gap`: mean(player − peer) on each standardized skill feature (6 values), plus a scalar summary defined as the **mean of the absolute standardized per-feature gaps**.
+2. **Bias-corrected lens (reporting-only).** `OAQ_bc = OAQ_observed − β̂ᵀ(x_P − x̄_peers)`, where β̂ comes from a within-position OLS of `engagement_raw` on the standardized 6-feature skill vector (Abadie–Imbens-style regression correction). `OAQ_portable_bc` applies the SAME β̂ (from the engagement_raw-on-skill regression — NOT refit on the market-adjusted quantity) to the portable residual.
+3. **Status rule (A17 language, verbatim in application):** the raw OAQ remains the locked primary and the only basis for gate verdicts. The bc lens is robustness, reported regardless of direction. Spearman rank agreement primary-vs-bc is reported; agreement < 0.8 is itself a reported finding and a stated limitation — it does not license switching the headline to whichever lens reads better.
+
+**Anti-tuning compliance (§13):** logged before the final compute on published-literature grounds (Abadie & Imbens 2011); the correction form and the β̂ source regression are fixed in advance, applied uniformly; the primary quantity, weights (§4/A12), peer construction (§6/A13), λ (A5), denominators (A4/A8/A24), and all validation floors (§9, A6/V3) are unchanged.
+
 **Decision record (2026-07-13) — owner decisions per `docs/airtight_execution_plan.md` §D and the 2026-07-11 decision sheet (§I checklist item "Owner decisions §D recorded in prereg"). Not an amendment; recorded for the audit trail. Logged while Reddit is 0/774 fetched (corpus pull in flight; no per-player production Reddit counts exist).**
 
 - **D-1: Gate-4 GO, with the U1 rider** (10-player fail-fast dry-run after the G4-A1..A3 commits and the YouTube API key). Gate-4 is executed for the poster run as load-bearing pathway #3.
