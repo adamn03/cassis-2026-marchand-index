@@ -35,8 +35,10 @@ Method summary (locked):
     imputation for NULL skill (A13: 5v5 on-ice features).
   OAQ_observed = engagement_raw - mean(engagement_raw over K peers).
   OAQ_portable = (engagement_raw - market_z) - mean over K peers of same.
-  expected_cap(P): per-group OLS cap_hit_M ~ PPG + TOI/G prediction, floored
-    at $0.775M. Age excluded so the rookie scale is not re-imported.
+  expected_cap(P): A24 — per-group OLS log(cap_hit_M) ~ PPG + TOI/G fit on
+    NON-ROOKIE market contracts, Duan-smeared back-transform, floored at
+    $0.775M. Age excluded so the rookie scale is not re-imported. Rookie flag
+    keys on the CapWages contract type (price+age proxy = per-row fallback).
   marchand_index_hybrid = OAQ_portable / (expected_cap if rookie-deal else
     cap_hit_M)                                    (HEADLINE, A8)
   marchand_index = OAQ_portable / expected_cap   (intrinsic-efficiency lens;
@@ -130,7 +132,12 @@ LEAGUE_MIN_CAP_M = 0.775
 LAMBDA_BIGMARKET = 0.5
 LAMBDA_SENSITIVITY = (0.0, 0.25, 0.5, 0.75, 1.0)
 
-# Rookie-deal (ELC) proxy: cap ≤ $0.975M AND age ≤ 25. Tight enough to exclude
+# A24: is_rookie_deal keys on the CapWages contract-type field ("entry-level"
+# substring after casefold) of the contract governing 2025-26. The price+age
+# proxy below is the PER-ROW FALLBACK where the field is missing (pre-A24 CSV
+# vintage, or a low-quality row that never reached a contract object); the
+# `rookie_flag_source` column records which path fired.
+# Proxy: cap ≤ $0.975M AND age ≤ 25. Tight enough to exclude
 # veteran-minimum / depth players (Stecher 32 @ $0.788M, McIlrath 34 @ $0.825M,
 # Wotherspoon 28 @ $1.00M, Mukhamadullin 24 @ $1.00M) while catching every
 # obvious ELC in the set (Bedard, Celebrini, Schaefer, Eklund, Smith, Fantilli,
@@ -197,9 +204,12 @@ def load_inputs() -> pd.DataFrame:
         on="player_id", how="left",
     )
     df = df.merge(trends[["player_id", "trends_12mo"]], on="player_id", how="left")
-    df = df.merge(
-        caps[["player_id", "cap_hit_M", "cap_quality"]], on="player_id", how="left"
-    )
+    cap_cols = ["player_id", "cap_hit_M", "cap_quality"]
+    if "contract_type" in caps.columns:      # A24: present after the re-fetch
+        cap_cols.append("contract_type")
+    df = df.merge(caps[cap_cols], on="player_id", how="left")
+    if "contract_type" not in df.columns:
+        df["contract_type"] = pd.NA
     df = df.merge(
         external[
             ["player_id", "jersey_list_member", "jersey_rank", "asg2024_member"]
@@ -488,15 +498,50 @@ def _peer_means(values: np.ndarray, peers: list[list[int]]) -> np.ndarray:
     return out
 
 
-def compute_expected_cap(df: pd.DataFrame) -> np.ndarray:
-    """A4 denominator: market-rate cap expected from production alone.
+def rookie_flags(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    """A24 rookie flag: (is_rookie_deal bool array, rookie_flag_source array).
 
-    OLS `cap_hit_M ~ PPG + TOI/G` fit SEPARATELY per position group on the
-    in-sample rows where all three are finite. Predictions are floored at the
-    2025-26 league minimum ($0.775M). NULL predictors are imputed with the
-    within-group mean before prediction (group fit). Age is deliberately
-    excluded — including it re-imports the rookie-scale floor via
-    young/cheap peers (verified empirically; see prereg §14 A4).
+    Keys on the CapWages `contract_type` field of the contract governing
+    2025-26 ("entry-level" substring, casefolded). Rows with no field value
+    fall back to the A4-era price+age proxy; `rookie_flag_source` records
+    which path fired ("contract_type" | "price_age_proxy") per row.
+    """
+    cap_raw = df["cap_hit_M"].to_numpy(dtype=float)
+    age = df["age"].to_numpy(dtype=float)
+    proxy = (
+        np.isfinite(cap_raw) & np.isfinite(age)
+        & (cap_raw <= ROOKIE_CAP_MAX_M) & (age <= ROOKIE_AGE_MAX)
+    )
+    ctype = df["contract_type"] if "contract_type" in df.columns else None
+    flag = np.zeros(len(df), dtype=bool)
+    source = np.empty(len(df), dtype=object)
+    for i in range(len(df)):
+        t = "" if ctype is None or pd.isna(ctype.iloc[i]) else str(ctype.iloc[i])
+        if t.strip():
+            flag[i] = "entry-level" in t.casefold()
+            source[i] = "contract_type"
+        else:
+            flag[i] = bool(proxy[i])
+            source[i] = "price_age_proxy"
+    return flag, source
+
+
+def compute_expected_cap(df: pd.DataFrame,
+                         rookie: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """A4/A24 denominator: market-rate cap expected from production alone.
+
+    A24 primary: OLS `log(cap_hit_M) ~ PPG + TOI/G` fit SEPARATELY per
+    position group on the NON-ROOKIE rows where cap and all predictors are
+    finite (ELC rows are CBA-priced by fiat, not the market), predicting for
+    every row via the Duan (1983) smearing back-transform
+    `exp(Xb) * mean(exp(residuals))` (the naive `exp(Xb)` alternative is NOT
+    computed). The pre-A24 linear all-rows fit is retained as an audit lens
+    (second return value). Predictions floored at the 2025-26 league minimum
+    ($0.775M). NULL predictors are imputed with the within-group mean before
+    prediction. Age is deliberately excluded — including it re-imports the
+    rookie-scale floor via young/cheap peers (see prereg §14 A4).
+
+    Returns (expected_cap, expected_cap_linear_allrows).
     """
     groups = df["group"].to_numpy()
     cap = df["cap_hit_M"].to_numpy(dtype=float)
@@ -504,6 +549,8 @@ def compute_expected_cap(df: pd.DataFrame) -> np.ndarray:
         df[c].to_numpy(dtype=float) for c in EXPECTED_CAP_PREDICTORS
     ])
     out = np.full(len(df), np.nan)
+    out_linear = np.full(len(df), np.nan)
+    n_pred = X_raw.shape[1]
 
     for gi in np.unique(groups):
         idx = np.where(groups == gi)[0]
@@ -511,26 +558,37 @@ def compute_expected_cap(df: pd.DataFrame) -> np.ndarray:
             continue
         cap_g = cap[idx]
         X_g = X_raw[idx]
-        # Fit only on rows with finite cap + all predictors.
-        fit_mask = np.isfinite(cap_g) & np.all(np.isfinite(X_g), axis=1)
-        if fit_mask.sum() < (X_g.shape[1] + 1):
-            # Degenerate group: floor everyone in this group at league min.
-            out[idx] = LEAGUE_MIN_CAP_M
-            continue
-        X_fit = np.column_stack([np.ones(fit_mask.sum()), X_g[fit_mask]])
-        y_fit = cap_g[fit_mask]
-        beta, *_ = np.linalg.lstsq(X_fit, y_fit, rcond=None)
-        # Predict on every row in the group; impute NULL predictors with
-        # group means (finite-row means) before prediction.
+        rookie_g = rookie[idx]
+        finite = np.isfinite(cap_g) & (cap_g > 0) & np.all(np.isfinite(X_g), axis=1)
+
+        # Prediction matrix: NULL predictors imputed with group means.
         X_pred = X_g.copy()
         for j in range(X_pred.shape[1]):
             col = X_g[:, j]
             mu = np.nanmean(col) if np.isfinite(col).any() else 0.0
             X_pred[:, j] = np.where(np.isnan(col), mu, col)
-        Xb = np.column_stack([np.ones(idx.size), X_pred])
-        pred = Xb @ beta
-        out[idx] = np.maximum(pred, LEAGUE_MIN_CAP_M)
-    return out
+        Xb_all = np.column_stack([np.ones(idx.size), X_pred])
+
+        # A24 primary: log-scale fit on non-rookie market contracts + Duan.
+        fit_mask = finite & ~rookie_g
+        if fit_mask.sum() < (n_pred + 1):
+            out[idx] = LEAGUE_MIN_CAP_M   # degenerate group: floor everyone
+        else:
+            X_fit = np.column_stack([np.ones(fit_mask.sum()), X_g[fit_mask]])
+            y_fit = np.log(cap_g[fit_mask])
+            beta, *_ = np.linalg.lstsq(X_fit, y_fit, rcond=None)
+            smear = float(np.mean(np.exp(y_fit - X_fit @ beta)))
+            out[idx] = np.maximum(np.exp(Xb_all @ beta) * smear, LEAGUE_MIN_CAP_M)
+
+        # Audit lens: the pre-A24 linear fit on ALL finite rows (incl. ELCs).
+        lin_mask = np.isfinite(cap_g) & np.all(np.isfinite(X_g), axis=1)
+        if lin_mask.sum() < (n_pred + 1):
+            out_linear[idx] = LEAGUE_MIN_CAP_M
+        else:
+            X_lin = np.column_stack([np.ones(lin_mask.sum()), X_g[lin_mask]])
+            beta_lin, *_ = np.linalg.lstsq(X_lin, cap_g[lin_mask], rcond=None)
+            out_linear[idx] = np.maximum(Xb_all @ beta_lin, LEAGUE_MIN_CAP_M)
+    return out, out_linear
 
 
 def compute_oaq(df: pd.DataFrame, peers: list[list[int]] | None = None,
@@ -586,15 +644,15 @@ def compute_oaq(df: pd.DataFrame, peers: list[list[int]] | None = None,
     #                               (all 160 use per-group OLS prediction).
     #   marchand_index_rawcap     : §8-original — OAQ_portable / cap_hit_M
     #                               (current-season bargain lens).
-    expected_cap = compute_expected_cap(df)
-    df["expected_cap"] = expected_cap
-    cap_raw = df["cap_hit_M"].to_numpy(dtype=float)
-    age = df["age"].to_numpy(dtype=float)
-    rookie_deal = (
-        np.isfinite(cap_raw) & np.isfinite(age)
-        & (cap_raw <= ROOKIE_CAP_MAX_M) & (age <= ROOKIE_AGE_MAX)
-    )
+    # A24: rookie flag first (contract-type keyed, proxy fallback) — the
+    # expected_cap fit set depends on it.
+    rookie_deal, rookie_src = rookie_flags(df)
     df["is_rookie_deal"] = rookie_deal.astype(int)
+    df["rookie_flag_source"] = rookie_src
+    expected_cap, expected_cap_linear = compute_expected_cap(df, rookie_deal)
+    df["expected_cap"] = expected_cap
+    df["expected_cap_linear_allrows"] = expected_cap_linear
+    cap_raw = df["cap_hit_M"].to_numpy(dtype=float)
     port = df["OAQ_portable"].to_numpy(dtype=float)
     with np.errstate(invalid="ignore", divide="ignore"):
         df["marchand_index"] = np.where(
@@ -1150,16 +1208,22 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
                  f"descriptive/non-exclusionary): {n_small} — kept in all "
                  "computations; headline is not quoted on these rows")
     lines.append("- **A8 headline denominator:** `marchand_index_hybrid` — "
-                 "rookie-deal players use `expected_cap` (per-group OLS of "
-                 "cap_hit_M ~ PPG + TOI/G, age excluded, floored at "
-                 f"${LEAGUE_MIN_CAP_M:.3f}M); everyone else uses actual "
-                 "`cap_hit_M`. `marchand_index` (expected_cap for all, the "
-                 "intrinsic-efficiency lens; was the A4 headline) and "
+                 "rookie-deal players use `expected_cap` (A24: per-group OLS "
+                 "of log(cap_hit_M) ~ PPG + TOI/G on non-rookie market "
+                 "contracts, Duan-smeared back-transform, age excluded, "
+                 f"floored at ${LEAGUE_MIN_CAP_M:.3f}M); everyone else uses "
+                 "actual `cap_hit_M`. `marchand_index` (expected_cap for all, "
+                 "the intrinsic-efficiency lens; was the A4 headline) and "
                  "`marchand_index_rawcap` (§8-original, raw cap denominator) "
                  "are also computed for the 5-lens leaderboard comparison.")
     n_rookie = int(df["is_rookie_deal"].sum())
-    lines.append(f"- **Rookie-deal flag:** cap ≤ ${ROOKIE_CAP_MAX_M:.3f}M AND "
-                 f"age ≤ {ROOKIE_AGE_MAX} → {n_rookie} of {len(df)} players.\n")
+    n_ct = int((df["rookie_flag_source"] == "contract_type").sum())
+    n_px = int((df["rookie_flag_source"] == "price_age_proxy").sum())
+    lines.append("- **Rookie-deal flag (A24):** CapWages contract type "
+                 "(\"entry-level\", casefolded) with price+age proxy "
+                 f"(cap ≤ ${ROOKIE_CAP_MAX_M:.3f}M AND age ≤ {ROOKIE_AGE_MAX}) "
+                 f"as per-row fallback → {n_rookie} of {len(df)} players "
+                 f"(source: contract_type {n_ct}, price_age_proxy {n_px}).\n")
 
     # Sentinel / dropped summary.
     drop_counts: dict[str, int] = {}
@@ -1273,11 +1337,10 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     # Leaderboards.
     lines.append("## Leaderboards\n")
     lines.append(
-        f"Rookie-deal flag: `cap_hit_M ≤ ${ROOKIE_CAP_MAX_M:.3f}M AND "
-        f"age ≤ {ROOKIE_AGE_MAX}` → "
-        f"{int(df['is_rookie_deal'].sum())} of {len(df)} players. Catches "
-        "every clean ELC in the set; excludes vet-min depth (Stecher/"
-        "McIlrath/Wotherspoon/Mukhamadullin).\n"
+        "Rookie-deal flag (A24): CapWages contract type (\"entry-level\") "
+        f"with the price+age proxy (`cap_hit_M ≤ ${ROOKIE_CAP_MAX_M:.3f}M "
+        f"AND age ≤ {ROOKIE_AGE_MAX}`) as per-row fallback → "
+        f"{int(df['is_rookie_deal'].sum())} of {len(df)} players.\n"
     )
 
     lines.append("### Top 10 by engagement_raw (no peer or market adjustment)")

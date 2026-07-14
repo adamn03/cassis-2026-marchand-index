@@ -14,9 +14,13 @@ must fall in [$0.7M league-min, $20M]. Any failure -> cap_quality=low with a
 note, kept in the CSV but excluded from the Marchand Index leaderboard
 downstream. A 10-player random sample is hand-verified before compute.
 
+A24: the governing contract's `type` field (the contract whose details[] holds
+the 2025-26 row) is extracted as `contract_type` — the mechanical rookie-flag
+key ("entry-level" substring, case-folded) that replaces the price+age proxy.
+
 Writes: marchand_index/raw/cap_hits.csv
   player_id, full_name, nhl_player_id, capwages_nhlid, cap_hit_M, season,
-  cap_quality, cap_note, source_url, fetched_at
+  contract_type, cap_quality, cap_note, source_url, fetched_at
 """
 from __future__ import annotations
 
@@ -72,15 +76,23 @@ def parse_money_to_m(raw) -> float | None:
     return val / 1_000_000 if val > 1000 else val  # "$12,500,000" -> 12.5; "12.5" -> 12.5
 
 
-def find_2025_26_caphit(player: dict) -> tuple[float | None, str]:
+def find_2025_26_caphit(player: dict) -> tuple[float | None, str, str]:
+    """(cap_M, note, contract_type) from the contract governing 2025-26.
+
+    A24: `contract_type` is the governing contract's `type` scalar (e.g.
+    "Entry-Level Contract", "Standard Contract (Extension)") — the same
+    contract object whose details[] row supplies capHit, so a future extension
+    listed first (the Hutson case) can never mislabel the season.
+    """
     for c in player.get("contracts", []) or []:
         for det in c.get("details", []) or []:
             if det.get("season") == TARGET_SEASON:
+                ctype = str(c.get("type") or "")
                 val = parse_money_to_m(det.get("capHit"))
                 if val is not None:
-                    return val, ""
-                return None, "capHit unparseable"
-    return None, f"no {TARGET_SEASON} detail"
+                    return val, "", ctype
+                return None, "capHit unparseable", ctype
+    return None, f"no {TARGET_SEASON} detail", ""
 
 
 def main() -> None:
@@ -89,7 +101,7 @@ def main() -> None:
     rows = []
     for p in load_players():
         want_id = (p.get("nhl_player_id") or "").strip()
-        cap_m, note, cw_nhlid, url = None, "", "", ""
+        cap_m, note, cw_nhlid, url, ctype = None, "", "", "", ""
         # Try candidate slugs; accept the first whose nhlId matches (or, when we
         # have no want_id to verify against, the first with a valid 2025-26 hit).
         for slug in candidate_slugs(p["full_name"], want_id):
@@ -110,7 +122,7 @@ def main() -> None:
                     note = f"nhlId mismatch cw={cand_id} vs {want_id}"
                     time.sleep(0.5)
                     continue  # wrong player (shared surname) -> try next candidate
-                cap_m, note = find_2025_26_caphit(player)
+                cap_m, note, ctype = find_2025_26_caphit(player)
                 cw_nhlid = cand_id
                 break
             except Exception as e:
@@ -132,6 +144,7 @@ def main() -> None:
             "capwages_nhlid": cw_nhlid,
             "cap_hit_M": "" if cap_m is None else f"{cap_m:.4f}",
             "season": TARGET_SEASON,
+            "contract_type": ctype,
             "cap_quality": quality,
             "cap_note": note,
             "source_url": url,
@@ -142,7 +155,8 @@ def main() -> None:
     out = RAW_DIR / "cap_hits.csv"
     atomic_write_csv(out, rows, [
         "player_id", "full_name", "nhl_player_id", "capwages_nhlid", "cap_hit_M",
-        "season", "cap_quality", "cap_note", "source_url", "fetched_at",
+        "season", "contract_type", "cap_quality", "cap_note", "source_url",
+        "fetched_at",
     ])
     n_ok = sum(1 for r in rows if r["cap_quality"] == "ok")
     n_low = sum(1 for r in rows if r["cap_quality"] == "low")
