@@ -473,6 +473,18 @@ A4/A8 key `is_rookie_deal` on a price+age proxy (`cap_hit_M ≤ $0.975M AND age 
 
 **Anti-tuning compliance (§13):** logged while Reddit is 0/774 and no final composite exists; the taxonomy keys on fetch-outcome facts, never on any resulting score; weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8/A24), and all validation floors (§9, A6/V3) are unchanged.
 
+**A26 (2026-07-13) — §10 bootstrap: 7-day circular block resampling for the Wikipedia daily vector; propagated-uncertainty table. Logged BEFORE the final compute.**
+
+§10 resamples the 365-day Wikipedia pageview vector iid by day. Daily pageviews are strongly autocorrelated (news cycles span days), and iid resampling of autocorrelated data understates variance — the published CIs would be too narrow in a direction that flatters precision (E7).
+
+**Rules:**
+
+1. **Block resampling (Politis–Romano convention).** The wiki daily vector is resampled in 7-day CIRCULAR blocks. Exact procedure: treat the 365-day vector as a ring; each bootstrap draw samples 53 uniformly-random block start indices, concatenates the 53 seven-day blocks, truncates to 365 days. Applies to both `wiki_en` and `wiki_intl` daily vectors.
+2. Reddit pool resampling is unchanged; seed `20260526` is unchanged.
+3. **Propagated-uncertainty table.** `results.md` AND the poster carry a table stating what the CIs propagate (wiki daily vectors, Reddit submission pool) and what they do NOT (peer-set composition, Trends values, market proxy, expected_cap fit).
+
+**Anti-tuning compliance (§13):** logged before the final compute on variance-honesty grounds; block length (7 days) is fixed in advance by news-cycle reasoning, not chosen for any interval's resulting width; seed, draw count (1,000), weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8/A24), and all validation floors (§9, A6/V3) are unchanged. Wider CIs are the expected and accepted consequence.
+
 **Decision record (2026-07-13) — owner decisions per `docs/airtight_execution_plan.md` §D and the 2026-07-11 decision sheet (§I checklist item "Owner decisions §D recorded in prereg"). Not an amendment; recorded for the audit trail. Logged while Reddit is 0/774 fetched (corpus pull in flight; no per-player production Reddit counts exist).**
 
 - **D-1: Gate-4 GO, with the U1 rider** (10-player fail-fast dry-run after the G4-A1..A3 commits and the YouTube API key). Gate-4 is executed for the poster run as load-bearing pathway #3.
