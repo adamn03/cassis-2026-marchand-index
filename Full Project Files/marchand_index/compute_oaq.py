@@ -203,7 +203,10 @@ def load_inputs() -> pd.DataFrame:
         wiki_intl[["player_id", "wiki_intl_12mo", "intl_match"]],
         on="player_id", how="left",
     )
-    df = df.merge(trends[["player_id", "trends_12mo"]], on="player_id", how="left")
+    tr_cols = ["player_id", "trends_12mo"]
+    if "query_mid" in trends.columns:      # A25: the no-topic-MID verdict
+        tr_cols.append("query_mid")
+    df = df.merge(trends[tr_cols], on="player_id", how="left")
     cap_cols = ["player_id", "cap_hit_M", "cap_quality"]
     if "contract_type" in caps.columns:      # A24: present after the re-fetch
         cap_cols.append("contract_type")
@@ -376,6 +379,76 @@ def compute_engagement_raw(df: pd.DataFrame):
         d = [c for c in COMPONENTS if not np.isfinite(comp_z[c][i])]
         dropped.append("|".join(d))
     return er, dropped
+
+
+# --------------------------------------------------------------------------- #
+# A25 — missingness taxonomy                                                   #
+# --------------------------------------------------------------------------- #
+NULL_NO_ENTITY = "no_entity_exists"
+NULL_FETCH_FAILED = "fetch_failed"
+
+
+def classify_null_reasons(df: pd.DataFrame) -> dict[str, list[str]]:
+    """A25: per-component null_reason for every NULL component value.
+
+    Mechanical classification from the fetchers' verdict columns:
+      wiki_12mo NULL + wiki_match == "none"      -> no_entity_exists
+      wiki_intl_12mo NULL + intl_match == "none" -> no_entity_exists
+      trends_12mo NULL + no topic MID            -> no_entity_exists
+      everything else NULL (HTTP failure, block, missing row/column,
+      unclassifiable vintage)                    -> fetch_failed
+    Returns component -> list of "" | no_entity_exists | fetch_failed.
+    Defensive: verdict columns absent (synthetic fixtures, old CSV vintages)
+    default to fetch_failed, which preserves pre-A25 renorm behavior.
+    """
+    n = len(df)
+
+    def col_str(name: str) -> list[str]:
+        if name not in df.columns:
+            return [""] * n
+        return ["" if pd.isna(v) else str(v).strip() for v in df[name]]
+
+    wiki_match = col_str("wiki_match")
+    intl_match = col_str("intl_match")
+    query_mid = col_str("query_mid")
+
+    out: dict[str, list[str]] = {}
+    for c in COMPONENTS:
+        vals = df[c].to_numpy(dtype=float) if c in df.columns \
+            else np.full(n, np.nan)
+        reasons = []
+        for i in range(n):
+            if np.isfinite(vals[i]):
+                reasons.append("")
+            elif c == "wiki_12mo" and wiki_match[i].lower() == "none":
+                reasons.append(NULL_NO_ENTITY)
+            elif c == "wiki_intl_12mo" and intl_match[i].lower() == "none":
+                reasons.append(NULL_NO_ENTITY)
+            elif c == "trends_12mo" and query_mid[i] == "" and "query_mid" in df.columns:
+                reasons.append(NULL_NO_ENTITY)
+            else:
+                reasons.append(NULL_FETCH_FAILED)
+        out[c] = reasons
+    return out
+
+
+def apply_null_taxonomy(df: pd.DataFrame) -> pd.DataFrame:
+    """A25 rule 3: impute RAW 0 (before z-scoring) for no_entity_exists nulls;
+    fetch_failed nulls stay NaN (sentinel renorm, rule 2). Adds a per-player
+    `null_reasons` audit column ("comp=reason|..."). Mutates a copy."""
+    df = df.copy()
+    reasons = classify_null_reasons(df)
+    for c in COMPONENTS:
+        ne = np.array([r == NULL_NO_ENTITY for r in reasons[c]])
+        if ne.any():
+            vals = df[c].to_numpy(dtype=float) if c in df.columns \
+                else np.full(len(df), np.nan)
+            df[c] = np.where(ne, 0.0, vals)
+    df["null_reasons"] = [
+        "|".join(f"{c}={reasons[c][i]}" for c in COMPONENTS if reasons[c][i])
+        for i in range(len(df))
+    ]
+    return df
 
 
 def signed_log1p(v: np.ndarray) -> np.ndarray:
@@ -599,6 +672,10 @@ def compute_oaq(df: pd.DataFrame, peers: list[list[int]] | None = None,
     marchand_index_rawcap (§8-original: OAQ_portable / cap_hit_M),
     dropped_components, effective_K, peer info."""
     df = df.copy().reset_index(drop=True)
+
+    # A25: no_entity_exists nulls become raw 0 BEFORE any z-scoring; every
+    # downstream path (primary, log lens, bootstrap) sees the imputed columns.
+    df = apply_null_taxonomy(df)
 
     er, dropped = compute_engagement_raw(df)
     df["engagement_raw"] = er
@@ -1241,6 +1318,28 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
         lines.append("No components dropped for any player.")
     lines.append("")
 
+    # A25 missingness taxonomy: every no_entity_exists imputation listed
+    # (raw 0 before z-scoring); fetch_failed nulls appear in the drop table
+    # above (renorm, pre-A25 behavior).
+    lines.append("## A25 missingness taxonomy\n")
+    ne_rows = []
+    if "null_reasons" in df.columns:
+        for _, r in df.iterrows():
+            for part in str(r["null_reasons"] or "").split("|"):
+                if part.endswith("=" + NULL_NO_ENTITY):
+                    ne_rows.append((r["full_name"],
+                                    part.split("=")[0]))
+    if ne_rows:
+        lines.append("`no_entity_exists` rows (component imputed to raw 0):\n")
+        lines.append("| Player | Component |")
+        lines.append("|---|---|")
+        for name, comp in ne_rows:
+            lines.append(f"| {name} | {comp} |")
+    else:
+        lines.append("No `no_entity_exists` rows — every NULL was "
+                     "fetch_failed-class (weight renorm).")
+    lines.append("")
+
     # External validation table.
     lines.append("## External validation (§9)\n")
     lines.append("| ID | Test | Metric | Value | 95% CI | n | Power |")
@@ -1648,7 +1747,8 @@ OUT_COLS = [
     "onice_status", "games_played", "small_sample",
     "wiki_12mo", "wiki_intl_12mo", "intl_match",
     "trends_12mo", "reddit_mentions_12mo", "reddit_upvotes_12mo",
-    "engagement_raw", "dropped_components",
+    "engagement_raw", "dropped_components", "null_reasons",
+    "rookie_flag_source", "expected_cap_linear_allrows",
     "effective_K", "peer_player_ids", "peer_engagement_mean",
     "market_z",
     "OAQ_observed", "OAQ_observed_lo95", "OAQ_observed_hi95",
