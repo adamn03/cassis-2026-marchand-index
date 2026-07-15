@@ -1,5 +1,26 @@
 # market_proxy.csv — sources & audit trail
 
+> **A30 REBUILD (2026-07-15, owner decision D-2).** Primary `MarketSize_team`
+> = equal-weight z-mean of `metro_population`, `team_sub_subscribers`,
+> `attendance_pct_capacity`. New sources:
+> - `team_sub_subscribers`: Arctic Shift subreddits endpoint
+>   `https://arctic-shift.photon-reddit.com/api/subreddits/search?subreddit=<sub>`
+>   (`subscribers` field; per-record `retrieved_on` snapshot vintage kept in
+>   `sub_retrieved_on` — most subs snapshot 2025-02-14/15, utahmammoth
+>   2025-07-02). Transport probe 2026-07-15: `www.reddit.com/r/<sub>/about.json`
+>   and `old.reddit.com` both HTTP 403 at $0; Arctic Shift 200. UTA = SUM of
+>   {utahmammoth, UtahHockey} per the A22 rename rule.
+> - `arena_capacity` (hockey configuration):
+>   `https://en.wikipedia.org/wiki/List_of_National_Hockey_League_arenas`
+>   (retrieved 2026-07-15). `attendance_pct_capacity` = `arena_attendance`
+>   ÷ `arena_capacity` (announced ≠ turnstile disclosed; values slightly
+>   above 1.0 possible — standing room + suite counting).
+> - `metro_population` unchanged (below). `arena_attendance` retained for the
+>   `market_z_lockedv1` audit lens only (§7-original pair). The instaloader
+>   `team_social_followers` path is REMOVED (dead at $0; not an A30 component).
+> The original §7-era documentation below stands as the audit trail for the
+> retained columns.
+
 Exogenous team market-size components for the Marchand Index pilot
 (`MarketSize_team`, pre-registration §7). This file documents every figure in
 `market_proxy.csv` so a reviewer can independently verify it.

@@ -59,7 +59,7 @@ def _portable_for_weights(df, peers, market_z, weights):
 
 def main() -> None:
     df = co.load_inputs()
-    market_z, _ = co.compute_market_z(df)
+    market_z, _, _ = co.compute_market_z(df)
     df["market_z"] = market_z
     peers = co.compute_peers(df)
 

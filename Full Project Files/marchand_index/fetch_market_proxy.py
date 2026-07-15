@@ -1,24 +1,29 @@
 """Build marchand_index/market_proxy.csv -- exogenous team market-size components.
 
-Pre-registration sec.7 governs MarketSize_team:
+A30 (owner decision D-2) governs MarketSize_team:
   equal-weight mean of the 32-team z-scores of
-    1. metro_population   (static public Census/StatCan figures)
-    2. arena_attendance   (avg regular-season home attendance, latest season)
-    3. team_social_followers (official team Instagram followers, instaloader)
-  Graceful degradation: any component not cleanly available for ALL 32 teams
-  is dropped; the surviving set is recorded per row in `components_present`.
-  Metro population is the irreducible floor.
+    1. metro_population         (static public Census/StatCan figures)
+    2. team_sub_subscribers     (team-subreddit subscriber count, Arctic Shift
+                                 archive snapshot; the hockey-market intensity
+                                 metro pop cannot see — J2-F1. UTA = SUM over
+                                 the A22 sub set {UtahHockey, utahmammoth})
+    3. attendance_pct_capacity  (announced avg home attendance / arena seating
+                                 capacity — raw attendance measures arena size
+                                 at sellout, J2-F8)
+  The displaced §7-original pair (metro + raw attendance) stays in this CSV so
+  compute_oaq.py can build the `market_z_lockedv1` audit lens; metro-only is
+  the E9 sensitivity. Graceful degradation unchanged: a component not cleanly
+  available for ALL 32 teams is dropped (recorded in `components_present`);
+  metro population is the irreducible floor.
 
 This script holds RAW component values + sources ONLY. It does NOT z-score and
 does NOT compute MarketSize -- compute_oaq.py does that downstream.
 
-$0 / local-only. metro_population + arena_attendance are static public figures
-hardcoded from cited public sources (see market_proxy_sources.md). ESPN's
-attendance report and the Census/StatCan tables are bot-walled or large; the
-figures below were grounded against those public sources and are auditable via
-the source doc. team_social_followers is a BEST-EFFORT instaloader pass that is
-expected to 403 unauthenticated at $0; if it fails the column is left blank for
-all teams and dropped from components_present (graceful degradation).
+$0 / local-only. metro_population, arena_attendance, and arena_capacity are
+static public figures hardcoded from cited public sources (see
+market_proxy_sources.md). team_sub_subscribers is fetched live from the Arctic
+Shift subreddits endpoint (per-record `retrieved_on` snapshot vintage kept in
+`sub_retrieved_on` — A30 disclosure).
 
 Run:  python fetch_market_proxy.py
 Out:  market_proxy.csv  (32 rows, joins on raw/teams.csv team_code)
@@ -26,15 +31,23 @@ Out:  market_proxy.csv  (32 rows, joins on raw/teams.csv team_code)
 from __future__ import annotations
 
 import csv
+import datetime as dt
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from _common import atomic_write_csv  # noqa: E402
 
+import requests  # noqa: E402
+
 PILOT_DIR = Path(__file__).parent
 TEAMS_CSV = PILOT_DIR / "raw" / "teams.csv"
 OUT_CSV = PILOT_DIR / "market_proxy.csv"
+
+UA = "marchand-index/0.3 (research; contact ana178@sfu.ca)"
+ARCTIC_SUBS_API = "https://arctic-shift.photon-reddit.com/api/subreddits/search"
+SLEEP_ARCTIC = 1.0
 
 FIELDNAMES = [
     "team_code",
@@ -42,8 +55,11 @@ FIELDNAMES = [
     "division",
     "metro_population",
     "arena_attendance",
-    "team_ig_handle",
-    "team_social_followers",
+    "arena_capacity",
+    "attendance_pct_capacity",
+    "team_sub",
+    "team_sub_subscribers",
+    "sub_retrieved_on",
     "components_present",
     "notes",
 ]
@@ -148,87 +164,113 @@ ARENA_ATTENDANCE = {
 }
 
 # --------------------------------------------------------------------------
-# COMPONENT 3: team_social_followers (BEST-EFFORT, instaloader, unauthenticated)
-# Official team Instagram handles (for the audit trail + an instaloader attempt).
+# COMPONENT 3 input: arena_capacity (hockey configuration)
+# Source: en.wikipedia.org/wiki/List_of_National_Hockey_League_arenas
+# (retrieved 2026-07-15; see market_proxy_sources.md).
+# attendance_pct_capacity = ARENA_ATTENDANCE / ARENA_CAPACITY (A30 rule 1c).
 # --------------------------------------------------------------------------
-IG_HANDLE = {
-    "ANA": "anaheimducks",
-    "BOS": "nhlbruins",
-    "BUF": "buffalosabres",
-    "CGY": "nhlflames",
-    "CAR": "canes",
-    "CHI": "nhlblackhawks",
-    "COL": "coloradoavalanche",
-    "CBJ": "bluejacketsnhl",
-    "DAL": "dallasstars",
-    "DET": "detroitredwings",
-    "EDM": "edmontonoilers",
-    "FLA": "flapanthers",
-    "LA":  "lakings",
-    "MIN": "minnesotawild",
-    "MON": "canadiensmtl",
-    "NAS": "predsnhl",
-    "NJ":  "njdevils",
-    "NYI": "newyorkislanders",
-    "NYR": "nyrangers",
-    "OTT": "senators",
-    "PHI": "nhlflyers",
-    "PIT": "penguins",
-    "SJ":  "sanjosesharks",
-    "SEA": "seattlekraken",
-    "STL": "stlouisblues",
-    "TB":  "tblightning",
-    "TOR": "mapleleafs",
-    "UTA": "utahmammoth",
-    "VAN": "canucks",
-    "VEG": "vegasgoldenknights",
-    "WAS": "capitals",
-    "WPG": "nhljets",
+ARENA_CAPACITY = {
+    "ANA": 17_174,   # Honda Center
+    "BOS": 17_565,   # TD Garden
+    "BUF": 19_070,   # KeyBank Center
+    "CGY": 19_289,   # Scotiabank Saddledome
+    "CAR": 18_547,   # Lenovo Center
+    "CHI": 19_717,   # United Center
+    "COL": 17_809,   # Ball Arena
+    "CBJ": 18_144,   # Nationwide Arena
+    "DAL": 18_532,   # American Airlines Center
+    "DET": 19_515,   # Little Caesars Arena
+    "EDM": 18_347,   # Rogers Place
+    "FLA": 19_250,   # Amerant Bank Arena
+    "LA":  18_230,   # Crypto.com Arena
+    "MIN": 17_954,   # Grand Casino Arena
+    "MON": 20_962,   # Bell Centre
+    "NAS": 17_159,   # Bridgestone Arena
+    "NJ":  16_514,   # Prudential Center
+    "NYI": 17_255,   # UBS Arena
+    "NYR": 18_006,   # Madison Square Garden
+    "OTT": 19_347,   # Canadian Tire Centre
+    "PHI": 19_538,   # Xfinity Mobile Arena
+    "PIT": 18_387,   # PPG Paints Arena
+    "SJ":  17_435,   # SAP Center
+    "SEA": 17_151,   # Climate Pledge Arena
+    "STL": 18_096,   # Enterprise Center
+    "TB":  19_092,   # Benchmark International Arena
+    "TOR": 18_800,   # Scotiabank Arena
+    "UTA": 16_020,   # Delta Center (hockey configuration)
+    "VAN": 18_910,   # Rogers Arena
+    "VEG": 17_367,   # T-Mobile Arena
+    "WAS": 18_573,   # Capital One Arena
+    "WPG": 15_321,   # Canada Life Centre
 }
 
+# --------------------------------------------------------------------------
+# COMPONENT 2: team_sub_subscribers (Arctic Shift archive snapshot — A30 1b)
+# Sub map identical to fetch_reddit.TEAM_SUB. UTA additionally sums the
+# pre-rename A22 sub (r/UtahHockey) — one fanbase split by the rename.
+# --------------------------------------------------------------------------
+TEAM_SUB = {
+    "ANA": "anaheimducks", "BOS": "BostonBruins", "BUF": "sabres",
+    "CGY": "CalgaryFlames", "CAR": "canes", "CHI": "hawks",
+    "COL": "ColoradoAvalanche", "CBJ": "BlueJackets", "DAL": "DallasStars",
+    "DET": "DetroitRedWings", "EDM": "EdmontonOilers", "FLA": "FloridaPanthers",
+    "LA": "losangeleskings", "MIN": "wildhockey", "MON": "Habs",
+    "NAS": "Predators", "NJ": "devils", "NYI": "NewYorkIslanders",
+    "NYR": "rangers", "OTT": "OttawaSenators", "PHI": "Flyers",
+    "PIT": "penguins", "SJ": "SanJoseSharks", "SEA": "SeattleKraken",
+    "STL": "stlouisblues", "TB": "TampaBayLightning", "TOR": "leafs",
+    "UTA": "utahmammoth", "VAN": "canucks", "VEG": "goldenknights",
+    "WAS": "caps", "WPG": "winnipegjets",
+}
+UTA_EXTRA_SUBS = ["UtahHockey"]   # A22 rename rule — summed into UTA
 
-def fetch_instagram_followers(handles: dict[str, str]) -> dict[str, int]:
-    """Best-effort unauthenticated instaloader pass over team IG handles.
 
-    Expected to 403 / rate-limit at $0 with no login. Returns whatever it can;
-    on any failure the team is simply absent from the result (-> blank column).
-    Never raises -- this component is optional per the pre-reg.
-    """
-    out: dict[str, int] = {}
-    try:
-        import instaloader  # local import: optional dependency for this step
-    except Exception as e:  # pragma: no cover
-        print(f"[ig] instaloader unavailable ({e}); skipping social component.")
-        return out
-
-    try:
-        L = instaloader.Instaloader(
-            quiet=True,
-            download_pictures=False,
-            download_videos=False,
-            download_video_thumbnails=False,
-            download_geotags=False,
-            download_comments=False,
-            save_metadata=False,
-        )
-    except Exception as e:  # pragma: no cover
-        print(f"[ig] could not init instaloader ({e}); skipping social component.")
-        return out
-
-    for code, handle in handles.items():
+def fetch_sub_record(sub: str, session: requests.Session):
+    """(subscribers, retrieved_on ISO date) from Arctic Shift, exact-name match.
+    Returns (None, None) on any failure."""
+    for backoff in (0.0, 2.0, 5.0, 15.0):
+        if backoff:
+            time.sleep(backoff)
         try:
-            prof = instaloader.Profile.from_username(L.context, handle)
-            out[code] = int(prof.followers)
-            print(f"[ig] {code:<3} @{handle}: {out[code]:,}")
-        except Exception as e:  # 401/403/429/connection -> expected at $0
-            print(f"[ig] {code:<3} @{handle}: FAILED ({type(e).__name__}); "
-                  f"skipping (graceful degradation).")
-            # If the very first lookup hard-blocks, bail early -- no point
-            # hammering 32 handles into a 401 wall.
-            if not out:
-                print("[ig] first lookup blocked; abandoning social component "
-                      "for all teams (expected unauthenticated at $0).")
+            r = session.get(ARCTIC_SUBS_API, params={"subreddit": sub},
+                            headers={"User-Agent": UA}, timeout=30)
+            if r.status_code != 200:
+                continue
+            payload = r.json().get("data") or []
+            if isinstance(payload, dict):
+                payload = [payload]
+            for d in payload:
+                if d.get("display_name", "").lower() == sub.lower():
+                    n = d.get("subscribers")
+                    ro = d.get("retrieved_on")
+                    when = (dt.datetime.fromtimestamp(
+                        ro, dt.timezone.utc).date().isoformat() if ro else "")
+                    return (int(n) if isinstance(n, int) and n >= 0 else None,
+                            when)
+            return (None, None)   # 200 but no exact match — real miss
+        except Exception:
+            continue
+    return (None, None)
+
+
+def fetch_team_sub_subscribers(codes: list[str]):
+    """{team_code: (subscribers_summed, 'date[|date]')} — A30 rule 1b."""
+    sess = requests.Session()
+    out: dict[str, tuple[int | None, str]] = {}
+    for code in codes:
+        subs_list = [TEAM_SUB[code]] + (UTA_EXTRA_SUBS if code == "UTA" else [])
+        total, dates, ok = 0, [], True
+        for s in subs_list:
+            n, when = fetch_sub_record(s, sess)
+            time.sleep(SLEEP_ARCTIC)
+            if n is None:
+                ok = False
                 break
+            total += n
+            dates.append(when or "?")
+        out[code] = (total if ok else None, "|".join(dates))
+        print(f"[subs] {code:<3} {'+'.join(subs_list):35s} "
+              f"= {out[code][0]} (retrieved {out[code][1]})")
     return out
 
 
@@ -241,35 +283,37 @@ def main() -> None:
     teams = load_team_order()
     codes = [t["team_code"] for t in teams]
 
-    # Integrity guards: every team must have the two floor components, and the
+    # Integrity guards: every team must have the static components, and the
     # static dicts must not drift from the authoritative team list.
-    missing_pop = [c for c in codes if c not in METRO_POP]
-    missing_att = [c for c in codes if c not in ARENA_ATTENDANCE]
-    extra_pop = [c for c in METRO_POP if c not in codes]
-    if missing_pop:
-        raise SystemExit(f"metro_population missing for: {missing_pop}")
-    if missing_att:
-        raise SystemExit(f"arena_attendance missing for: {missing_att}")
-    if extra_pop:
-        raise SystemExit(f"metro_population has codes not in teams.csv: {extra_pop}")
+    for name, d in (("metro_population", METRO_POP),
+                    ("arena_attendance", ARENA_ATTENDANCE),
+                    ("arena_capacity", ARENA_CAPACITY),
+                    ("team_sub", TEAM_SUB)):
+        missing = [c for c in codes if c not in d]
+        extra = [c for c in d if c not in codes]
+        if missing:
+            raise SystemExit(f"{name} missing for: {missing}")
+        if extra:
+            raise SystemExit(f"{name} has codes not in teams.csv: {extra}")
     if len(codes) != 32:
         raise SystemExit(f"expected 32 teams, teams.csv has {len(codes)}")
 
-    # COMPONENT 3 attempt (best-effort, optional).
-    ig_followers = fetch_instagram_followers(IG_HANDLE)
-    social_ok = len(ig_followers) == 32  # only "present" if clean for ALL 32
-    if ig_followers and not social_ok:
-        print(f"[ig] only {len(ig_followers)}/32 fetched -> dropping social "
-              f"component entirely (must be clean for all 32 per pre-reg).")
+    # COMPONENT 2: Arctic Shift subscriber snapshots (A30 rule 1b).
+    sub_counts = fetch_team_sub_subscribers(codes)
+    subs_ok = all(sub_counts[c][0] is not None for c in codes)
+    if not subs_ok:
+        bad = [c for c in codes if sub_counts[c][0] is None]
+        print(f"[subs] MISSING for {bad} -> component dropped for ALL 32 "
+              f"(graceful degradation; metro floor stands)")
 
     rows = []
     for t in teams:
         code = t["team_code"]
-        present = ["metro_population", "arena_attendance"]
-        followers = ""
-        if social_ok:
-            followers = ig_followers[code]
-            present.append("team_social_followers")
+        att_pct = ARENA_ATTENDANCE[code] / ARENA_CAPACITY[code]
+        present = ["metro_population", "attendance_pct_capacity"]
+        subs_val, subs_when = sub_counts[code]
+        if subs_ok:
+            present.insert(1, "team_sub_subscribers")
 
         note_bits = []
         if code in ("NYR", "NYI"):
@@ -280,14 +324,13 @@ def main() -> None:
         if code in ("LA", "ANA"):
             note_bits.append("shares Los Angeles MSA (Anaheim in Greater LA)")
         if code == "UTA":
-            note_bits.append("Utah Mammoth, relocated to Salt Lake City 2024-25")
+            note_bits.append("Utah Mammoth, relocated to Salt Lake City "
+                             "2024-25; subscribers = utahmammoth + UtahHockey "
+                             "(A22 rename rule); relocation novelty disclosed")
         if code == "CAR":
             note_bits.append("plays in Raleigh, NC")
         if code == "FLA":
             note_bits.append("plays in Sunrise, FL (Miami MSA)")
-        if not social_ok:
-            note_bits.append("team_social_followers dropped (instaloader blocked "
-                             "unauthenticated at $0)")
 
         rows.append({
             "team_code": code,
@@ -295,22 +338,39 @@ def main() -> None:
             "division": t["division"],
             "metro_population": METRO_POP[code],
             "arena_attendance": ARENA_ATTENDANCE[code],
-            "team_ig_handle": IG_HANDLE[code],
-            "team_social_followers": followers,
+            "arena_capacity": ARENA_CAPACITY[code],
+            "attendance_pct_capacity": f"{att_pct:.4f}",
+            "team_sub": TEAM_SUB[code],
+            "team_sub_subscribers": subs_val if subs_val is not None else "",
+            "sub_retrieved_on": subs_when,
             "components_present": "|".join(present),
             "notes": "; ".join(note_bits),
         })
 
     atomic_write_csv(OUT_CSV, rows, FIELDNAMES)
 
-    surviving = ["metro_population", "arena_attendance"]
-    if social_ok:
-        surviving.append("team_social_followers")
     print(f"\nWrote {OUT_CSV.name}: {len(rows)} rows.")
-    print(f"Surviving components (clean for all 32): {'|'.join(surviving)}")
-    print("metro_population: US Census 2025 MSA est. / StatCan 2021 CMA. "
-          "arena_attendance: ESPN 2024-25 home avg. "
-          f"team_social_followers: {'present' if social_ok else 'DROPPED (blocked)'}.")
+    print("A30 primary components: metro_population"
+          + ("|team_sub_subscribers" if subs_ok else " (subs DROPPED)")
+          + "|attendance_pct_capacity")
+
+    # A30 acceptance: proxy correlation matrix (Spearman) — expect the
+    # metro / sub-subscribers divergence for the Canadian teams.
+    try:
+        import pandas as pd
+        mp = pd.DataFrame(rows)
+        cols = ["metro_population", "arena_attendance",
+                "attendance_pct_capacity", "team_sub_subscribers"]
+        num = mp[cols].apply(pd.to_numeric, errors="coerce")
+        print("\nSpearman correlation matrix (A30 acceptance):")
+        print(num.corr(method="spearman").round(3).to_string())
+        can = ["CGY", "EDM", "MON", "OTT", "TOR", "VAN", "WPG"]
+        sub_can = mp[mp["team_code"].isin(can)]
+        print("\nCanadian teams (metro vs sub-subscribers):")
+        print(sub_can[["team_code", "metro_population",
+                       "team_sub_subscribers"]].to_string(index=False))
+    except Exception as e:
+        print(f"(correlation matrix skipped: {e})")
 
 
 if __name__ == "__main__":

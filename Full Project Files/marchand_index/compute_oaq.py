@@ -828,12 +828,17 @@ def compute_oaq(df: pd.DataFrame, peers: list[list[int]] | None = None,
 # --------------------------------------------------------------------------- #
 # §7 market proxy                                                              #
 # --------------------------------------------------------------------------- #
-def compute_market_z(df: pd.DataFrame):
-    """Returns (market_z aligned to df rows, list of components used)."""
-    mp = pd.read_csv(PILOT_DIR / "market_proxy.csv")
-    candidates = ["metro_population", "arena_attendance", "team_social_followers"]
-    used = []
-    z_cols = []
+# A30 (owner decision D-2): primary components. The §7-original pair is kept
+# as the `market_z_lockedv1` audit lens; metro-only is the E9 sensitivity.
+MARKET_COMPONENTS_A30 = ["metro_population", "team_sub_subscribers",
+                         "attendance_pct_capacity"]
+MARKET_COMPONENTS_LOCKEDV1 = ["metro_population", "arena_attendance"]
+
+
+def _market_z_from(mp: pd.DataFrame, candidates: list[str]):
+    """(32-team market_size z-vector, components used) with §7 graceful
+    degradation: a component not present for ALL 32 teams is dropped."""
+    used, z_cols = [], []
     for c in candidates:
         if c not in mp.columns:
             continue
@@ -845,14 +850,35 @@ def compute_market_z(df: pd.DataFrame):
     if not z_cols:
         raise RuntimeError("No market components present for all 32 teams.")
     market_size = np.mean(np.vstack(z_cols), axis=0)        # equal-weight z-mean
-    market_size_z = zscore_array(market_size)                # z across 32 teams
-    team_to_z = dict(zip(mp["team_code"].astype(str), market_size_z))
+    return zscore_array(market_size), used                   # z across 32 teams
 
+
+def _align_teams(df: pd.DataFrame, mp: pd.DataFrame, z32: np.ndarray):
+    team_to_z = dict(zip(mp["team_code"].astype(str), z32))
     miss = set(df["team_code"].astype(str)) - set(team_to_z)
     if miss:
         raise RuntimeError(f"team_code(s) in players not in market_proxy: {sorted(miss)}")
-    aligned = df["team_code"].astype(str).map(team_to_z).to_numpy(dtype=float)
-    return aligned, used
+    return df["team_code"].astype(str).map(team_to_z).to_numpy(dtype=float)
+
+
+def compute_market_z(df: pd.DataFrame, mp: pd.DataFrame | None = None):
+    """Returns (market_z aligned to df rows, components used, lenses dict).
+
+    Primary = A30 components. lenses = {"market_z_lockedv1": aligned array
+    (§7-original metro + raw attendance), "market_z_metro_only": aligned
+    array (E9 sensitivity)} — reporting-only, never fed to gate verdicts."""
+    if mp is None:
+        mp = pd.read_csv(PILOT_DIR / "market_proxy.csv")
+    z_primary, used = _market_z_from(mp, MARKET_COMPONENTS_A30)
+    aligned = _align_teams(df, mp, z_primary)
+
+    lenses: dict[str, np.ndarray] = {}
+    z_v1, used_v1 = _market_z_from(mp, MARKET_COMPONENTS_LOCKEDV1)
+    if set(used_v1) == set(MARKET_COMPONENTS_LOCKEDV1):
+        lenses["market_z_lockedv1"] = _align_teams(df, mp, z_v1)
+    z_metro, _ = _market_z_from(mp, ["metro_population"])
+    lenses["market_z_metro_only"] = _align_teams(df, mp, z_metro)
+    return aligned, used, lenses
 
 
 # --------------------------------------------------------------------------- #
@@ -1908,7 +1934,7 @@ OUT_COLS = [
     "engagement_raw", "dropped_components", "null_reasons",
     "rookie_flag_source", "expected_cap_linear_allrows",
     "effective_K", "peer_player_ids", "peer_engagement_mean",
-    "market_z",
+    "market_z", "market_z_lockedv1", "market_z_metro_only",
     "OAQ_observed", "OAQ_observed_lo95", "OAQ_observed_hi95",
     "OAQ_portable", "OAQ_portable_lo95", "OAQ_portable_hi95",
     "OAQ_portable_lockedv1",
@@ -1936,8 +1962,10 @@ def main() -> None:
     reddit_scores = load_reddit_scores()
     wiki_intl_daily = load_wiki_intl_daily_by_edition()
 
-    market_z, market_used = compute_market_z(df)
+    market_z, market_used, market_lenses = compute_market_z(df)
     df["market_z"] = market_z
+    for k, v in market_lenses.items():   # A30 audit lens + E9 sensitivity
+        df[k] = v
 
     df_inputs = df.copy()
     peers = compute_peers(df)
