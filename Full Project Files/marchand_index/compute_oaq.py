@@ -1041,7 +1041,11 @@ def auc_mannwhitney(scores: np.ndarray, labels: np.ndarray) -> float:
 
 
 def _bootstrap_stat_ci(stat_fn, n: int, n_draws: int, seed: int):
-    """Player-level resample-with-replacement CI for a cohort statistic."""
+    """Resample-with-replacement CI over the cohort's exchangeable units.
+
+    The unit is whatever `stat_fn` indexes: players for V1/V2, TEAMS for V3
+    (A29 rule 3 — V3's stat_fn receives indices into n=32 team-level arrays,
+    so team-level variance is captured, not player-level)."""
     rng = np.random.default_rng(seed)
     vals = []
     for _ in range(n_draws):
@@ -1186,8 +1190,12 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
             rho_v3, ci_v3 = float("nan"), (float("nan"), float("nan"))
             rho_v3_eng, ci_v3_eng = float("nan"), (float("nan"), float("nan"))
         results["V3"] = {
-            "test": ("Spearman rho(sum_OAQ_observed_per_team, "
-                     "team_wiki_12mo) across n teams"),
+            "test": ("aggregation-consistency check (A29): Spearman "
+                     "rho(sum_OAQ_observed_per_team, team_wiki_12mo) "
+                     "across n teams"),
+            "pathway_class": ("shared-method with the wiki_en composite "
+                              "component (A29 rule 4) — NOT counted toward "
+                              "the >=3-independent-pathways claim"),
             "metric": "spearman_rho",
             "value": rho_v3,
             "ci95": list(ci_v3),
@@ -1268,8 +1276,10 @@ def evaluate_patterns(df: pd.DataFrame, external: dict) -> dict:
     else:
         pd_verdict = "confirmed" if rho_v3 >= PD_FLOOR else "disconfirmed"
     out["PD"] = {
-        "description": ("Sum of OAQ_observed per team aligns with independent "
-                        "team Wikipedia pageviews (V3 Spearman >= 0.40)"),
+        "description": ("Sum of OAQ_observed per team aligns with team "
+                        "Wikipedia pageviews — aggregation-consistency "
+                        "check, A29: shared-method, not an independent "
+                        "pathway (V3 Spearman >= 0.40)"),
         "metric": "spearman_rho",
         "value": rho_v3,
         "ci95": v3.get("ci95", [float("nan"), float("nan")]),
@@ -1469,7 +1479,10 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     if v3:
         rob = v3.get("robustness_eng_raw", {})
         lines.append(
-            f"- V3 (A6): outcome = {v3.get('outcome_signal','')}; "
+            f"- V3 (A6, relabeled by A29): **aggregation-consistency "
+            f"check** — shared-method with the wiki_en composite "
+            f"component; NOT counted toward the >=3-independent-pathways "
+            f"claim. Outcome = {v3.get('outcome_signal','')}; "
             f"predictor = {v3.get('predictor','')}. "
             f"Mechanical baseline (sum of engagement_raw, no peer-skill "
             f"control): rho = {_fnum(rob.get('rho'))}, 95% CI "

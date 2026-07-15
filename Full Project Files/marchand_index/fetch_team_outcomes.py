@@ -1,14 +1,26 @@
-"""V3 (pre-reg A6) — team-level outcomes for the n=32 triangulation gate.
+"""V3 (pre-reg A6, repaired by A29) — team-level outcomes for the n=32
+aggregation-consistency check (A29 relabel: shared-method with the wiki_en
+composite component, NOT counted toward the >=3-independent-pathways claim).
 
-Per A6 graceful-degradation logged 2026-05-28, V3 outcome reduced to
-**team Wikipedia 12-mo pageviews only** — Reddit blanket-blocks the
-/about.json endpoints at $0 (403 anti-bot challenge across all UA
-strategies). Subscriber column is fetched best-effort and left blank
-on failure; the V3 statistic is computed off wiki_12mo alone.
+A29 repairs applied here:
+1. FIXED WINDOW — pageviews summed over [2025-04-18, 2026-04-17] using the
+   same WINDOW_START/WINDOW_END constants as the player wiki fetchers
+   (the old code used a run-anchored trailing 365 days — J1-N7).
+2. REDIRECT SUM — the pageviews API does not follow redirects (the A1
+   lesson). For each team the canonical title is resolved (follows any
+   rename), every redirect title is enumerated via MediaWiki
+   `prop=redirects`, and all non-zero in-window series are summed. Utah is
+   the known in-window rename: "Utah Hockey Club" -> "Utah Mammoth"; both
+   titles contribute. Per-team `redirect_share` makes any surprise rename
+   visible.
+
+Subscriber column remains best-effort/blank (Reddit 403 at $0 — A6 graceful
+degradation; the A30 transport probe will revisit).
 
 Writes marchand_index/team_outcomes.csv:
   team_code, team_full_name, subreddit, subreddit_subscribers,
-  wiki_article, wiki_12mo, fetch_date
+  wiki_article, redirect_titles, wiki_12mo, wiki_12mo_canonical,
+  redirect_share, window_start, window_end, fetch_date
 """
 from __future__ import annotations
 
@@ -22,9 +34,15 @@ from _common import PILOT_DIR, atomic_write_csv  # noqa: E402
 
 import requests  # noqa: E402
 
-UA = "marchand-index/0.1 (research; contact ana178@sfu.ca)"
+UA = "marchand-index/0.2 (research; contact ana178@sfu.ca)"
 SLEEP_REDDIT = 2.0          # unauthenticated Reddit
 SLEEP_WIKI = 0.2            # Wikimedia is liberal
+
+# Fixed attention window (pre-reg A11/A29) — identical to fetch_wikipedia.py.
+WINDOW_START = "20250418"
+WINDOW_END = "20260417"
+
+MEDIAWIKI_API = "https://en.wikipedia.org/w/api.php"
 
 TEAM_SUB = {
     "ANA": "anaheimducks", "BOS": "BostonBruins", "BUF": "sabres",
@@ -40,9 +58,9 @@ TEAM_SUB = {
     "WAS": "caps", "WPG": "winnipegjets",
 }
 
-# Canonical Wikipedia article titles for the 32 NHL teams. Locked here
-# (deterministic, no slug-resolution heuristic) — these are the unambiguous
-# team articles, all confirmed by their team_franchise Wikidata entries.
+# Seed Wikipedia article titles for the 32 NHL teams. Each is resolved to
+# its CURRENT canonical title at fetch time (A29: follows renames — Utah's
+# seed intentionally stays the pre-rename title to exercise the resolver).
 TEAM_WIKI = {
     "ANA": "Anaheim Ducks", "BOS": "Boston Bruins", "BUF": "Buffalo Sabres",
     "CGY": "Calgary Flames", "CAR": "Carolina Hurricanes",
@@ -64,7 +82,8 @@ TEAM_WIKI = {
 
 OUT_FIELDS = [
     "team_code", "team_full_name", "subreddit", "subreddit_subscribers",
-    "wiki_article", "wiki_12mo", "fetch_date",
+    "wiki_article", "redirect_titles", "wiki_12mo", "wiki_12mo_canonical",
+    "redirect_share", "window_start", "window_end", "fetch_date",
 ]
 
 
@@ -84,18 +103,56 @@ def fetch_subreddit_subs(sub: str, session: requests.Session) -> int | None:
     return None
 
 
-def fetch_team_wiki_12mo(title: str, session: requests.Session) -> int | None:
-    """Wikimedia REST pageviews-per-article, daily, summed over the most recent
-    365 days available (cutoff = today − 1, matching §3.1 player wiki window).
-    """
-    end = dt.date.today() - dt.timedelta(days=1)
-    start = end - dt.timedelta(days=364)
-    # Wikimedia REST API endpoint.
+def resolve_canonical(title: str, session: requests.Session) -> str:
+    """Follow any redirect to the CURRENT canonical article title (A29:
+    a seed title that was renamed mid-window resolves to the new name)."""
+    params = {"action": "query", "titles": title, "redirects": 1,
+              "format": "json", "formatversion": 2}
+    try:
+        r = session.get(MEDIAWIKI_API, params=params,
+                        headers={"User-Agent": UA}, timeout=30)
+        if r.status_code == 200:
+            pages = r.json().get("query", {}).get("pages", [])
+            if pages and pages[0].get("title"):
+                return pages[0]["title"]
+    except Exception:
+        pass
+    return title
+
+
+def enumerate_redirects(canonical: str, session: requests.Session) -> list[str]:
+    """All redirect titles pointing at the canonical article (mechanical,
+    identity-keyed — A29 rule 2). Paginates rdcontinue."""
+    titles: list[str] = []
+    params = {"action": "query", "titles": canonical, "prop": "redirects",
+              "rdlimit": "max", "format": "json", "formatversion": 2}
+    while True:
+        try:
+            r = session.get(MEDIAWIKI_API, params=params,
+                            headers={"User-Agent": UA}, timeout=30)
+            if r.status_code != 200:
+                break
+            data = r.json()
+            pages = data.get("query", {}).get("pages", [])
+            if pages:
+                titles.extend(rd["title"] for rd in pages[0].get("redirects", []))
+            cont = data.get("continue")
+            if not cont:
+                break
+            params.update(cont)
+        except Exception:
+            break
+    return titles
+
+
+def fetch_title_views(title: str, session: requests.Session) -> int | None:
+    """In-window pageview total for ONE exact title (API does not follow
+    redirects, so redirect titles carry their own legitimate series)."""
     encoded = title.replace(" ", "_")
     url = (
         "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/"
         f"en.wikipedia/all-access/all-agents/{encoded}/daily/"
-        f"{start.strftime('%Y%m%d')}/{end.strftime('%Y%m%d')}"
+        f"{WINDOW_START}/{WINDOW_END}"
     )
     try:
         r = session.get(url, headers={"User-Agent": UA}, timeout=30)
@@ -110,38 +167,77 @@ def fetch_team_wiki_12mo(title: str, session: requests.Session) -> int | None:
         return None
 
 
+def combine_view_totals(canonical_total: int | None,
+                        redirect_totals: dict[str, int | None]):
+    """(wiki_12mo summed, canonical_total, redirect_share, contributing titles).
+
+    Sums the canonical series plus every NON-ZERO redirect series (A29 rule 2).
+    redirect_share = redirect views / total (0.0 when total is 0/None)."""
+    canon = canonical_total or 0
+    contributing = {t: v for t, v in redirect_totals.items() if v}
+    redirect_sum = sum(contributing.values())
+    total = canon + redirect_sum
+    share = (redirect_sum / total) if total > 0 else 0.0
+    return (total if total > 0 else None), canonical_total, share, sorted(contributing)
+
+
 def main() -> None:
-    fetch_date = dt.datetime.utcnow().isoformat(timespec="seconds") + "Z"
+    fetch_date = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     sess = requests.Session()
     rows: list[dict] = []
     assert set(TEAM_SUB) == set(TEAM_WIKI), "TEAM_SUB / TEAM_WIKI key mismatch"
     teams = sorted(TEAM_SUB)
     for i, tc in enumerate(teams, 1):
         sub = TEAM_SUB[tc]
-        title = TEAM_WIKI[tc]
-        print(f"[{i:2d}/32] {tc:3s}  r/{sub:25s}  {title}", flush=True)
+        seed_title = TEAM_WIKI[tc]
+        canonical = resolve_canonical(seed_title, sess)
+        time.sleep(SLEEP_WIKI)
+        redirects = enumerate_redirects(canonical, sess)
+        time.sleep(SLEEP_WIKI)
+        print(f"[{i:2d}/32] {tc:3s}  r/{sub:25s}  {canonical} "
+              f"({len(redirects)} redirects)", flush=True)
+
         subs = fetch_subreddit_subs(sub, sess)
         time.sleep(SLEEP_REDDIT)
-        wiki = fetch_team_wiki_12mo(title, sess)
+
+        canon_views = fetch_title_views(canonical, sess)
         time.sleep(SLEEP_WIKI)
+        rd_views: dict[str, int | None] = {}
+        for rt in redirects:
+            rd_views[rt] = fetch_title_views(rt, sess)
+            time.sleep(SLEEP_WIKI)
+        wiki, canon_total, share, contributing = combine_view_totals(
+            canon_views, rd_views)
+
         rows.append({
             "team_code": tc,
-            "team_full_name": title,
+            "team_full_name": canonical,
             "subreddit": sub,
             "subreddit_subscribers": subs if subs is not None else "",
-            "wiki_article": title,
+            "wiki_article": canonical,
+            "redirect_titles": "|".join(contributing),
             "wiki_12mo": wiki if wiki is not None else "",
+            "wiki_12mo_canonical": canon_total if canon_total is not None else "",
+            "redirect_share": f"{share:.4f}",
+            "window_start": WINDOW_START,
+            "window_end": WINDOW_END,
             "fetch_date": fetch_date,
         })
         ok_sub = "ok" if subs else "NULL"
         ok_w = "ok" if wiki else "NULL"
-        print(f"     subs={subs}  [{ok_sub}]   wiki12mo={wiki}  [{ok_w}]")
+        print(f"     subs={subs} [{ok_sub}]  wiki12mo={wiki} [{ok_w}]  "
+              f"redirect_share={share:.3f}")
 
     out = PILOT_DIR / "team_outcomes.csv"
     atomic_write_csv(out, rows, OUT_FIELDS)
     n_subs_ok = sum(1 for r in rows if r["subreddit_subscribers"] != "")
     n_wiki_ok = sum(1 for r in rows if r["wiki_12mo"] != "")
     print(f"Wrote {out}  subs_ok={n_subs_ok}/32  wiki_ok={n_wiki_ok}/32")
+    print("Per-team redirect share (A29 audit):")
+    for r in rows:
+        if float(r["redirect_share"]) > 0:
+            print(f"  {r['team_code']}: {r['redirect_share']} "
+                  f"({r['redirect_titles'] or '-'})")
 
 
 if __name__ == "__main__":
