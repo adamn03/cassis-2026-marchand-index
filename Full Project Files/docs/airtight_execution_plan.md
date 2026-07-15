@@ -1,6 +1,8 @@
 # Airtight Execution Plan — Marchand Index Production Run
 **Version: 1.1 — panel-chair APPROVED; final executability sweep applied 2026-07-07. Do not begin Phase 2 until owner decisions in §D are made and the §I checklist is green.**
 Date: 2026-07-07
+
+> **Execution status addendum (2026-07-15 — status only, plan body unedited):** §D decisions MADE 2026-07-13 (D-1 GO+U1, D-2 rebuild primary, D-3 sign-off+U2; recorded impl prereg §14, commit 91ab66b). Phase 0 in progress: A21–A26 committed (text+code), A27 text committed / code pending verify, A28+ pending in order. Reddit source switched to Arctic Shift (see `superpowers/plans/2026-07-13-arctic-shift-source-switch.md` — supersedes §B A23 spec, Task 1.8, and the §E creds trigger). Corpus pull under way (cache only — reddit_counts.csv still 0/774; governing rule intact). Tests: 141 committed (was 102 at v1.1). Supplements in force: free-data (A36/A37), cross-domain (A38/A39), idea-max §4 (A40), A41 pool dedup 774→771.
 Built from: internal audit (E1–E9) + three-judge CASSIS panel (hostile statistician J1, NHL club practitioner J2, validation methodologist J3). Every step is written to be executable by a weaker model: exact file, exact rule, acceptance criterion, verification command.
 
 ## Governing rule

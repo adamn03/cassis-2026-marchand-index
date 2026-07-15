@@ -1,6 +1,7 @@
 # Supplement — Reddit Source Switch to Arctic Shift (2026-07-13)
 
 **Status:** owner-approved 2026-07-13 (plan-mode approval). Supplements `airtight_execution_plan.md` v1.1 — does not edit it; supersessions recorded in §3 below. Amendment text lives in `2026-07-12-amendment-proposals.md` (A23, rewritten) and commits to the impl prereg §14 before any fetch.
+**Execution status (2026-07-15):** A21–A23 texts + code COMMITTED (ece1c68); OAuth removed; corpus pull running (15+/36 subs done, resumable). §4b dupe finding RESOLVED — owner approved A41 dedup 774→771 (2026-07-13, prereg §14). Open: §5 A30 subscriber transport probe (at A30 implementation time).
 
 ## 1. Decision
 
@@ -37,7 +38,7 @@ Unchanged: A21 identity rules; A22 roster-derivation rule (extended with the UTA
 - **Submissions-only stands.** Reddit COMMENTS remain rejected per the 2026-07-07 free-data supplement (construct change on 0.44 locked A12 weight). The corpus architecture makes a comments pull cheap later (H1/H4/Gate-5 are post-poster future work) — but it is not part of this switch.
 - **Composite counting subs unchanged:** r/hockey + the player's A22 team-sub set. r/nhl + r/fantasyhockey enter only `reddit_mentions_allsubs` / `reddit_mentions_fantasy` (descriptive, never composite — A12 weights locked).
 
-## 4b. Finding — pool duplicate rows (OWNER DECISION NEEDED, pre-existing)
+## 4b. Finding — pool duplicate rows (RESOLVED — A41 approved 2026-07-13)
 
 The A21 acceptance dry-run (`diagnostics/reddit_identity_dryrun.py`, output
 `raw/reddit_identity_pairs.md`) confirmed the MID-dupe suspicion SESSION.md had

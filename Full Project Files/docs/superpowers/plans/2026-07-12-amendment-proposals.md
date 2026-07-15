@@ -1,5 +1,22 @@
 # Amendment Proposals — A21–A29, A32–A35, G4-A1–A3 (DRAFTS)
 
+**Execution status (2026-07-15):**
+
+| Amendment | Text commit | Code commit |
+|---|---|---|
+| A21 | 112c5fe | ece1c68 |
+| A22 | ab165c6 | ece1c68 |
+| A23 (Arctic Shift rewrite) | 146aaeb | ece1c68 |
+| A24 | f8d67e7 | a966fc7 (cap re-fetch with `contract_type` in progress) |
+| A25 | e4449cf | cdb4c04 |
+| A26 | e5f96c7 | 0f55ea0 |
+| A27 | 2ddb75b | code in working tree, pytest verify pending |
+| A28–A35, G4-A1..A3 | pending — execute in order per §"How to execute" | — |
+
+Owner decisions D-1/D-2/D-3 + U-slate + A41 pool dedup (774→771) approved 2026-07-13,
+recorded in impl prereg §14 (commit 91ab66b). A29/A30/A31 must incorporate them as written
+in the decision sheet and supplements.
+
 **Date:** 2026-07-12. **Revised 2026-07-13:** A23 rewritten as the Arctic Shift source-switch amendment (the original cap-second-pass spec is superseded — the cap no longer exists under complete enumeration); A22 gains the UTA sub-rename rule; A35 clause 4(b) restated for archive score semantics. Evidence + supersession record: `2026-07-13-arctic-shift-source-switch.md`. **Status: ADVISORY DRAFT.** Nothing here is committed to any pre-registration file. These are ready-to-paste drafts prepared BEFORE the owner checks the boxes in `2026-07-11-decision-sheet.md`. Source of truth for the specs: `docs/airtight_execution_plan.md` v1.1 §B. House style matched to existing amendments A15–A20 in `marchand_index/preregistration.md` §14.
 
 **Not drafted here (by design):**

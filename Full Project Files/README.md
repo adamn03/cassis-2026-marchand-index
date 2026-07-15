@@ -12,7 +12,7 @@ Everything currently in use for the CASSIS 2026 poster. Created by the 2026-06-2
 | `marchand_index/preregistration.md` | **Canonical implementation prereg** (amendments A1–A14). Code + tests read this file relatively — do not move it out of `marchand_index/`. |
 | `marchand_index/value_propositions.md` | Downstream value-prop backlog (#1–#7). Build AFTER data + the 5 validation gates land. |
 | `docs/preregistration.md` | Spec-level prereg: H1–H4 hypotheses + Gate-4 sampling/band rules (committed before the production run). |
-| `docs/superpowers/{specs,plans}/` | Design history (whole-league pool, ingestion expansion, skill-vector expansion). |
+| `docs/superpowers/{specs,plans}/` | Active plan docs: amendment proposals (A21+), decision sheet, supplements (free-data, cross-domain, Arctic Shift), idea-max review, application plan. Executed June designs (pool/A12/A13) deleted 2026-07-15 — in git history. |
 
 ## Accepted CASSIS submission
 

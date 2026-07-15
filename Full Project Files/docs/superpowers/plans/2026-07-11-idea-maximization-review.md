@@ -1,6 +1,6 @@
 # Idea-Maximization Review — red-team + ranked upgrades (2026-07-11)
 
-**Status:** advisory only. Nothing here is committed. Amendment text below is DRAFT — owner decides whether/what to log. Next free impl amendment number: **A40**.
+**Status:** §4 ACCEPTED — owner approved U3 (A40 descriptive batch) 2026-07-13 with the U-slate (prereg §14, commit 91ab66b). §4's draft text is to be committed as A40 at its Phase-0 slot (after A39, before compute) — not yet written to prereg. Rest of this doc remains advisory red-team context. Next free impl amendment number: **A40** (A41 = pool dedup, claimed).
 **Read before writing this:** live spec, airtight plan v1.1 (§A–§I), free-data supplement (A36/A37 + pre-chews), cross-domain supplement (A38/A39 + citation kit), spec prereg (H1–H4 + Gate-4 §5–§8), impl prereg (A1–A20 + verification log), accepted abstract (`Pilot Files/submission/abstract_v1.md`).
 **Constraint honored throughout:** ~9-week runway with heavy execution debt (Reddit 0/774, Trends 331/774, Phase 0 uncommitted). Every proposal ≤1 day; most are hours.
 
