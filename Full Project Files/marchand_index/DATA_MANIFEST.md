@@ -15,7 +15,7 @@ carries `fetch_date`/`fetched_at` and, where applicable, `source_url` +
 | `moneypuck_skaters_2025.csv` | `fetch_moneypuck.py` | Raw MoneyPuck skaters download cache (full upstream schema, all situations). Input only — use `nhl_onice.csv` downstream. |
 | `nhl_onice.csv` | `fetch_moneypuck.py` | Derived 5v5 on-ice metrics per pooled player (cf_pct, xgf_pct, ozs_pct, TOI) + `onice_status`. |
 | `nhl_skill.csv` | `fetch_nhl_api.py` | NHL API skill covariates (ppg, toi_per_game, games_played, age, position). |
-| `teams.csv` | `fetch_rosters_dailyfaceoff.py` | Static 32-team map: team_code, slug, city, division. Join key for market/team files. |
+| `teams.csv` | static (built once by the deleted dailyfaceoff builder — in git history) | Static 32-team map: team_code, slug, city, division. Join key for market/team files. |
 | `trends.csv` | `fetch_trends.py` | Google Trends 12-mo interest per player (`query_mid`, anchor-scaled means, `trends_method`). |
 | `wiki_pageviews.csv` | `fetch_wikipedia.py` (repairs: `repair_wiki_identity.py`) | en-wiki 12-mo pageview totals + slug/QID resolution (`wiki_match`). |
 | `wiki_daily.csv` | `fetch_wikipedia.py` (repairs: `repair_wiki_identity.py`) | en-wiki daily view vectors (bootstrap input, A26 block resample). |
@@ -30,7 +30,7 @@ carries `fetch_date`/`fetched_at` and, where applicable, `source_url` +
 
 | File | Written by | Contents |
 |---|---|---|
-| `players.csv` | roster chain (`fetch_rosters_toi.py` / `_league.py` / `_dailyfaceoff.py`) → `filter_pool_played.py` | Locked player pool: ids, slugs, roster source + snapshot date. |
+| `players.csv` | `fetch_rosters_league.py` (A10 whole-league builder) → `filter_pool_played.py` | Locked player pool: ids, slugs, roster source + snapshot date. Legacy 160-set builders deleted 2026-07-15 (git history). |
 | `pool_gp_audit.csv` | `filter_pool_played.py` | GP-filter audit of pool: `kept` + `drop_reason` per candidate row. |
 | `oaq_pilot.csv` | `compute_oaq.py` | Pilot (pilot2) model output: engagement components, OAQ observed/portable + 95% CIs, Marchand Index lenses, quality flags. |
 | `external_outcomes.csv` | `fetch_external_outcomes.py` | Validation outcomes: jersey-sales list membership/rank, ASG-2024 fan votes. Sources: `external_outcomes_sources.md`. |
