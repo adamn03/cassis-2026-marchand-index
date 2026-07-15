@@ -515,6 +515,24 @@ A13 group-mean-imputes the three on-ice features for skaters under the 150-minut
 
 **Anti-tuning compliance (§13):** logged before the final compute; the eligibility rule keys on the pre-existing A13 thin flag, fixed before any result exists; K, distance, features, weights, λ, denominators, and all floors unchanged.
 
+**A29 (2026-07-15) — V3 repaired (fixed window, redirect-summed titles, team-level bootstrap) and relabeled "aggregation-consistency check" (not an independent pathway). Logged BEFORE the V3 re-fetch and the final compute.**
+
+Four defects (J1-N7 code-confirmed; J2 Utah landmine; J3 independence classification):
+
+1. **Window.** `fetch_team_outcomes.py:89` computes a run-anchored trailing window — the same defect A11/A14 removed for player-keyed sources. Team pageviews must be on the fixed window.
+2. **Renamed articles.** The pageviews API does not follow redirects (the A1 lesson). Utah's article was renamed "Utah Hockey Club" → "Utah Mammoth" INSIDE the window, splitting its views across two titles.
+3. **Bootstrap unit.** V3's n = 32 exchangeable units are TEAMS; resampling players understates team-level variance.
+4. **Independence.** V3's outcome (team Wikipedia pageviews) shares platform, window, and news shocks with the composite's heaviest component (wiki_en, weight 0.29+0.11 intl). Per the panel's independence classification it is construct-overlapping/shared-method and cannot count toward the ≥3-independent-pathways criterion.
+
+**Rules:**
+
+1. Team Wikipedia pageviews re-fetched on the EXACT fixed window [2025-04-18, 2026-04-17] (same `WINDOW_START`/`WINDOW_END` constants as the player wiki fetchers). `team_outcomes.csv` rebuilt.
+2. **Redirect audit, all 32 teams (mechanical):** for each team's canonical article, enumerate redirect titles via the MediaWiki API `prop=redirects`; fetch in-window pageviews for the canonical title AND every redirect title; sum all non-zero series (views recorded against a redirect title are legitimate views). Report per-team redirect share so any surprise rename is visible. Utah is the known case: both "Utah Hockey Club" and "Utah Mammoth" contribute.
+3. V3's bootstrap resamples TEAMS (n = 32), not players.
+4. **Relabel.** V3 is titled "aggregation-consistency check" EVERYWHERE (results.md, poster, abstract) and is NOT counted toward the ≥3-independent-pathways claim. The A18 interpretation rule (verdict from the OAQ-based ρ against the 0.40 floor; baseline comparison informs the narrow claim only) is unchanged.
+
+**Anti-tuning compliance (§13):** logged before the re-fetch; the window is the already-locked A11 interval; redirect enumeration is mechanical and identity-keyed, never magnitude-keyed; the floor (0.40), predictor, and A18 interpretation are unchanged — the relabel STRENGTHENS the honesty of the pathway count and cannot flatter any result. Prior `team_outcomes.csv` retained in git history per §13.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
