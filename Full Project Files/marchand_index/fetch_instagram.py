@@ -1,4 +1,4 @@
-"""Fetch public Instagram follower counts for the 160-skater set (pre-reg §3.5).
+"""Fetch public Instagram follower counts for the locked player pool (pre-reg §3.5; dropped from the composite by A12 — descriptive only).
 
 Composite weight 0.139. players.csv carries no handle column, so the handle is
 auto-resolved from the player's *canonical* Wikipedia article (the slug chosen

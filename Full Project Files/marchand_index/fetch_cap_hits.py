@@ -1,4 +1,4 @@
-"""Fetch 2025-26 cap hits for the 160-skater set from CapWages (pre-reg §5).
+"""Fetch 2025-26 cap hits for the locked player pool (players.csv) from CapWages (pre-reg §5).
 
 cap_hit_M = the 2025-26-season cap hit in $M, read from CapWages structured
 page data. CapWages embeds it in __NEXT_DATA__ at

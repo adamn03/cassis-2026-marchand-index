@@ -1,4 +1,4 @@
-"""Fetch on-ice skill features for the 160-skater Tier-1 set (pre-reg pilot2 §6).
+"""Fetch on-ice skill features for the locked player pool (players.csv; pre-reg §6).
 
 Skill vector for peer matching = (age, PPG, TOI/G), pulled from the NHL public
 landing endpoint for the 2025-26 regular season (gameTypeId 2). The
@@ -13,7 +13,7 @@ DailyFaceoff top-pair anomaly absent from FLA's NHL roster) gets NULL skill
 fields and is flagged match_quality=low downstream — kept, not dropped.
 
 Writes:
-  marchand_index/raw/nhl_skill.csv   160 rows
+  marchand_index/raw/nhl_skill.csv   one row per pooled player
     player_id, full_name, nhl_player_id, team_code, position, age, ppg,
     toi_per_game, games_played, fetch_date
 """
