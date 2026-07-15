@@ -86,6 +86,14 @@ Challenge any idea that:
 
 **Format when pushing back:** (a) what to skip and why, (b) cheaper proxy that captures ~80% of the value, (c) cost in time/risk if the owner insists anyway.
 
+## Superseded ideas — ask before deleting
+
+When we change direction on a project (an idea, plan, or approach is abandoned or replaced), ASK the owner whether to delete the old idea's artifacts:
+- Owner says **yes** → delete them (git history keeps the record).
+- Owner says **no** → keep them for now; mark them superseded (status note or move to `Pilot Files/archive/`), and it's fine to ask again later if they're still around.
+
+Never silently delete a superseded idea, and never let one sit unlabeled as if it were still active.
+
 ## SESSION.md format (token-efficient)
 
 Read SESSION.md at the start of every session. Overwrite it when the owner says "update session" / "wrap up." Format — keep this tight:
