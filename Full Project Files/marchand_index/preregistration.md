@@ -533,6 +533,23 @@ Four defects (J1-N7 code-confirmed; J2 Utah landmine; J3 independence classifica
 
 **Anti-tuning compliance (§13):** logged before the re-fetch; the window is the already-locked A11 interval; redirect enumeration is mechanical and identity-keyed, never magnitude-keyed; the floor (0.40), predictor, and A18 interpretation are unchanged — the relabel STRENGTHENS the honesty of the pathway count and cannot flatter any result. Prior `team_outcomes.csv` retained in git history per §13.
 
+**A30 (2026-07-15) — Market-proxy REBUILD (owner decision D-2, 2026-07-13): MarketSize_team = equal-weight z-mean of metro_population, team_sub_subscribers, attendance_pct_capacity. Old proxy retained as `market_z_lockedv1`. Logged BEFORE the final compute.**
+
+Basis (J2-F1 HIGH, J2-F8, E9): Reddit carries 0.44 of composite weight, and team-subreddit volume anti-correlates with metro population (WPG: 0.8M metro, Canadian-scale fanbase). The locked metro+raw-attendance proxy cannot see hockey-market intensity, so the one-sided λ gives Canadian small-metro teams zero correction and portable OAQ credits fanbase intensity as personal attention. Raw attendance additionally measures arena size at sellout (J2-F8). Rebuilt while zero production results exist — the only window in which a primary change is free of tuning suspicion.
+
+**Rules:**
+
+1. **Components (equal-weight z-mean across the 32 teams, replacing the §7 pair):**
+   (a) `metro_population` — unchanged (census figures per `market_proxy_sources.md`);
+   (b) `team_sub_subscribers` — team-subreddit subscriber counts via the Arctic Shift subreddits endpoint (`/api/subreddits/search`, `subscribers` field). **Transport probe (2026-07-15, per the 2026-07-13 supplement §5):** the A9 OAuth transport is superseded (A23); `www.reddit.com/r/<sub>/about.json` and `old.reddit.com` both return HTTP 403 at $0; Arctic Shift returns 200 with `subscribers` plus a per-record `retrieved_on`. Observed snapshot vintages: most subs 2025-02-14/15; `utahmammoth` 2025-07-02 (subscribers = 59; sub created 2025-05). The vintage is recorded per row in `sub_retrieved_on`. **UTA rule:** subscribers = SUM over the A22 sub set {`UtahHockey`, `utahmammoth`} — one fanbase split by the rename.
+   (c) `attendance_pct_capacity` — announced average home attendance (2024-25 figures already grounded in `market_proxy_sources.md`) ÷ arena seating capacity in hockey configuration (Wikipedia List of NHL arenas, retrieved 2026-07-15), replacing raw attendance.
+2. **Preserved lenses:** the old proxy (metro + raw-attendance z-mean) is retained as `market_z_lockedv1` (audit lens, feeds A32's invariance panel); metro-only is retained as the E9 sensitivity (`market_z_metro_only`). λ ladder unchanged.
+3. **Disclosures (in advance):** subscriber counts are archive-snapshot stocks of heterogeneous vintage (above) — acceptable for a slowly-varying market-size stock, unlike player-attention flows, and disclosed; UTA's count is genuinely post-relocation small AND vintage-limited (relocation novelty); announced attendance ≠ turnstile; the shared-metro overstatement for NYI/NJ is one-directional (over-discount) under one-sided λ = conservative.
+
+**Acceptance:** 32/32 subscriber counts fetched; proxy correlation matrix printed (expect metro ⊥ sub-subscribers divergence for the Canadian teams).
+
+**Anti-tuning compliance (§13):** the rebuild was approved by owner decision D-2 (recorded above, 2026-07-13) while Reddit is 0/774 and no production composite exists; every component keys on external structural facts (census populations, archive subscriber stocks, attendance/capacity ratios) — never on any player's attention, rank, or index value; the displaced proxy is preserved as a locked audit lens per §13, and A32's invariance panel must demonstrate (not assert) verdict-invariance to the swap; λ (A5), weights (§4/A12), peer features (§6/A13), denominators (A4/A8/A24), floors (§9), window (A11), and pool (A10) unchanged.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
