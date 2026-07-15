@@ -147,24 +147,35 @@ def enumerate_redirects(canonical: str, session: requests.Session) -> list[str]:
 
 def fetch_title_views(title: str, session: requests.Session) -> int | None:
     """In-window pageview total for ONE exact title (API does not follow
-    redirects, so redirect titles carry their own legitimate series)."""
+    redirects, so redirect titles carry their own legitimate series).
+
+    Retries on 429/5xx with backoff — a silently dropped canonical series
+    corrupts the redirect sum (the NYR/SEA/SJ failure mode on first run)."""
     encoded = title.replace(" ", "_")
     url = (
         "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/"
         f"en.wikipedia/all-access/all-agents/{encoded}/daily/"
         f"{WINDOW_START}/{WINDOW_END}"
     )
-    try:
-        r = session.get(url, headers={"User-Agent": UA}, timeout=30)
-        if r.status_code != 200:
-            return None
-        items = r.json().get("items", [])
-        if not items:
-            return None
-        total = sum(int(it.get("views", 0)) for it in items)
-        return total if total > 0 else None
-    except Exception:
-        return None
+    # 404 is retried too: the pageviews edge intermittently 404s titles that
+    # have full series (observed live 2026-07-15 — Seattle Kraken 404 then
+    # 200/365-items seconds later). A title that 404s the whole ladder is
+    # treated as a real null.
+    for backoff in (0.0, 2.0, 5.0, 15.0):
+        if backoff:
+            time.sleep(backoff)
+        try:
+            r = session.get(url, headers={"User-Agent": UA}, timeout=30)
+            if r.status_code != 200:
+                continue             # 404/429/5xx — retry
+            items = r.json().get("items", [])
+            if not items:
+                return None
+            total = sum(int(it.get("views", 0)) for it in items)
+            return total if total > 0 else None
+        except Exception:
+            continue
+    return None
 
 
 def combine_view_totals(canonical_total: int | None,
@@ -181,6 +192,42 @@ def combine_view_totals(canonical_total: int | None,
     return (total if total > 0 else None), canonical_total, share, sorted(contributing)
 
 
+def fetch_one_team(tc: str, sess: requests.Session, fetch_date: str,
+                   with_subs: bool = True) -> dict:
+    sub = TEAM_SUB[tc]
+    canonical = resolve_canonical(TEAM_WIKI[tc], sess)
+    time.sleep(SLEEP_WIKI)
+    redirects = enumerate_redirects(canonical, sess)
+    time.sleep(SLEEP_WIKI)
+
+    subs = fetch_subreddit_subs(sub, sess) if with_subs else None
+    if with_subs:
+        time.sleep(SLEEP_REDDIT)
+
+    canon_views = fetch_title_views(canonical, sess)
+    time.sleep(SLEEP_WIKI)
+    rd_views: dict[str, int | None] = {}
+    for rt in redirects:
+        rd_views[rt] = fetch_title_views(rt, sess)
+        time.sleep(SLEEP_WIKI)
+    wiki, canon_total, share, contributing = combine_view_totals(
+        canon_views, rd_views)
+    return {
+        "team_code": tc,
+        "team_full_name": canonical,
+        "subreddit": sub,
+        "subreddit_subscribers": subs if subs is not None else "",
+        "wiki_article": canonical,
+        "redirect_titles": "|".join(contributing),
+        "wiki_12mo": wiki if wiki is not None else "",
+        "wiki_12mo_canonical": canon_total if canon_total is not None else "",
+        "redirect_share": f"{share:.4f}",
+        "window_start": WINDOW_START,
+        "window_end": WINDOW_END,
+        "fetch_date": fetch_date,
+    }
+
+
 def main() -> None:
     fetch_date = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     sess = requests.Session()
@@ -188,45 +235,26 @@ def main() -> None:
     assert set(TEAM_SUB) == set(TEAM_WIKI), "TEAM_SUB / TEAM_WIKI key mismatch"
     teams = sorted(TEAM_SUB)
     for i, tc in enumerate(teams, 1):
-        sub = TEAM_SUB[tc]
-        seed_title = TEAM_WIKI[tc]
-        canonical = resolve_canonical(seed_title, sess)
-        time.sleep(SLEEP_WIKI)
-        redirects = enumerate_redirects(canonical, sess)
-        time.sleep(SLEEP_WIKI)
-        print(f"[{i:2d}/32] {tc:3s}  r/{sub:25s}  {canonical} "
-              f"({len(redirects)} redirects)", flush=True)
+        row = fetch_one_team(tc, sess, fetch_date)
+        rows.append(row)
+        print(f"[{i:2d}/32] {tc:3s}  r/{row['subreddit']:25s}  "
+              f"{row['wiki_article']}  wiki12mo={row['wiki_12mo']}  "
+              f"redirect_share={row['redirect_share']}", flush=True)
 
-        subs = fetch_subreddit_subs(sub, sess)
-        time.sleep(SLEEP_REDDIT)
-
-        canon_views = fetch_title_views(canonical, sess)
-        time.sleep(SLEEP_WIKI)
-        rd_views: dict[str, int | None] = {}
-        for rt in redirects:
-            rd_views[rt] = fetch_title_views(rt, sess)
-            time.sleep(SLEEP_WIKI)
-        wiki, canon_total, share, contributing = combine_view_totals(
-            canon_views, rd_views)
-
-        rows.append({
-            "team_code": tc,
-            "team_full_name": canonical,
-            "subreddit": sub,
-            "subreddit_subscribers": subs if subs is not None else "",
-            "wiki_article": canonical,
-            "redirect_titles": "|".join(contributing),
-            "wiki_12mo": wiki if wiki is not None else "",
-            "wiki_12mo_canonical": canon_total if canon_total is not None else "",
-            "redirect_share": f"{share:.4f}",
-            "window_start": WINDOW_START,
-            "window_end": WINDOW_END,
-            "fetch_date": fetch_date,
-        })
-        ok_sub = "ok" if subs else "NULL"
-        ok_w = "ok" if wiki else "NULL"
-        print(f"     subs={subs} [{ok_sub}]  wiki12mo={wiki} [{ok_w}]  "
-              f"redirect_share={share:.3f}")
+    # Second pass: a canonical series that 404-flaked through the whole
+    # ladder usually heals within minutes — refetch those teams once
+    # (subscriber value kept from the first pass).
+    for i, row in enumerate(rows):
+        if row["wiki_12mo_canonical"] == "":
+            tc = row["team_code"]
+            print(f"RETRY {tc}: canonical series missing — second pass")
+            time.sleep(20)
+            redo = fetch_one_team(tc, sess, fetch_date, with_subs=False)
+            redo["subreddit_subscribers"] = row["subreddit_subscribers"]
+            rows[i] = redo
+            if redo["wiki_12mo_canonical"] == "":
+                print(f"     WARN {tc}: canonical STILL missing — row is "
+                      f"suspect, do not commit without investigating")
 
     out = PILOT_DIR / "team_outcomes.csv"
     atomic_write_csv(out, rows, OUT_FIELDS)
