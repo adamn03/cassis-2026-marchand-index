@@ -169,7 +169,7 @@ def _to_num(df: pd.DataFrame, cols: list[str]) -> None:
 
 
 def load_inputs() -> pd.DataFrame:
-    """Join all inputs on player_id into one wide DataFrame (160 rows).
+    """Join all inputs on player_id into one wide DataFrame (one row per pooled player).
 
     Reddit is treated as NULL for any player missing from reddit_counts.csv
     (the fetcher may be mid-write / blocked for some players); the files
@@ -683,6 +683,46 @@ def compute_expected_cap(df: pd.DataFrame,
     return out, out_linear
 
 
+def compute_boundary_bias(df: pd.DataFrame,
+                          peers: list[list[int]]) -> pd.DataFrame:
+    """A27: peer_skill_gap diagnostic + Abadie–Imbens-style bias-corrected
+    reporting lens. Primary quantities untouched.
+
+    Diagnostic: per-feature standardized gap (player − mean of K peers) on
+    the 6 SKILL_COLS + the scalar mean-absolute-gap summary.
+    Lens: OAQ_bc = OAQ_observed − β̂ᵀ(x_P − x̄_peers) with β̂ from a
+    within-position OLS of engagement_raw on the standardized skill vector.
+    OAQ_portable_bc applies the SAME β̂ (never refit on the market-adjusted
+    quantity) to the portable residual.
+    """
+    Z = _standardize_skill(df)
+    n = len(df)
+    gaps = np.full((n, Z.shape[1]), np.nan)
+    for i, pl in enumerate(peers):
+        if pl:
+            gaps[i] = Z[i] - Z[np.asarray(pl, dtype=int)].mean(axis=0)
+    for j, c in enumerate(SKILL_COLS):
+        df[f"peer_skill_gap_{c}"] = gaps[:, j]
+    with np.errstate(invalid="ignore"):
+        df["peer_skill_gap"] = np.abs(gaps).mean(axis=1)
+
+    er = df["engagement_raw"].to_numpy(dtype=float)
+    groups = df["group"].to_numpy()
+    correction = np.full(n, np.nan)
+    for gi in np.unique(groups):
+        idx = np.where(groups == gi)[0]
+        fit = idx[np.isfinite(er[idx])]
+        if fit.size < Z.shape[1] + 2:
+            continue  # degenerate group: lens stays NaN, disclosed via CSV
+        X = np.column_stack([np.ones(fit.size), Z[fit]])
+        beta, *_ = np.linalg.lstsq(X, er[fit], rcond=None)
+        correction[idx] = gaps[idx] @ beta[1:]
+    df["OAQ_bc"] = df["OAQ_observed"].to_numpy(dtype=float) - correction
+    df["OAQ_portable_bc"] = (
+        df["OAQ_portable"].to_numpy(dtype=float) - correction)
+    return df
+
+
 def compute_oaq(df: pd.DataFrame, peers: list[list[int]] | None = None,
                 market_z: np.ndarray | None = None) -> pd.DataFrame:
     """Full per-player OAQ pipeline. `df` must already have market_z if not
@@ -766,6 +806,9 @@ def compute_oaq(df: pd.DataFrame, peers: list[list[int]] | None = None,
             (hybrid_denom > 0) & np.isfinite(hybrid_denom),
             port / hybrid_denom, np.nan,
         )
+
+    # A27: boundary-bias diagnostic + bias-corrected reporting lens.
+    df = compute_boundary_bias(df, peers)
     return df
 
 
@@ -1680,6 +1723,37 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
         "function of the exact λ.\n"
     )
 
+    # A27 boundary-bias diagnostic + bias-corrected lens (reporting only).
+    if "OAQ_bc" in df.columns:
+        lines.append("## A27 star-boundary bias diagnostic + corrected lens "
+                     "(non-gating)\n")
+        rho_bc_obs = spearman_rho(
+            df["OAQ_observed"].to_numpy(dtype=float),
+            df["OAQ_bc"].to_numpy(dtype=float))
+        rho_bc_port = spearman_rho(
+            df["OAQ_portable"].to_numpy(dtype=float),
+            df["OAQ_portable_bc"].to_numpy(dtype=float))
+        gap_mean = float(np.nanmean(df["peer_skill_gap"].to_numpy(dtype=float)))
+        lines.append(
+            "`OAQ_bc = OAQ_observed − β̂ᵀ(x_P − x̄_peers)` (Abadie–Imbens "
+            "regression correction; β̂ from within-position OLS of "
+            "engagement_raw on the standardized 6-feature skill vector; the "
+            "SAME β̂ applied to the portable residual). The raw OAQ remains "
+            "the locked primary and the only basis for gate verdicts.\n")
+        lines.append(f"- Pool mean `peer_skill_gap`: {_fnum(gap_mean, 3)}")
+        lines.append(f"- Spearman rank agreement OAQ_observed vs OAQ_bc: "
+                     f"{_fnum(rho_bc_obs, 3)}")
+        lines.append(f"- Spearman rank agreement OAQ_portable vs "
+                     f"OAQ_portable_bc: {_fnum(rho_bc_port, 3)}")
+        low = [r for r in (rho_bc_obs, rho_bc_port)
+               if np.isfinite(r) and r < 0.8]
+        if low:
+            lines.append(
+                "- **Agreement < 0.8 — reported finding and stated "
+                "limitation (A27 rule 3); the headline does not switch "
+                "lenses under any outcome.**")
+        lines.append("")
+
     # A17 log1p robustness lens (reporting only; primary is unchanged and
     # remains the sole basis for gate verdicts).
     if log_agreement is not None:
@@ -1788,6 +1862,10 @@ OUT_COLS = [
     "OAQ_portable_lockedv1",
     "OAQ_portable_lockedv1_lo95", "OAQ_portable_lockedv1_hi95",
     "expected_cap", "is_rookie_deal",
+    "peer_skill_gap", "peer_skill_gap_age", "peer_skill_gap_ppg",
+    "peer_skill_gap_toi_per_game", "peer_skill_gap_cf_pct",
+    "peer_skill_gap_xgf_pct", "peer_skill_gap_ozs_pct",
+    "OAQ_bc", "OAQ_portable_bc",
     "marchand_index", "marchand_index_lo95", "marchand_index_hi95",
     "marchand_index_rawcap",
     "marchand_index_rawcap_lo95", "marchand_index_rawcap_hi95",
