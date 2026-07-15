@@ -359,7 +359,7 @@ Airtight A31.6 requires the amendment to contain the full 8-row shipping matrix 
 
 **Optional clause (include unless the owner objects — reporting-only):** V1b additionally reports the one-sided Mann-Whitney U p-value (asymptotic, continuity-corrected; `scipy.stats.mannwhitneyu(..., alternative="greater")`) as a descriptive companion to the bootstrap CI. It is NOT a gate and appears only in the validation panel.
 
-- [ ] **Step 1:** When executing Airtight §B A31, paste the three blocks above into the amendment. Mark this task complete in the same commit.
+- [x] **Step 1:** When executing Airtight §B A31, paste the three blocks above into the amendment. Mark this task complete in the same commit. — DONE 2026-07-15 (A31 committed with definitions, rows 3–7, BH pins, MWU clause verbatim).
 
 ---
 
