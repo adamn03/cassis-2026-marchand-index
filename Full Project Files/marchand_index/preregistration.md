@@ -507,6 +507,14 @@ K-nearest matching at a distribution boundary is biased: a player at the skill f
 
 Owner actions still pending (not decisions): (a) eyeball `raw/reddit_identity_pairs.md` (A21 acceptance step); (d) YouTube API key (U1/Gate-4 prerequisite).
 
+**A28 (2026-07-15) — Sensitivity re-run: `onice_status = thin` rows ineligible as peers. Logged BEFORE the final compute.**
+
+A13 group-mean-imputes the three on-ice features for skaters under the 150-minute 5v5 floor. Imputation shrinks those rows to the position centroid, so the Mahalanobis distance understates their true covariance distance and they are systematically over-selected as peers (J1-N6; cf. Rosenbaum & Rubin 1984 on matching with imputed covariates).
+
+**Rule:** one pre-registered sensitivity re-run in which `onice_status = thin` rows are INELIGIBLE as peers (they are still scored themselves, matched against non-thin peers). Spearman rank agreement vs the primary is reported for `OAQ_observed`, `OAQ_portable`, and the headline index. The primary is unchanged; the A17 status rule governs any material disagreement (< 0.8 → reported finding, no headline switch).
+
+**Anti-tuning compliance (§13):** logged before the final compute; the eligibility rule keys on the pre-existing A13 thin flag, fixed before any result exists; K, distance, features, weights, λ, denominators, and all floors unchanged.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
