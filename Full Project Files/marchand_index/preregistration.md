@@ -606,6 +606,14 @@ A3/A20 left V2 at the 2024 fan-vote membership: in-pool overlap n = 8 < 10 → u
 
 **Anti-tuning compliance (§13):** membership is defined by official external publications that predate this amendment and are independent of every model input; the union rule and fan-vote-only restriction are fixed before the overlap count is known; floors and verdict logic unchanged; logged while Reddit is 0/774 and no V2 statistic exists. The pre-A33 `external_outcomes.csv` is retained in git history per §13.
 
+**A34 (2026-07-18) — Published-leaderboard display rule: `small_sample` / season-absent rows excluded from published panels, retained in data. Logged BEFORE the final compute.**
+
+Rows with `small_sample = true` or NULL current-season GP (the A10 Barkov class) have attention floored by absence while their skill features are imputed toward the group mean — the arithmetic then produces a spurious negative-OAQ tail that reads as a finding but is an artifact of absence (J2-F7).
+
+**Rule:** rows with `small_sample = true` OR null current-season GP are EXCLUDED from every PUBLISHED leaderboard and panel (poster, results.md tables). They remain in `oaq_pilot.csv` with all computed values, and the excluded count is disclosed alongside every published table. The injury-attention confound is added to the poster limitations set. This is a DISPLAY rule only: no quantity, gate, or bootstrap changes; flagged rows still participate in z-scoring, peer pools (subject to A28's sensitivity), and validation cohorts exactly as before.
+
+**Anti-tuning compliance (§13):** display-layer only, keyed on the pre-existing A10 flag (locked 2026-06-17) and on GP nullity — objective absence facts, never on any player's resulting score; logged before any result exists; all computation, weights, floors, and verdicts unchanged.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
