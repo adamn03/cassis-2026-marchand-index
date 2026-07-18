@@ -238,3 +238,13 @@ Any change to this document after the initial commit is appended below with date
 All other §7.2 criteria (roster-period upload, 15s–30min duration, ≥500 views) are unchanged.
 
 **Anti-tuning compliance (§10):** logged before any YouTube data exists, so no video, view count, or player result could have influenced the rule; the rule is mechanical (string matching against pool-derived name sets), applied uniformly; bands (§5), channel allow-list (§6.1), query format (§6.3), outcome (§6.4), regression (§6.5), coverage floors (§7.3), pass logic (§8.1), and seed (§9) are unchanged.
+
+**G4-A2 (2026-07-18) — Pre-declared censoring disclosure: the ≥500-view floor + title-match select on the outcome and censor the depth band toward null. Logged BEFORE any Gate-4 YouTube fetch. Cross-ref: `docs/airtight_execution_plan.md` §B Gate-4 amendments (source J3-F8).**
+
+§7.2's ≥500-view floor and title-relevance rule are selection filters applied to the OUTCOME variable (video attention). For depth players, whole video populations fall below the floor, so the depth band is right-truncated exactly where its signal would live. Pre-declared, before any fetch:
+
+1. The direction of this bias — it biases the DEPTH BAND TOWARD NULL (attenuates any true OAQ–attention relationship among low-visibility players) — is stated in the published Gate-4 table, not in a footnote.
+2. Per-band counts of players excluded for having zero qualifying videos are reported in the same table.
+3. This disclosure does not alter the §8.1 pass logic; it pre-commits the interpretation that a depth-band null is partly attributable to outcome censoring and that a depth-band POSITIVE survives despite a bias working against it.
+
+**Anti-tuning compliance (§10):** disclosure-only; declared before any data exists; it constrains interpretation in the direction of caution and cannot flatter a weak result into a strong one; floors, filters, bands, regression, pass logic, and seed unchanged.
