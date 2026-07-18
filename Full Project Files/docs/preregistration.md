@@ -248,3 +248,9 @@ All other §7.2 criteria (roster-period upload, 15s–30min duration, ≥500 vie
 3. This disclosure does not alter the §8.1 pass logic; it pre-commits the interpretation that a depth-band null is partly attributable to outcome censoring and that a depth-band POSITIVE survives despite a bias working against it.
 
 **Anti-tuning compliance (§10):** disclosure-only; declared before any data exists; it constrains interpretation in the direction of caution and cannot flatter a weak result into a strong one; floors, filters, bands, regression, pass logic, and seed unchanged.
+
+**G4-A3 (2026-07-18) — Scope-note update: Gate-4 results WILL be claimed on the CASSIS poster. Logged BEFORE any Gate-4 YouTube fetch. Cross-ref: `docs/airtight_execution_plan.md` §A (J3-F2 pathway classification).**
+
+A10 recorded that Gate 4 "remains future work and is not claimed on the poster." The panel's pathway-independence classification (plan §A) made Gate-4 load-bearing: without it the poster's ≥3-independent-pathways criterion fails (V3 is reclassified as an aggregation-consistency check by impl-prereg A29; V1 is one family; V2's power depends on A33). Updated scope: Gate-4 IS executed for the poster run, and its results are claimed on the poster REGARDLESS OF DIRECTION, under the §8/§8.1 pass logic and null-result handling unchanged. The bands (§5), sampling frame (§6), snapshot/dedup rules (§7 as amended by G4-A1/A2), and seed (§9) govern; the §6.2.2 escalation rule governs any coverage shortfall — no improvisation.
+
+**Anti-tuning compliance (§10):** scope declaration only, logged before any Gate-4 data exists; committing IN ADVANCE to publish regardless of direction is the anti-tuning act — it removes the option of quietly dropping an unflattering result; no threshold, band, filter, or verdict rule changes.
