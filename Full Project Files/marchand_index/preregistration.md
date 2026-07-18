@@ -592,6 +592,20 @@ The 14-player v1 pilot and the 160-player pilot2 era (including the outcome-insp
 
 **Anti-tuning compliance (§13):** reporting-and-framing only — no quantity, weight, floor, or verdict rule changes; logged while Reddit is 0/774 and no confirmatory result exists; the variant list is the closed set of §13-preserved locked originals, fixed here in advance.
 
+**A33 (2026-07-18) — V2 membership: union of official FAN-VOTE All-Star selections, 2022 + 2023 + 2024. Logged BEFORE the final compute.**
+
+A3/A20 left V2 at the 2024 fan-vote membership: in-pool overlap n = 8 < 10 → underpowered per §9, contributing nothing to the pathway count (J3-F2).
+
+**Rules:**
+
+1. **Membership definition.** V2 membership = the union of players selected via an OFFICIAL FAN-VOTE component of the 2022, 2023, and 2024 All-Star selections, as named in NHL.com press releases. The fan-vote mechanism differs by year (captain votes, "Last Men In", full fan ballot); each season's exact mechanism is documented in `external_outcomes_sources.md`, and ONLY fan-voted names are taken — never league- or player-selected ones.
+2. **Sourcing.** Per the A20 pattern: ≥2 independent URLs per season list, recorded in `external_outcomes_sources.md`.
+3. **Join.** NHL-id-keyed per the A20 namesake guard (the id decides whenever present; name backup only for blank-id rows).
+4. **Power rule.** If the in-pool overlap reaches n ≥ 10, V2 is powered under its EXISTING floor (§9: ρ ≥ 0.45 / target 0.55 — unchanged); if not, V2 stays underpowered as pre-declared. No floor moves either way.
+5. **Disclosure.** The votes predate the attention window — same temporal-mismatch attenuation class as V1b's union lists; disclosed.
+
+**Anti-tuning compliance (§13):** membership is defined by official external publications that predate this amendment and are independent of every model input; the union rule and fan-vote-only restriction are fixed before the overlap count is known; floors and verdict logic unchanged; logged while Reddit is 0/774 and no V2 statistic exists. The pre-A33 `external_outcomes.csv` is retained in git history per §13.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
