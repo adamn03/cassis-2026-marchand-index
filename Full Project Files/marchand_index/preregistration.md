@@ -614,6 +614,18 @@ Rows with `small_sample = true` or NULL current-season GP (the A10 Barkov class)
 
 **Anti-tuning compliance (§13):** display-layer only, keyed on the pre-existing A10 flag (locked 2026-06-17) and on GP nullity — objective absence facts, never on any player's resulting score; logged before any result exists; all computation, weights, floors, and verdicts unchanged.
 
+**A35 (2026-07-18) — Small-items batch: anchor-degeneracy fix, log-lens escape-clause plug, goals-rate robustness, Reddit construct disclosures, nationality note. Logged BEFORE the final compute.**
+
+Five clauses (J1-N9, J3-F7, J2-F12, J2-F14, J2-F10), one amendment:
+
+1. **Trends anchor degeneracy (Marchand's own row).** A16 anchors every Trends fetch to the Brad Marchand topic entity, so his own row is anchor/anchor ≡ 1.0 — a degenerate self-measurement. Pre-declared secondary anchor for HIS ROW ONLY, named now: the Google Trends topic entity for **"Sidney Crosby"** (hockey-native, star-magnitude — adequate resolution against Marchand's own star-tier series). The ≡1.0 degeneracy is disclosed on his case card. Additionally, the count of depth players whose Trends series quantizes to zero against the anchor is reported.
+2. **A17 escape-clause plug (verbatim, poster-binding):** "No log-lens number appears in the headline, abstract, or leaderboard panels under any outcome."
+3. **Goals-rate robustness.** Pre-declared re-run with goals/60 replacing PPG in the peer skill vector (fame plausibly follows goals more than assists); reported as rank agreement vs primary ONLY — never as an alternative ranking (per §H forking-paths rule).
+4. **Reddit construct disclosures (poster limitations):** (a) the fetch counts SUBMISSIONS only — comments and game-thread activity are invisible, and depth players' attention is disproportionately comment-borne; (b) *(restated 2026-07-13 per A23 rule 4b)* `score` is the archive's ~2.5-day post-creation re-crawl value — votes near-settled and uniformly timed; the earlier fetch-time accrual confound is removed, and the residual (votes accruing after ~2.5 days are uncaptured) is uniform in timing across all players; disclosed.
+5. **Nationality note.** `wiki_intl` (weight 0.11) responds to nationality with no peer control — deliberate (national attention drivers are part of the signal being measured, not a confound to strip), disclosed on the poster.
+
+**Anti-tuning compliance (§13):** clauses 2, 4, 5 are disclosures/prohibitions that constrain future claims and cannot flatter any result; clause 1's secondary anchor is named before any Trends-dependent result exists and applies to a single pre-identified row; clause 3 is a rank-agreement-only robustness re-run under the §H rule. Weights, floors, window, λ, denominators, pool, and verdict logic unchanged. Logged while Reddit is 0/774 and no final composite exists.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
