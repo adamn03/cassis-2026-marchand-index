@@ -149,6 +149,9 @@ ROOKIE_AGE_MAX = 25
 
 # V1/V2 floors per pre-reg §9.
 V1_FLOOR, V1_TARGET = 0.40, 0.50
+# A31: V1b is the sole confirmatory primary (Hosmer–Lemeshow bands).
+V1B_FLOOR, V1B_TARGET = 0.70, 0.80
+A31_N_PERM = 100_000   # BH permutation count (Phipson–Smyth smoothing)
 V2_FLOOR, V2_TARGET = 0.45, 0.55
 PA_FLOOR = 0.40   # PA uses V1 Spearman >= 0.40
 PB_FLOOR = 0.45   # PB uses V2 Spearman >= 0.45
@@ -1086,10 +1089,159 @@ def _bootstrap_stat_ci(stat_fn, n: int, n_draws: int, seed: int):
         return (float(np.percentile(vals, 2.5)), float(np.percentile(vals, 97.5)))
 
 
+# --------------------------------------------------------------------------- #
+# A31 helpers — confirmatory hierarchy                                          #
+# --------------------------------------------------------------------------- #
+def _hm_se(auc: float, n1: int, n2: int) -> float:
+    """Hanley & McNeil (1982) SE of an AUC with n1 positives, n2 negatives."""
+    q1 = auc / (2 - auc)
+    q2 = 2 * auc * auc / (1 + auc)
+    var = (auc * (1 - auc) + (n1 - 1) * (q1 - auc * auc)
+           + (n2 - 1) * (q2 - auc * auc)) / (n1 * n2)
+    return float(np.sqrt(var))
+
+
+def a31_power_statement(n_pos: int, n_neg: int, alpha: float = 0.05) -> dict:
+    """U2(a): pre-registered power at the design constants (one-sided alpha).
+    Recomputed mechanically at the observed positive count (post-A37)."""
+    import math
+    se0 = _hm_se(0.5, n_pos, n_neg)
+    crit = 0.5 + 1.645 * se0
+    out = {"n_pos": n_pos, "n_neg": n_neg, "alpha_one_sided": alpha,
+           "se_null": se0, "critical_auc": crit}
+    for true_auc, key in ((V1B_FLOOR, "power_at_floor"),
+                          (V1B_TARGET, "power_at_target")):
+        se1 = _hm_se(true_auc, n_pos, n_neg)
+        out[key] = float(0.5 * (1.0 + math.erf(
+            ((true_auc - crit) / se1) / 2**0.5)))
+    return out
+
+
+def _auc_from_pos_neg(pos: np.ndarray, neg: np.ndarray) -> float:
+    scores = np.concatenate([pos, neg])
+    labels = np.concatenate([np.ones(len(pos)), np.zeros(len(neg))])
+    return auc_mannwhitney(scores, labels)
+
+
+def stratified_auc_draws(score_cols: dict[str, np.ndarray], labels: np.ndarray,
+                         n_draws: int = BOOTSTRAP_DRAWS, seed: int = SEED):
+    """A31 rule 1 + U2(b): stratified player-level bootstrap — each draw
+    resamples positives and negatives separately, with replacement; the SAME
+    index draws are applied to every score column so ΔAUC comparisons are
+    paired (shared draw noise cancels)."""
+    pos_idx = np.where(labels == 1)[0]
+    neg_idx = np.where(labels == 0)[0]
+    rng = np.random.default_rng(seed)
+    out = {k: np.empty(n_draws) for k in score_cols}
+    for d in range(n_draws):
+        ps = rng.choice(pos_idx, len(pos_idx), replace=True)
+        ns = rng.choice(neg_idx, len(neg_idx), replace=True)
+        for k, sc in score_cols.items():
+            out[k][d] = _auc_from_pos_neg(sc[ps], sc[ns])
+    return out
+
+
+def _pct_ci(draws: np.ndarray) -> list[float]:
+    finite = draws[np.isfinite(draws)]
+    if finite.size == 0:
+        return [float("nan"), float("nan")]
+    return [float(np.percentile(finite, 2.5)), float(np.percentile(finite, 97.5))]
+
+
+def mwu_one_sided_p(scores: np.ndarray, labels: np.ndarray) -> float:
+    """A31 rule 2 descriptive companion: one-sided Mann–Whitney U p
+    (alternative: positives stochastically greater). scipy when available,
+    else the asymptotic normal approximation with continuity correction."""
+    mask = np.isfinite(scores) & np.isfinite(labels)
+    pos = scores[mask][labels[mask] == 1]
+    neg = scores[mask][labels[mask] == 0]
+    if len(pos) == 0 or len(neg) == 0:
+        return float("nan")
+    try:
+        from scipy.stats import mannwhitneyu
+        return float(mannwhitneyu(pos, neg, alternative="greater",
+                                  use_continuity=True).pvalue)
+    except Exception:
+        import math
+        n1, n2 = len(pos), len(neg)
+        ranks = pd.Series(np.concatenate([pos, neg])).rank().to_numpy()
+        u = ranks[:n1].sum() - n1 * (n1 + 1) / 2
+        mu, sd = n1 * n2 / 2, math.sqrt(n1 * n2 * (n1 + n2 + 1) / 12)
+        z = (u - mu - 0.5) / sd
+        return float(1 - 0.5 * (1 + math.erf(z / 2**0.5)))
+
+
+def _phipson_smyth_p(observed: float, perm: np.ndarray) -> float:
+    """One-sided additive-smoothed Monte-Carlo p (Phipson & Smyth 2010)."""
+    perm = perm[np.isfinite(perm)]
+    return float((1 + np.sum(perm >= observed)) / (1 + len(perm)))
+
+
+def perm_p_membership_auc(scores: np.ndarray, labels: np.ndarray,
+                          n_perm: int = A31_N_PERM, seed: int = SEED) -> float:
+    """V2 pin: permute membership labels; one-sided AUC > 0.5."""
+    mask = np.isfinite(scores) & np.isfinite(labels)
+    sc, lb = scores[mask], labels[mask]
+    n1 = int((lb == 1).sum())
+    n2 = int((lb == 0).sum())
+    if n1 == 0 or n2 == 0:
+        return float("nan")
+    ranks = pd.Series(sc).rank().to_numpy()
+    obs = (ranks[lb == 1].sum() - n1 * (n1 + 1) / 2) / (n1 * n2)
+    rng = np.random.default_rng(seed)
+    n = len(sc)
+    perm = np.empty(n_perm)
+    for i in range(n_perm):
+        pick = rng.choice(n, n1, replace=False)
+        perm[i] = (ranks[pick].sum() - n1 * (n1 + 1) / 2) / (n1 * n2)
+    return _phipson_smyth_p(float(obs), perm)
+
+
+def perm_p_spearman(x: np.ndarray, y: np.ndarray, n_perm: int = A31_N_PERM,
+                    seed: int = SEED, agreement_sign: float = 1.0) -> float:
+    """V1a/V3 pin: permute the outcome vector; one-sided in the agreement
+    direction (`agreement_sign` flips when the outcome's coding makes
+    NEGATIVE rho the agreement direction, per V1a's 1=best convention)."""
+    mask = np.isfinite(x) & np.isfinite(y)
+    xs, ys = x[mask], y[mask]
+    if len(xs) < 3:
+        return float("nan")
+    obs = agreement_sign * spearman_rho(xs, ys)
+    rng = np.random.default_rng(seed)
+    perm = np.empty(n_perm)
+    yv = ys.copy()
+    for i in range(n_perm):
+        rng.shuffle(yv)
+        perm[i] = agreement_sign * spearman_rho(xs, yv)
+    return _phipson_smyth_p(float(obs), perm)
+
+
+def bh_step_up(pvals: dict[str, float], q: float = 0.05) -> dict:
+    """Benjamini–Hochberg across the secondary family. Returns per-test
+    {p, supported} — 'supported' is only the multiplicity LABEL; the
+    pre-registered floors still govern pass/fail (A31 rule 2)."""
+    items = [(k, v) for k, v in pvals.items() if np.isfinite(v)]
+    items.sort(key=lambda kv: kv[1])
+    m = len(items)
+    k_max = 0
+    for rank, (_, p) in enumerate(items, 1):
+        if p <= rank / m * q:
+            k_max = rank
+    out = {}
+    for rank, (name, p) in enumerate(items, 1):
+        out[name] = {"p": p, "supported": rank <= k_max}
+    for name, p in pvals.items():
+        if name not in out:
+            out[name] = {"p": p, "supported": False}
+    return out
+
+
 def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
-                        seed: int = SEED) -> dict:
+                        seed: int = SEED, n_perm: int = A31_N_PERM) -> dict:
     """V1a (Spearman rho vs jersey_rank), V1b (AUC jersey membership),
-    V2 (AUC asg2024 membership; Spearman if vote share existed)."""
+    V2 (AUC asg2024 membership; Spearman if vote share existed).
+    A31: V1a/V2/V3 carry one-sided permutation p-values (Phipson-Smyth)
+    combined in a BH step-up family under `BH_secondary`."""
     port = df["OAQ_portable"].to_numpy(dtype=float)
     jersey_rank = df["jersey_rank"].to_numpy(dtype=float)
     jersey_mem = df["jersey_list_member"].to_numpy(dtype=float)
@@ -1109,8 +1261,13 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
             return spearman_rho(p_sub[idx], r_sub[idx])
 
         ci_v1a = _bootstrap_stat_ci(stat_v1a, n_rank, n_draws, seed)
+        # A31: jersey_rank is 1=best, so agreement is NEGATIVE rho;
+        # agreement_sign=-1 makes the one-sided test point that way.
+        perm_p_v1a = perm_p_spearman(p_sub, r_sub, n_perm=n_perm, seed=seed,
+                                     agreement_sign=-1.0)
     else:
         rho_v1a, ci_v1a = float("nan"), (float("nan"), float("nan"))
+        perm_p_v1a = float("nan")
     results["V1a"] = {
         "test": "Spearman rho(OAQ_portable, jersey_rank) over rank overlap",
         "metric": "spearman_rho",
@@ -1122,25 +1279,74 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
         "underpowered": n_rank < UNDERPOWERED_N,
         "convention": ("jersey_rank is 1=best, so a NEGATIVE rho indicates "
                        "AGREEMENT (high OAQ_portable -> low/better rank number)."),
+        "perm_p": perm_p_v1a,   # A31 one-sided, agreement direction
     }
 
-    # ---- V1b: AUC jersey membership across all 160 (primary) ---- #
+    # ---- V1b: AUC jersey membership — A31 sole confirmatory primary ---- #
     n_pos_v1b = int(np.nansum(jersey_mem == 1))
+    n_neg_v1b = int(np.nansum(jersey_mem == 0))
     auc_v1b = auc_mannwhitney(port, jersey_mem)
-    if np.isfinite(auc_v1b):
-        def stat_v1b(idx):
-            return auc_mannwhitney(port[idx], jersey_mem[idx])
-        ci_v1b = _bootstrap_stat_ci(stat_v1b, len(df), n_draws, seed)
+    # A31 rule 1 + rule 3 + U2(b): stratified draws shared across the primary
+    # and the baseline scores so every ΔAUC is paired.
+    score_cols = {
+        "OAQ_portable": port,
+        "engagement_raw": df["engagement_raw"].to_numpy(dtype=float),
+        "ppg": df["ppg"].to_numpy(dtype=float),
+        "OAQ_observed": df["OAQ_observed"].to_numpy(dtype=float),
+    }
+    if np.isfinite(auc_v1b) and n_pos_v1b > 0 and n_neg_v1b > 0:
+        draws = stratified_auc_draws(score_cols, jersey_mem, n_draws, seed)
+        ci_v1b = _pct_ci(draws["OAQ_portable"])
+        baselines = {
+            k: {"auc": auc_mannwhitney(v, jersey_mem),
+                "ci95": _pct_ci(draws[k])}
+            for k, v in score_cols.items() if k != "OAQ_portable"
+        }
+        delta_auc = {
+            f"OAQ_portable_minus_{k}": {
+                "delta": float(np.nanmean(draws["OAQ_portable"] - draws[k])),
+                "point": float(auc_v1b - baselines[k]["auc"]),
+                "ci95": _pct_ci(draws["OAQ_portable"] - draws[k]),
+            }
+            for k in ("engagement_raw", "ppg")
+        }
+        power = a31_power_statement(n_pos_v1b, n_neg_v1b)
+        mwu_p = mwu_one_sided_p(port, jersey_mem)
     else:
-        ci_v1b = (float("nan"), float("nan"))
+        ci_v1b = [float("nan"), float("nan")]
+        baselines, delta_auc, power = {}, {}, {}
+        mwu_p = float("nan")
+    # A31 rule 1 verdict language (rows of the shipping matrix).
+    ci_lo = ci_v1b[0]
+    if not np.isfinite(auc_v1b):
+        v1b_class = "not computable"
+    elif auc_v1b < V1B_FLOOR:
+        v1b_class = "V1b-fail"
+    elif np.isfinite(ci_lo) and ci_lo > 0.50:
+        v1b_class = "V1b-strong"
+    else:
+        v1b_class = ("V1b-point (floor met on point estimate, not resolved "
+                     f"from chance at n={n_pos_v1b} positives)")
     results["V1b"] = {
-        "test": "AUC OAQ_portable discriminating jersey_list_member (1/0)",
+        "test": ("AUC OAQ_portable discriminating jersey_list_member (1/0) — "
+                 "A31 confirmatory primary"),
         "metric": "auc",
         "value": auc_v1b,
         "ci95": list(ci_v1b),
+        "ci_method": ("stratified player-level bootstrap (A31 rule 1): each "
+                      "draw resamples positives and negatives separately, "
+                      f"with replacement; {n_draws} draws, seed {seed}; "
+                      "Hanley & McNeil 1982"),
         "n_total": int(len(df)),
         "n_members": n_pos_v1b,
+        "floor": V1B_FLOOR,
+        "target": V1B_TARGET,
+        "verdict_class": v1b_class,
         "underpowered": n_pos_v1b < UNDERPOWERED_N,
+        "power": power,                    # U2(a)
+        "mwu_one_sided_p": mwu_p,          # A31 rule 2 companion (not a gate)
+        "baselines": baselines,            # A31 rule 3
+        "delta_auc_paired": delta_auc,     # U2(b)
     }
 
     # ---- V2: AUC asg2024 membership (membership-only; no vote share) ---- #
@@ -1150,8 +1356,11 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
         def stat_v2(idx):
             return auc_mannwhitney(port[idx], asg_mem[idx])
         ci_v2 = _bootstrap_stat_ci(stat_v2, len(df), n_draws, seed)
+        perm_p_v2 = perm_p_membership_auc(port, asg_mem, n_perm=n_perm,
+                                          seed=seed)
     else:
         ci_v2 = (float("nan"), float("nan"))
+        perm_p_v2 = float("nan")
     results["V2"] = {
         "test": "AUC OAQ_portable discriminating asg2024_member (1/0)",
         "metric": "auc",
@@ -1164,6 +1373,7 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
         "underpowered": n_pos_v2 < UNDERPOWERED_N,
         "note": ("asg2024 published as membership only (no fan-vote share "
                  "available), so V2 is AUC; no Spearman computed."),
+        "perm_p": perm_p_v2,   # A31 one-sided, AUC > 0.5
     }
 
     # ---- V3 (A6): team-level triangulation. n=32 teams. ---- #
@@ -1212,9 +1422,12 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
 
             ci_v3 = _bootstrap_stat_ci(stat_v3, n_v3, n_draws, seed)
             ci_v3_eng = _bootstrap_stat_ci(stat_v3_eng, n_v3, n_draws, seed)
+            perm_p_v3 = perm_p_spearman(team_sum_oaq, wiki_aligned,
+                                        n_perm=n_perm, seed=seed)
         else:
             rho_v3, ci_v3 = float("nan"), (float("nan"), float("nan"))
             rho_v3_eng, ci_v3_eng = float("nan"), (float("nan"), float("nan"))
+            perm_p_v3 = float("nan")
         results["V3"] = {
             "test": ("aggregation-consistency check (A29): Spearman "
                      "rho(sum_OAQ_observed_per_team, team_wiki_12mo) "
@@ -1239,6 +1452,7 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
                          "(no peer-skill control)"),
             },
             "teams_used": team_used,
+            "perm_p": perm_p_v3,   # A31 one-sided, positive-rho agreement
         }
     else:
         results["V3"] = {
@@ -1249,7 +1463,16 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
             "floor": V3_FLOOR,
             "underpowered": True,
             "note": "team_outcomes.csv not found",
+            "perm_p": float("nan"),
         }
+
+    # A31 rule 2: BH step-up over the secondary family. 'supported' is the
+    # multiplicity label only — the pre-registered floors govern pass/fail.
+    results["BH_secondary"] = bh_step_up({
+        "V1a": results["V1a"]["perm_p"],
+        "V2": results["V2"]["perm_p"],
+        "V3": results["V3"]["perm_p"],
+    })
     return results
 
 
@@ -1357,6 +1580,85 @@ def _fnum(x, nd=4):
         return f"{float(x):.{nd}f}"
     except (TypeError, ValueError):
         return "NA"
+
+
+def _a31_results_lines(external: dict) -> list[str]:
+    """A31 results.md section: verdict, power sentence, MWU companion,
+    baseline AUC table, paired dAUC table, BH secondary-family table."""
+    v1b = external["V1b"]
+    lines: list[str] = []
+    lines.append("## A31 confirmatory hierarchy (V1b primary)\n")
+    lines.append(
+        f"- **Verdict: {v1b['verdict_class']}** — AUC = {_fnum(v1b['value'])}, "
+        f"95% CI [{_fnum(v1b['ci95'][0])}, {_fnum(v1b['ci95'][1])}] "
+        f"(floor {v1b['floor']}, target {v1b['target']}; stratified "
+        "player-level bootstrap)."
+    )
+    pw = v1b.get("power") or {}
+    if pw:
+        lines.append(
+            f"- Power (U2a, Hanley-McNeil at {pw['n_pos']}/{pw['n_neg']} "
+            f"positives/negatives, one-sided alpha "
+            f"{pw['alpha_one_sided']}): SE under the null = "
+            f"{_fnum(pw['se_null'])}, critical AUC = "
+            f"{_fnum(pw['critical_auc'])}; power "
+            f"{_fnum(pw['power_at_floor'])} at floor {v1b['floor']} and "
+            f"{_fnum(pw['power_at_target'])} at target {v1b['target']}."
+        )
+    lines.append(
+        f"- Mann-Whitney one-sided p (descriptive companion, not a gate): "
+        f"{_fnum(v1b.get('mwu_one_sided_p'))}"
+    )
+    lines.append("")
+
+    baselines = v1b.get("baselines") or {}
+    if baselines:
+        lines.append("### Baseline AUCs (A31 rule 3, shared stratified draws)\n")
+        lines.append("| Score | AUC | 95% CI |")
+        lines.append("|---|---|---|")
+        lines.append(
+            f"| OAQ_portable (primary) | {_fnum(v1b['value'])} | "
+            f"[{_fnum(v1b['ci95'][0])}, {_fnum(v1b['ci95'][1])}] |"
+        )
+        for k, b in baselines.items():
+            lines.append(
+                f"| {k} | {_fnum(b['auc'])} | "
+                f"[{_fnum(b['ci95'][0])}, {_fnum(b['ci95'][1])}] |"
+            )
+        lines.append("")
+
+    delta = v1b.get("delta_auc_paired") or {}
+    if delta:
+        lines.append("### Paired dAUC (U2b — same draws, shared noise "
+                     "cancels)\n")
+        lines.append("| Contrast | point | draw mean | 95% CI |")
+        lines.append("|---|---|---|---|")
+        for k, d in delta.items():
+            label = k.replace("OAQ_portable_minus_", "OAQ_portable minus ")
+            lines.append(
+                f"| {label} | {_fnum(d['point'])} | {_fnum(d['delta'])} | "
+                f"[{_fnum(d['ci95'][0])}, {_fnum(d['ci95'][1])}] |"
+            )
+        lines.append("")
+
+    bh = external.get("BH_secondary") or {}
+    if bh:
+        lines.append("### BH secondary family (q = 0.05)\n")
+        lines.append("| Test | one-sided perm p | BH-supported |")
+        lines.append("|---|---|---|")
+        for name in ("V1a", "V2", "V3"):
+            e = bh.get(name, {})
+            lines.append(
+                f"| {name} | {_fnum(e.get('p'))} | "
+                f"{'yes' if e.get('supported') else 'no'} |"
+            )
+        lines.append("")
+        lines.append("- 'BH-supported' is the multiplicity label only; the "
+                     "pre-registered floors still govern pass/fail (A31 "
+                     "rule 2). Permutation p-values are one-sided in the "
+                     "agreement direction, Phipson-Smyth smoothed.")
+        lines.append("")
+    return lines
 
 
 def write_results_md(path: Path, df: pd.DataFrame, external: dict,
@@ -1517,6 +1819,9 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
             "Headline V3 uses peer-matched OAQ_observed."
         )
     lines.append("")
+
+    # A31 confirmatory hierarchy.
+    lines.extend(_a31_results_lines(external))
 
     # Patterns.
     lines.append("## Pre-registered pattern verdicts (§11)\n")
