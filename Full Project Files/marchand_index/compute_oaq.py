@@ -154,6 +154,10 @@ V1B_FLOOR, V1B_TARGET = 0.70, 0.80
 A31_N_PERM = 100_000   # BH permutation count (Phipson–Smyth smoothing)
 V2_FLOOR, V2_TARGET = 0.45, 0.55
 
+# A35 clause 2: poster-binding escape-clause plug, verbatim.
+A35_LOG_LENS_BAN = ("No log-lens number appears in the headline, abstract, "
+                    "or leaderboard panels under any outcome.")
+
 # A32 rule 1: required disclosure sentence, verbatim (poster + results.md).
 A32_DISCLOSURE = (
     "Headline definitions were amended after inspection of an overlapping "
@@ -234,6 +238,25 @@ def load_inputs() -> pd.DataFrame:
         on="player_id",
         how="left",
     )
+
+    # A35 clause 3: goals/60 (all situations) from the MoneyPuck raw file,
+    # keyed on nhl_player_id. Feeds ONLY the goals-rate robustness re-run.
+    mp_path = RAW_DIR / "moneypuck_skaters_2025.csv"
+    df["goals_per60"] = np.nan
+    if mp_path.exists():
+        mp = pd.read_csv(mp_path,
+                         usecols=["playerId", "situation", "I_F_goals",
+                                  "icetime"])
+        mp = mp[mp["situation"] == "all"].copy()
+        ice = pd.to_numeric(mp["icetime"], errors="coerce")
+        gls = pd.to_numeric(mp["I_F_goals"], errors="coerce")
+        with np.errstate(invalid="ignore", divide="ignore"):
+            mp["goals_per60"] = np.where(ice > 0, gls * 3600.0 / ice, np.nan)
+        g60 = dict(zip(mp["playerId"].astype("Int64").astype(str),
+                       mp["goals_per60"]))
+        nid = (df["nhl_player_id"].astype("string").str.strip()
+               .str.replace(r"\.0$", "", regex=True))
+        df["goals_per60"] = [g60.get(str(x), np.nan) for x in nid]
 
     # Reddit (defensive: files may be absent or only partially populated).
     rc_path = RAW_DIR / "reddit_counts.csv"
@@ -1725,6 +1748,86 @@ def _a31_results_lines(external: dict) -> list[str]:
     return lines
 
 
+def a35_goalsrate_agreement(df_primary: pd.DataFrame,
+                            df_inputs: pd.DataFrame,
+                            market_z: np.ndarray) -> dict:
+    """A35 clause 3: goals/60 replaces PPG in the peer skill vector; the
+    variant is reported as rank agreement vs the primary ONLY — never as an
+    alternative ranking (§H forking-paths rule)."""
+    if "goals_per60" not in df_inputs.columns or \
+            pd.to_numeric(df_inputs["goals_per60"], errors="coerce").isna().all():
+        return {"available": False}
+    gi = df_inputs.copy()
+    gi["ppg"] = pd.to_numeric(gi["goals_per60"], errors="coerce")
+    peers_g = compute_peers(gi)
+    df_g = compute_oaq(gi, peers=peers_g, market_z=market_z)
+    return {
+        "available": True,
+        "agreement": {
+            col: rank_agreement(df_primary[col].to_numpy(dtype=float),
+                                df_g[col].to_numpy(dtype=float))
+            for col in ("OAQ_observed", "OAQ_portable",
+                        "marchand_index_hybrid")
+        },
+    }
+
+
+def _a35_results_lines(a35: dict) -> list[str]:
+    """A35 results.md block: clauses 1/2/4/5 disclosures + the clause-3
+    rank-agreement table (never a leaderboard)."""
+    lines: list[str] = []
+    lines.append("## A35 pre-registered disclosures & robustness "
+                 "(non-gating)\n")
+    lines.append(f"- **Log-lens ban (A35 clause 2, verbatim, "
+                 f"poster-binding):** \"{A35_LOG_LENS_BAN}\"")
+    lines.append(
+        "- **Trends anchor degeneracy (clause 1):** the anchor player's own "
+        "row is anchor/anchor ≡ 1.0 under A16; his published value is "
+        "re-measured against the pre-declared Sidney Crosby secondary "
+        "anchor and chained onto the common scale (disclosed on his case "
+        f"card). Zero-quantization count: "
+        f"{a35.get('trends_zero_count', 'n/a')} players' Trends series "
+        "quantize to 0 against the anchor."
+    )
+    lines.append(
+        "- **Reddit construct (clause 4):** the fetch counts SUBMISSIONS "
+        "only — comments and game-thread activity are invisible, and depth "
+        "players' attention is disproportionately comment-borne; `score` is "
+        "the archive's ~2.5-day post-creation re-crawl value — votes "
+        "near-settled and uniformly timed; the residual (votes accruing "
+        "after ~2.5 days) is uniform in timing across players."
+    )
+    lines.append(
+        "- **Nationality (clause 5):** `wiki_intl` (weight 0.11) responds "
+        "to nationality with no peer control — deliberate (national "
+        "attention drivers are part of the signal being measured), "
+        "disclosed."
+    )
+    lines.append(
+        "- **Injury-attention confound (A34):** season-absent / "
+        "small-sample rows have attention floored by absence; they are "
+        "excluded from published tables and the confound is a stated "
+        "limitation."
+    )
+    lines.append("")
+    gr = a35.get("goalsrate") or {}
+    if gr.get("available"):
+        lines.append("### A35 clause-3 goals-rate robustness "
+                     "(rank agreement vs primary ONLY)\n")
+        lines.append("goals/60 replaces PPG in the peer skill vector; "
+                     "reported as agreement, never as an alternative "
+                     "ranking.\n")
+        lines.append("| Quantity | Spearman rho (primary vs goals-rate) |")
+        lines.append("|---|---|")
+        for k, v in gr["agreement"].items():
+            lines.append(f"| {k} | {_fnum(v)} |")
+        lines.append("")
+    else:
+        lines.append("### A35 clause-3 goals-rate robustness — NOT RUN "
+                     "(goals/60 unavailable in inputs)\n")
+    return lines
+
+
 def _a34_display_pool(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
     """A34 display rule: rows with small_sample=1 OR null current-season GP
     are excluded from every PUBLISHED table (they remain in oaq_pilot.csv
@@ -1767,7 +1870,8 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
                      log_external: dict | None = None,
                      a28_agreement: dict | None = None,
                      a28_n_thin: int | None = None,
-                     a32_panel: dict | None = None) -> None:
+                     a32_panel: dict | None = None,
+                     a35_block: dict | None = None) -> None:
     lines: list[str] = []
     lines.append("# Tier-1 pilot results — The Marchand Index (pilot2)\n")
     lines.append("Generated by `marchand_index/compute_oaq.py`. Method locked in "
@@ -1926,6 +2030,10 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     # A32 invariance panel + disclosure.
     if a32_panel:
         lines.extend(_a32_results_lines(a32_panel))
+
+    # A35 disclosures + goals-rate robustness.
+    if a35_block:
+        lines.extend(_a35_results_lines(a35_block))
 
     # Patterns.
     lines.append("## Pre-registered pattern verdicts (§11)\n")
@@ -2424,6 +2532,11 @@ def main() -> None:
     external = external_validation(df)
     patterns = evaluate_patterns(df, external)
     a32_panel = invariance_panel(df, external)
+    a35_block = {
+        "goalsrate": a35_goalsrate_agreement(df, df_inputs, market_z),
+        "trends_zero_count": int((pd.to_numeric(
+            df["trends_12mo"], errors="coerce") == 0).sum()),
+    }
 
     # A17 log1p robustness lens (reporting only; never feeds a gate verdict).
     log_lens = compute_log_lens(df, peers, market_z)
@@ -2461,7 +2574,7 @@ def main() -> None:
                      market_used, reddit_note,
                      log_agreement=log_agreement, log_external=log_external,
                      a28_agreement=a28_agreement, a28_n_thin=n_thin,
-                     a32_panel=a32_panel)
+                     a32_panel=a32_panel, a35_block=a35_block)
     write_results_json(PILOT_DIR / "results.json", external, patterns,
                        market_used, reddit_note,
                        log_agreement=log_agreement, log_external=log_external,

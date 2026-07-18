@@ -55,6 +55,10 @@ from pytrends.request import TrendReq  # noqa: E402
 
 TIMEFRAME = "2025-04-18 2026-04-17"   # A11 fixed window
 ANCHOR_NAME = "Brad Marchand"         # A16 fixed anchor (topic resolved at run)
+# A35 clause 1: the anchor player's OWN row is anchor/anchor ≡ 1.0
+# (degenerate). His row alone is re-measured against this pre-declared
+# secondary anchor and chained back onto the common scale.
+SECONDARY_ANCHOR_NAME = "Sidney Crosby"
 SLEEP = 3.0
 FIELDS = [
     "player_id", "full_name", "query", "query_mid", "trends_method",
@@ -114,6 +118,72 @@ def fetch_pair(pytrends: TrendReq, anchor_kw: str, player_kw: str):
     return p_mean, a_mean, n_weeks
 
 
+def _fold(s: str) -> str:
+    return " ".join(str(s).casefold().split())
+
+
+def chain_secondary_ratio(m_over_c: float | None,
+                          crosby_ratio: float | None) -> float | None:
+    """A35 clause 1: put the anchor player's row on the common
+    (Marchand-anchor) scale: (M/C measured) × (C/M already stored from the
+    standard fetch). Both factors are real measurements, so the product is
+    an empirical estimate rather than the degenerate identical 1.0."""
+    if m_over_c is None or crosby_ratio is None:
+        return None
+    if not crosby_ratio > 0:
+        return None
+    return m_over_c * crosby_ratio
+
+
+def a35_remeasure_anchor_row(rows_by_pid: dict[str, dict], pair_fetch,
+                             secondary_kw: str) -> bool:
+    """Re-measure ONLY the anchor player's row against the secondary anchor
+    (A35 clause 1). `pair_fetch(anchor_kw, player_kw)` returns
+    (player_mean, anchor_mean, n_weeks). Returns True when the row was
+    updated; refuses (False) when the anchor or Crosby row is absent or the
+    chain factor is unusable — the degenerate value is then left in place
+    and the caller should warn, never invent."""
+    anchor_row = crosby_row = None
+    for r in rows_by_pid.values():
+        if _fold(r.get("full_name")) == _fold(ANCHOR_NAME):
+            anchor_row = r
+        elif _fold(r.get("full_name")) == _fold(SECONDARY_ANCHOR_NAME):
+            crosby_row = r
+    if anchor_row is None or crosby_row is None:
+        return False
+    try:
+        crosby_ratio = float(crosby_row.get("trends_12mo", ""))
+    except (TypeError, ValueError):
+        return False
+    player_kw = anchor_row.get("query_mid") or anchor_row.get("query") \
+        or ANCHOR_NAME
+    p_mean, a_mean, n_weeks = pair_fetch(secondary_kw, player_kw)
+    ratio_mc = ratio_from_means(p_mean, a_mean)
+    chained = chain_secondary_ratio(ratio_mc, crosby_ratio)
+    if chained is None:
+        return False
+    anchor_row["trends_12mo"] = f"{chained:.6f}"
+    anchor_row["trends_method"] = "topic_secondary_anchor"
+    anchor_row["player_mean_scaled"] = f"{p_mean:.4f}"
+    anchor_row["anchor_mean_scaled"] = f"{a_mean:.4f}"
+    anchor_row["n_weeks"] = n_weeks
+    anchor_row["fetch_date"] = dt.date.today().isoformat()
+    return True
+
+
+def zero_quant_count(rows: list[dict]) -> int:
+    """A35 clause 1 report: players whose Trends series quantizes to 0
+    against the anchor on the joint scale."""
+    n = 0
+    for r in rows:
+        try:
+            if float(r.get("trends_12mo", "")) == 0.0:
+                n += 1
+        except (TypeError, ValueError):
+            continue
+    return n
+
+
 def load_resume_rows() -> dict[str, dict]:
     """player_id -> existing row, kept only if trends_12mo is non-null."""
     if not OUT_PATH.exists():
@@ -125,7 +195,35 @@ def load_resume_rows() -> dict[str, dict]:
     return out
 
 
+def a35_marchand_row_mode() -> None:
+    """`--a35-marchand-row`: live secondary-anchor re-measure of the anchor
+    player's row only (A35 clause 1); rewrites trends.csv in place."""
+    pytrends = TrendReq(hl="en-US", tz=0, retries=2, backoff_factor=1.5,
+                        timeout=(10, 30))
+    sec_mid = resolve_topic_mid(pytrends, SECONDARY_ANCHOR_NAME)
+    sec_kw = sec_mid or SECONDARY_ANCHOR_NAME
+    print(f"A35 secondary anchor: {SECONDARY_ANCHOR_NAME!r} -> "
+          f"{'topic ' + sec_mid if sec_mid else 'STRING FALLBACK'}")
+    time.sleep(SLEEP)
+    rows_by_pid = {r["player_id"]: r for r in load_csv(OUT_PATH)}
+
+    def live_pair(anchor_kw, player_kw):
+        return fetch_pair(pytrends, anchor_kw, player_kw)
+
+    if a35_remeasure_anchor_row(rows_by_pid, live_pair, sec_kw):
+        order = list(rows_by_pid)
+        atomic_write_csv(OUT_PATH, [rows_by_pid[q] for q in order], FIELDS)
+        print("Anchor row re-measured against the secondary anchor; "
+              f"{OUT_PATH} rewritten.")
+    else:
+        print("REFUSED: anchor/Crosby row missing or chain factor unusable; "
+              "degenerate value left in place.", file=sys.stderr)
+
+
 def main() -> None:
+    if "--a35-marchand-row" in sys.argv:
+        a35_marchand_row_mode()
+        return
     fetch_date = dt.date.today().isoformat()
     pytrends = TrendReq(hl="en-US", tz=0, retries=2, backoff_factor=1.5,
                         timeout=(10, 30))
@@ -184,6 +282,8 @@ def main() -> None:
     n_topic = sum(1 for r in rows if r.get("trends_method") == "topic")
     print(f"\nWrote {OUT_PATH} ({len(rows)} rows, {n_ok} non-null, "
           f"{n_topic} topic-resolved)")
+    print(f"A35 zero-quantization count (trends_12mo == 0): "
+          f"{zero_quant_count(rows)}")
 
 
 if __name__ == "__main__":
