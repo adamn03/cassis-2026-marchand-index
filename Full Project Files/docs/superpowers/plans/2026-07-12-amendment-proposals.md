@@ -11,7 +11,12 @@
 | A25 | e4449cf | cdb4c04 |
 | A26 | e5f96c7 | 0f55ea0 |
 | A27 | 2ddb75b | code in working tree, pytest verify pending |
-| A28–A35, G4-A1..A3 | pending — execute in order per §"How to execute" | — |
+| A28 | 506884c | 70b7a0d |
+| A29 | 7e9d47a | 5458cf4 (re-fetch a168e56) |
+| A30 (per D-2) | b0044ee | cac7e82 |
+| A31 (U2 folded per D-3) | 473897f | 791e780 |
+| A32 | this commit (D-2 clauses kept, markers stripped) | — |
+| A33–A35, G4-A1..A3 | pending — execute in order per §"How to execute" | — |
 
 Owner decisions D-1/D-2/D-3 + U-slate + A41 pool dedup (774→771) approved 2026-07-13,
 recorded in impl prereg §14 (commit 91ab66b). A29/A30/A31 must incorporate them as written

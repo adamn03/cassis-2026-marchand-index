@@ -581,6 +581,17 @@ Basis (J1-N1/N2/N3/N5, J3-F3/F4, J2-F4, E4): every existing gate tests OAQ while
 
 **Anti-tuning compliance (§13):** logged while Reddit is 0/774 and no confirmatory statistic exists; floors adopt published conventions (Hosmer–Lemeshow bands; Hanley & McNeil SE) on reasoning grounds; the headline change is REPORTING structure — no quantity, weight, floor, λ, K, window, pool, or verdict-rule change to any computed number; the shipping matrix and sentence templates CONSTRAIN future claims and cannot flatter any result; U2's power statement is a formula evaluated at design constants, and the paired ΔAUC reuses the pre-registered draws and seed, reported regardless of direction. Owner decision D-3 (sign-off + U2, 2026-07-13) is recorded above; the U2 window closes at this commit per the decision sheet.
 
+**A32 (2026-07-18) — Exploratory/confirmatory framing: pilot era declared design-generating; invariance panel across locked-original variants. Logged BEFORE the final compute.**
+
+The 14-player v1 pilot and the 160-player pilot2 era (including the outcome-inspected A4/A5/A8 revisions) refined headline definitions on samples that overlap the locked 774 pool (J1-N4, J3-F1). Under the standard framing (Nosek et al. 2018, PNAS), that era is EXPLORATORY/design-generating; the 774 production run is the sole confirmatory test of the frozen design.
+
+**Rules:**
+
+1. **Required disclosure sentence (poster + results.md, verbatim):** "Headline definitions were amended after inspection of an overlapping pilot sample; they were locked before the production fetch and are pre-specified, not strictly confirmatory. Locked-original variants (raw-cap MI, two-sided λ=1 OAQ, and market_z_lockedv1 — the pre-A30 market proxy) are reported alongside, and validation verdicts are shown to be invariant (or not) across them."
+2. **Invariance panel.** Recompute the V1b/V1a/V2/V3 point estimates under ALL locked-original variants — raw-cap MI (§8-original), two-sided λ=1 OAQ (§7-original), and market_z_lockedv1 (§7-original market proxy) — and report the deltas vs the primary in `results.md`. The market-proxy entry closes A30's residual anti-tuning exposure: pilot-era results were seen under the old proxy, so verdict-invariance to the proxy swap must be demonstrated, not asserted.
+
+**Anti-tuning compliance (§13):** reporting-and-framing only — no quantity, weight, floor, or verdict rule changes; logged while Reddit is 0/774 and no confirmatory result exists; the variant list is the closed set of §13-preserved locked originals, fixed here in advance.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
