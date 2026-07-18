@@ -15,7 +15,7 @@
 | A29 | 7e9d47a | 5458cf4 (re-fetch a168e56) |
 | A30 (per D-2) | b0044ee | cac7e82 |
 | A31 (U2 folded per D-3) | 473897f | 791e780 |
-| A32 | this commit (D-2 clauses kept, markers stripped) | — |
+| A32 | 0d927e5 (D-2 clauses kept, markers stripped) | committed with the A32 test file (invariance panel; see git log) |
 | A33–A35, G4-A1..A3 | pending — execute in order per §"How to execute" | — |
 
 Owner decisions D-1/D-2/D-3 + U-slate + A41 pool dedup (774→771) approved 2026-07-13,

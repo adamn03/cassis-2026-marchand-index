@@ -153,6 +153,16 @@ V1_FLOOR, V1_TARGET = 0.40, 0.50
 V1B_FLOOR, V1B_TARGET = 0.70, 0.80
 A31_N_PERM = 100_000   # BH permutation count (Phipson–Smyth smoothing)
 V2_FLOOR, V2_TARGET = 0.45, 0.55
+
+# A32 rule 1: required disclosure sentence, verbatim (poster + results.md).
+A32_DISCLOSURE = (
+    "Headline definitions were amended after inspection of an overlapping "
+    "pilot sample; they were locked before the production fetch and are "
+    "pre-specified, not strictly confirmatory. Locked-original variants "
+    "(raw-cap MI, two-sided λ=1 OAQ, and market_z_lockedv1 — the pre-A30 "
+    "market proxy) are reported alongside, and validation verdicts are shown "
+    "to be invariant (or not) across them."
+)
 PA_FLOOR = 0.40   # PA uses V1 Spearman >= 0.40
 PB_FLOOR = 0.45   # PB uses V2 Spearman >= 0.45
 UNDERPOWERED_N = 10
@@ -784,6 +794,14 @@ def compute_oaq(df: pd.DataFrame, peers: list[list[int]] | None = None,
     adj_v1 = er - market_z
     peer_adj_v1 = _peer_means(adj_v1, peers)
     df["OAQ_portable_lockedv1"] = adj_v1 - peer_adj_v1
+
+    # A32: proxy-swap invariance variant — the CURRENT A5 rule computed on
+    # the §7-original proxy (market_z_lockedv1), isolating the A30 swap.
+    if "market_z_lockedv1" in df.columns:
+        mz_v1 = df["market_z_lockedv1"].to_numpy(dtype=float)
+        adj_mv1 = er - LAMBDA_BIGMARKET * np.maximum(0.0, mz_v1)
+        df["OAQ_portable_market_lockedv1"] = adj_mv1 - _peer_means(adj_mv1,
+                                                                   peers)
 
     # Marchand Index — three denominator lenses ship together so the rookie
     # artifact and the small-market artifact can both be inspected honestly.
@@ -1476,6 +1494,50 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
     return results
 
 
+# A32 rule 2: the closed locked-original variant set (fixed in advance).
+A32_VARIANT_COLS = (
+    "marchand_index_rawcap",           # §8-original denominator
+    "OAQ_portable_lockedv1",           # §7-original two-sided λ=1 rule
+    "OAQ_portable_market_lockedv1",    # §7-original market proxy (A30 swap)
+)
+
+
+def invariance_panel(df: pd.DataFrame, external: dict) -> dict:
+    """A32 rule 2: V1a/V1b/V2 point estimates recomputed with each
+    locked-original variant substituted for OAQ_portable; deltas vs the
+    primary. V3 is invariant by construction (predictor is team-summed
+    OAQ_observed — no market term, no λ, no cap denominator)."""
+    jersey_rank = df["jersey_rank"].to_numpy(dtype=float)
+    jersey_mem = df["jersey_list_member"].to_numpy(dtype=float)
+    asg_mem = df["asg2024_member"].to_numpy(dtype=float)
+    out: dict = {"variants": {}}
+    for col in A32_VARIANT_COLS:
+        if col not in df.columns:
+            out["variants"][col] = {"missing": True}
+            continue
+        sc = df[col].to_numpy(dtype=float)
+        rank_mask = np.isfinite(jersey_rank) & np.isfinite(sc)
+        rho = (spearman_rho(sc[rank_mask], jersey_rank[rank_mask])
+               if rank_mask.sum() >= 2 else float("nan"))
+        entry = {}
+        for test, value in (("V1a", rho),
+                            ("V1b", auc_mannwhitney(sc, jersey_mem)),
+                            ("V2", auc_mannwhitney(sc, asg_mem))):
+            entry[test] = {
+                "value": value,
+                "delta": float(value - external[test]["value"]),
+            }
+        out["variants"][col] = entry
+    out["v3_note"] = (
+        "V3 is invariant by construction: its predictor (team-summed "
+        "OAQ_observed) contains no market term, no λ, and no cap "
+        "denominator, so all three locked-original variants leave it "
+        "unchanged."
+    )
+    out["disclosure"] = A32_DISCLOSURE
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # §11 patterns                                                                 #
 # --------------------------------------------------------------------------- #
@@ -1661,13 +1723,39 @@ def _a31_results_lines(external: dict) -> list[str]:
     return lines
 
 
+def _a32_results_lines(panel: dict) -> list[str]:
+    """A32 results.md section: verbatim disclosure + one row per
+    variant x validation test with the delta vs the primary."""
+    lines: list[str] = []
+    lines.append("## A32 invariance panel (locked-original variants)\n")
+    lines.append(f"> {panel['disclosure']}\n")
+    lines.append("| Variant | Test | Point | Primary | Delta |")
+    lines.append("|---|---|---|---|---|")
+    for col, entry in panel["variants"].items():
+        if entry.get("missing"):
+            lines.append(f"| {col} | — | column missing | — | — |")
+            continue
+        for test in ("V1a", "V1b", "V2"):
+            e = entry[test]
+            primary = e["value"] - e["delta"]
+            lines.append(
+                f"| {col} | {test} | {_fnum(e['value'])} | "
+                f"{_fnum(primary)} | {_fnum(e['delta'])} |"
+            )
+    lines.append("")
+    lines.append(f"- {panel['v3_note']}")
+    lines.append("")
+    return lines
+
+
 def write_results_md(path: Path, df: pd.DataFrame, external: dict,
                      patterns: dict, market_used: list[str],
                      reddit_note: str,
                      log_agreement: dict | None = None,
                      log_external: dict | None = None,
                      a28_agreement: dict | None = None,
-                     a28_n_thin: int | None = None) -> None:
+                     a28_n_thin: int | None = None,
+                     a32_panel: dict | None = None) -> None:
     lines: list[str] = []
     lines.append("# Tier-1 pilot results — The Marchand Index (pilot2)\n")
     lines.append("Generated by `marchand_index/compute_oaq.py`. Method locked in "
@@ -1822,6 +1910,10 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
 
     # A31 confirmatory hierarchy.
     lines.extend(_a31_results_lines(external))
+
+    # A32 invariance panel + disclosure.
+    if a32_panel:
+        lines.extend(_a32_results_lines(a32_panel))
 
     # Patterns.
     lines.append("## Pre-registered pattern verdicts (§11)\n")
@@ -2193,7 +2285,8 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
 def write_results_json(path: Path, external: dict, patterns: dict,
                        market_used: list[str], reddit_note: str,
                        log_agreement: dict | None = None,
-                       log_external: dict | None = None) -> None:
+                       log_external: dict | None = None,
+                       a32_panel: dict | None = None) -> None:
     payload = {
         "config": {
             "K_peers": K_PEERS,
@@ -2212,6 +2305,8 @@ def write_results_json(path: Path, external: dict, patterns: dict,
             "rank_agreement_primary_vs_log": log_agreement,
             "external_validation": log_external,
         }
+    if a32_panel is not None:
+        payload["A32_invariance"] = a32_panel
     atomic_write_text(path, json.dumps(_json_safe(payload), indent=2))
 
 
@@ -2244,6 +2339,7 @@ OUT_COLS = [
     "OAQ_portable", "OAQ_portable_lo95", "OAQ_portable_hi95",
     "OAQ_portable_lockedv1",
     "OAQ_portable_lockedv1_lo95", "OAQ_portable_lockedv1_hi95",
+    "OAQ_portable_market_lockedv1",
     "expected_cap", "is_rookie_deal",
     "peer_skill_gap", "peer_skill_gap_age", "peer_skill_gap_ppg",
     "peer_skill_gap_toi_per_game", "peer_skill_gap_cf_pct",
@@ -2294,6 +2390,7 @@ def main() -> None:
 
     external = external_validation(df)
     patterns = evaluate_patterns(df, external)
+    a32_panel = invariance_panel(df, external)
 
     # A17 log1p robustness lens (reporting only; never feeds a gate verdict).
     log_lens = compute_log_lens(df, peers, market_z)
@@ -2330,10 +2427,12 @@ def main() -> None:
     write_results_md(PILOT_DIR / "results.md", df, external, patterns,
                      market_used, reddit_note,
                      log_agreement=log_agreement, log_external=log_external,
-                     a28_agreement=a28_agreement, a28_n_thin=n_thin)
+                     a28_agreement=a28_agreement, a28_n_thin=n_thin,
+                     a32_panel=a32_panel)
     write_results_json(PILOT_DIR / "results.json", external, patterns,
                        market_used, reddit_note,
-                       log_agreement=log_agreement, log_external=log_external)
+                       log_agreement=log_agreement, log_external=log_external,
+                       a32_panel=a32_panel)
 
     print(f"Wrote {csv_path}")
     print(f"Wrote {PILOT_DIR / 'results.md'}")
