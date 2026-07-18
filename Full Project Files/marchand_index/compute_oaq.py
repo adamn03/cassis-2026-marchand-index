@@ -1725,6 +1725,16 @@ def _a31_results_lines(external: dict) -> list[str]:
     return lines
 
 
+def _a34_display_pool(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
+    """A34 display rule: rows with small_sample=1 OR null current-season GP
+    are excluded from every PUBLISHED table (they remain in oaq_pilot.csv
+    and in every computation — z-scores, peers, validation cohorts)."""
+    gp = pd.to_numeric(df.get("games_played"), errors="coerce")
+    small = pd.to_numeric(df.get("small_sample"), errors="coerce").fillna(0)
+    excl = (small == 1) | gp.isna()
+    return df[~excl.to_numpy()].copy(), int(excl.sum())
+
+
 def _a32_results_lines(panel: dict) -> list[str]:
     """A32 results.md section: verbatim disclosure + one row per
     variant x validation test with the delta vs the primary."""
@@ -1961,8 +1971,19 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
                  f"({', '.join(pc['displaced_names']) or 'none'})")
     lines.append(f"- **Verdict: {pc['verdict']}**\n")
 
-    # Leaderboards.
+    # Leaderboards. A34: every published table below draws from the display
+    # pool; flagged rows keep their computed values in oaq_pilot.csv.
+    disp, n_a34 = _a34_display_pool(df)
+    a34_caption = (f"(A34 display rule: {n_a34} rows excluded — "
+                   "`small_sample=1` or null current-season GP)")
     lines.append("## Leaderboards\n")
+    lines.append(
+        f"**A34 display rule:** {n_a34} rows (`small_sample=1` or null "
+        "current-season GP — the injury/absence class) are excluded from "
+        "every published table below; they remain in `oaq_pilot.csv` with "
+        "all computed values and participate in every computation "
+        "(z-scores, peer pools, validation cohorts) unchanged.\n"
+    )
     lines.append(
         "Rookie-deal flag (A24): CapWages contract type (\"entry-level\") "
         f"with the price+age proxy (`cap_hit_M ≤ ${ROOKIE_CAP_MAX_M:.3f}M "
@@ -1971,10 +1992,11 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     )
 
     lines.append("### Top 10 by engagement_raw (no peer or market adjustment)")
+    lines.append(a34_caption + "\n")
     lines.append("| Rank | Player | Age | engagement_raw | OAQ_portable |")
     lines.append("|---|---|---|---|---|")
     eng_top = (
-        df.dropna(subset=["engagement_raw"])
+        disp.dropna(subset=["engagement_raw"])
         .sort_values("engagement_raw", ascending=False)
         .head(10)
     )
@@ -1985,13 +2007,14 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
         )
     lines.append("")
 
-    mi_pool = df[df["cap_quality"].astype(str).str.lower() != "low"].copy()
+    mi_pool = disp[disp["cap_quality"].astype(str).str.lower() != "low"].copy()
     rookie_pool = mi_pool[mi_pool["is_rookie_deal"] == 1]
     nonrookie_pool = mi_pool[mi_pool["is_rookie_deal"] == 0]
 
     # Lens 1 — rookie-deal only, raw cap.
     lines.append("### Lens 1 — Top 10 ROOKIE-DEAL only, raw cap")
-    lines.append("(pool = rookie-deal players, ranked by OAQ_portable / cap_hit_M)\n")
+    lines.append("(pool = rookie-deal players, ranked by OAQ_portable / "
+                 f"cap_hit_M) {a34_caption}\n")
     lines.append("| Rank | Player | Age | MI_raw | OAQ_portable | cap_hit_M |")
     lines.append("|---|---|---|---|---|---|")
     r1 = rookie_pool.dropna(subset=["marchand_index_rawcap"]).sort_values(
@@ -2008,7 +2031,7 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     lines.append("### Lens 2 — Top 10 NON-ROOKIE-DEAL only, raw cap "
                  "(\"rookie-deal players removed\")")
     lines.append("(pool = veterans / extension-era players only, ranked by "
-                 "OAQ_portable / cap_hit_M)\n")
+                 f"OAQ_portable / cap_hit_M) {a34_caption}\n")
     lines.append("| Rank | Player | Age | MI_raw | OAQ_portable | cap_hit_M |")
     lines.append("|---|---|---|---|---|---|")
     r2 = nonrookie_pool.dropna(subset=["marchand_index_rawcap"]).sort_values(
@@ -2024,7 +2047,8 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     # Lens 3 — all 160, raw cap (§8-original, no rookie adjustment).
     lines.append("### Lens 3 — Top 10 ALL players, raw cap (no rookie "
                  "adjustment, §8-original)")
-    lines.append("(pool = all 160, ranked by OAQ_portable / cap_hit_M)\n")
+    lines.append("(pool = all players, ranked by OAQ_portable / cap_hit_M) "
+                 f"{a34_caption}\n")
     lines.append("| Rank | Player | Age | Rookie? | MI_raw | OAQ_portable | "
                  "cap_hit_M |")
     lines.append("|---|---|---|---|---|---|---|")
@@ -2047,7 +2071,7 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
                  "skill peers; veterans keep their actual cap hit. This is the "
                  "published headline leaderboard: fan-attention surplus per "
                  "dollar of a player's *actual* deal, projecting only those "
-                 "contractually barred from signing one.)\n")
+                 f"contractually barred from signing one.) {a34_caption}\n")
     lines.append("| Rank | Player | Age | Rookie? | MI_hybrid | "
                  "OAQ_portable | denom_used |")
     lines.append("|---|---|---|---|---|---|---|")
@@ -2069,10 +2093,10 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     # Lens 5 — A4 full: expected_cap for everyone (intrinsic-efficiency lens).
     lines.append("### Lens 5 — Top 10 ALL players, FULL A4 "
                  "(everyone uses expected_cap) — intrinsic-efficiency lens")
-    lines.append("(all 160 evaluated at projected market pay; attention per "
-                 "skill-deserved dollar. Was the A4 headline; A8 demoted it to "
-                 "the intrinsic-efficiency lens and promoted Lens 4 hybrid as "
-                 "the headline. Retained for audit.)\n")
+    lines.append("(all players evaluated at projected market pay; attention "
+                 "per skill-deserved dollar. Was the A4 headline; A8 demoted "
+                 "it to the intrinsic-efficiency lens and promoted Lens 4 "
+                 f"hybrid as the headline. Retained for audit.) {a34_caption}\n")
     lines.append("| Rank | Player | Age | Rookie? | MI | OAQ_portable | "
                  "expected_cap | cap_hit_M |")
     lines.append("|---|---|---|---|---|---|---|---|")
@@ -2092,7 +2116,7 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     # Top-20 team clustering under A5 (sanity check that small-market amplifier
     # is gone).
     market_clusters = (
-        df.dropna(subset=["marchand_index"])
+        disp.dropna(subset=["marchand_index"])
         .sort_values("marchand_index", ascending=False)
         .head(20)["team_code"].value_counts()
     )
@@ -2100,6 +2124,7 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
         f"{t}={c}" for t, c in market_clusters.items() if c >= 2
     ) or "no team contributes ≥2 to top 20"
     lines.append("### A5 sanity check — team clustering in top-20 MI")
+    lines.append(a34_caption + "\n")
     lines.append(
         f"Top-20 MI team clustering under A5 (λ = {LAMBDA_BIGMARKET}): "
         f"{cluster_str}. Under locked-v1 (λ = 1, two-sided) the same set "
@@ -2124,6 +2149,7 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     exp_ok = (exp_cap_all > 0) & np.isfinite(exp_cap_all)
 
     lines.append("### λ sensitivity ladder — top 10 by MI (Lens 5 view)")
+    lines.append(a34_caption + "\n")
     lines.append(
         f"For each λ, recompute `OAQ_portable = engagement_raw − λ × "
         f"max(0, market_z) − peer_mean(same)`, divide by `expected_cap`, "
@@ -2138,6 +2164,9 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     cap_quality_low = (
         df["cap_quality"].astype(str).str.lower() == "low"
     ).to_numpy()
+    # A34: computation stays full-pool (peer means need everyone); only the
+    # DISPLAYED ranking hides flagged rows.
+    a34_hidden = ~df.index.isin(disp.index)
     for lam in LAMBDA_SENSITIVITY:
         adj = er_all - lam * np.maximum(0.0, market_z_all)
         peer_adj = np.full_like(adj, np.nan)
@@ -2152,6 +2181,7 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
         with np.errstate(invalid="ignore", divide="ignore"):
             mi_lam = np.where(exp_ok, port / exp_cap_all, np.nan)
         mi_lam = np.where(cap_quality_low, np.nan, mi_lam)
+        mi_lam = np.where(a34_hidden, np.nan, mi_lam)
         order = np.argsort(-np.where(np.isfinite(mi_lam), mi_lam, -np.inf))
         top = []
         for j in order[:10]:
@@ -2268,9 +2298,10 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
                          f"{_fnum(rob.get('rho'))})")
             lines.append("")
         lines.append("### Top 10 by marchand_index_hybrid — log lens")
+        lines.append(a34_caption + "\n")
         lines.append("| Rank | Player | MI_hybrid_log1p | OAQ_portable_log1p |")
         lines.append("|---|---|---|---|")
-        log_pool = df[df["cap_quality"].astype(str).str.lower() != "low"]
+        log_pool = disp[disp["cap_quality"].astype(str).str.lower() != "low"]
         log_top = (log_pool.dropna(subset=["marchand_index_hybrid_log1p"])
                    .sort_values("marchand_index_hybrid_log1p", ascending=False)
                    .head(10))
