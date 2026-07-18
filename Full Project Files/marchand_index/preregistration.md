@@ -626,6 +626,62 @@ Five clauses (J1-N9, J3-F7, J2-F12, J2-F14, J2-F10), one amendment:
 
 **Anti-tuning compliance (§13):** clauses 2, 4, 5 are disclosures/prohibitions that constrain future claims and cannot flatter any result; clause 1's secondary anchor is named before any Trends-dependent result exists and applies to a single pre-identified row; clause 3 is a rank-agreement-only robustness re-run under the §H rule. Weights, floors, window, λ, denominators, pool, and verdict logic unchanged. Logged while Reddit is 0/774 and no final composite exists.
 
+**A36 (2026-07-18) — Player Wikipedia pageviews: redirect-title summation (en + intl),
+extending the A29-class team rule to the 774 player articles. Logged BEFORE the
+augmentation fetch; Reddit remains 0/774.**
+
+The Wikimedia pageviews API counts views against the exact title requested and does
+not follow redirects (A1). The en fetch (§3.1/A1/A14) and intl fetch (A12) therefore
+count only canonical-title views and drop views landing on redirect titles — a class
+A1 itself measured (the `Alex_Ovechkin` redirect carried 7,059 in-window views). The
+team-outcome amendment (A29) already adopts canonical+redirect summation for the 32
+team articles ("views to a redirect title are legitimate views"); this amendment
+applies the identical rule to the player articles, which carry §4/A12 weight 0.29
+(wiki_en) + 0.11 (wiki_intl).
+
+**Mechanical rule (applied identically to all 774; no identity re-resolution):**
+1. Identity is LOCKED to the existing `wikipedia_slug_chosen` / `wikidata_qid` in
+   `raw/wiki_pageviews.csv` (A1 + A19-audited) and the existing per-edition titles in
+   `raw/wiki_intl_pageviews.csv` (`per_edition_json`). No slug is re-chosen; rows with
+   `wiki_match = none` stay NULL, untouched.
+2. For each canonical title, enumerate its redirect titles via the corresponding
+   edition's MediaWiki API (`action=query&prop=redirects&rdlimit=max`, batched ≤50
+   titles per request, following `continue`). Redirect titles containing
+   "(disambiguation)" (case-insensitive, any language's title copied verbatim) are
+   excluded.
+3. Fetch in-window daily pageviews [2025-04-18, 2026-04-17] for the canonical title
+   AND every enumerated redirect title; sum per calendar day (merge by the API item
+   `timestamp`, not by list position — the API omits zero days). The player's
+   `wiki_12mo` / `wiki_intl_12mo` becomes the summed total; the §10 bootstrap daily
+   vector becomes the per-day-summed vector, **zero-filled to the full 365-day
+   window** (index 0 = 2025-04-18 … index 364 = 2026-04-17; days the API omits are
+   true zero-view days). Zero-filling aligns the stored vectors with the A26 block
+   bootstrap, which already treats them as 365-day rings, and gives every vector a
+   deterministic date index.
+4. New audit columns in `raw/wiki_pageviews.csv`: `n_redirect_titles`,
+   `redirect_views_12mo`, `redirect_share` (= redirect/total, 0 when total = 0);
+   equivalents in `raw/wiki_intl_pageviews.csv` aggregated over editions. The top-10
+   players by `redirect_share` and the pool-level mean share are reported in
+   `results.md` so any surprise (an in-window rename) is visible — mirroring A29's
+   per-team redirect-share report.
+5. Any future full wiki re-fetch must include this summation (in addition to the
+   A19 P3522-first identity rule).
+
+**Honest residuals (disclosed in advance):** (i) a redirect retargeted mid-window
+credits all its views to its fetch-date target (rare; direction unknowable at $0);
+(ii) redirect enumeration reflects fetch-date redirect existence — redirects deleted
+before fetch are missed (undercount persists, smaller); (iii) pageview-API 404 for a
+redirect title contributes zero (clean skip).
+
+**Anti-tuning compliance (§13):** uniform, mechanical data-collection completion
+decided on measurement-validity and A29-consistency grounds; logged before the
+augmentation fetch, while Reddit is 0/774 and no production composite exists; keyed
+on article identity only, never on any player's resulting pageviews or rank;
+weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8), pool
+(§2/A10), window (A11/A14), and all validation floors (§9, A6/V3) unchanged. The
+pre-A36 `wiki_pageviews.csv` / `wiki_daily.csv` / `wiki_intl_pageviews.csv` /
+`wiki_intl_daily.csv` are retained in git history per §13.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
