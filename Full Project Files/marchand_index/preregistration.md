@@ -682,6 +682,60 @@ weights (§4/A12), peer features (§6/A13), λ (A5), denominators (A4/A8), pool
 pre-A36 `wiki_pageviews.csv` / `wiki_daily.csv` / `wiki_intl_pageviews.csv` /
 `wiki_intl_daily.csv` are retained in git history per §13.
 
+**A37 (2026-07-18) — V1b union completion: pre-declared retrieval sweep for ALL
+official best-selling-jersey lists in seasons 2023-24 / 2024-25 / 2025-26. Logged
+BEFORE the sweep runs; Reddit remains 0/774.**
+
+A3/A20 define V1b membership as the union of official NHL/Fanatics best-selling-
+jersey lists over the three named seasons, but only three lists have been retrieved
+(A3's two + A20's 2025-26 top-10), giving n = 12 in-pool positives for the sole
+confirmatory primary. This amendment pre-declares a retrieval sweep that completes
+the union under the SAME class rule. It changes no floor, no test statistic, and no
+definition — it completes data collection for an already-locked outcome.
+
+**Qualification rule (mechanical; fixed before the sweep):** a list qualifies iff ALL of:
+1. League-wide (not one team's store, not a per-team breakdown);
+2. Attributed to NHL, NHL PR, NHLPA, NHL Shop, or Fanatics as the data source;
+3. Player-level ranked list or top-N membership list;
+4. Coverage period lies within one of the seasons 2023-24, 2024-25, 2025-26
+   (full-season, partial-season, or since-a-stated-date lists all qualify);
+5. Corroborated by ≥2 independent URLs (the A20 pattern), captured in
+   `marchand_index/external_outcomes_sources.md`.
+
+**Adoption is all-or-none:** EVERY list found that qualifies is adopted; no
+discretionary selection. Membership = appeared on ANY adopted list (same union
+semantics). Join is NHL-id-keyed per the A20 namesake guard. A list that fails any
+clause is recorded in the sources doc with the failing clause, not silently skipped.
+
+**Search manifest (fixed; execute every line; record hit/no-hit per line):**
+- Web search: `site:nhl.com "best-selling" OR "top-selling" jerseys` (each season year pair)
+- Web search: `NHL PR top selling jerseys 2024`, `... 2025`, `... 2026`
+- Web search: `Fanatics NHL best selling jerseys list 2024 / 2025 / 2026`
+- Web search: `NHLPA most popular jerseys 2024 / 2025 / 2026`
+- Wayback Machine (web.archive.org): snapshots of `shop.nhl.com` "top sellers" /
+  "best sellers" landing pages within each season's date range (note: retailer
+  category pages are dynamic inventory, NOT ranked lists — they qualify ONLY if a
+  snapshot shows an explicit ranked/top-N editorial list; record the verdict)
+- Web search: `"top-selling jerseys" NHL midseason 2023-24 / 2024-25 / 2025-26`
+
+**Outcome handling:** rebuild `external_outcomes.csv` with the enlarged union;
+report old n (12) and new n; if the sweep finds nothing new, log the null result
+here (sweep executed, zero qualifying additions) and V1b proceeds at n = 12
+exactly as before.
+
+**Honest residuals:** press-reported lists inherit outlet transcription risk
+(mitigated by the ≥2-URL rule); partial-season lists overweight early-season
+sellers; the union remains temporally impure for the two pre-window seasons
+exactly as A31.3/§G already disclose.
+
+**Anti-tuning compliance (§13):** the qualification rule and search manifest are
+fixed and committed before any search result is seen; adoption is all-or-none, so
+no name can be cherry-picked in or out; outcome lists are independent of all model
+inputs (wiki/Reddit/Trends); logged while Reddit is 0/774 and no production OAQ or
+V1b exists, so no result could have influenced the rule; floors, AUC construction,
+bootstrap (per A31.1), weights, pool, window unchanged. Pre-A37
+`external_outcomes.csv` retained in git history per §13.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
