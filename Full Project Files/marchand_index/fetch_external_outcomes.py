@@ -192,10 +192,19 @@ JERSEY_2023 = [
     "David Pastrnak", "Patrice Bergeron", "Alex Ovechkin", "Kirill Kaprizov",
     "Nathan MacKinnon", "Cale Makar",
 ]
+# A37 sweep adoption (2026-07-18): 2023-24 season-through-February Fanatics
+# top-5 (league-wide, Fanatics-attributed, ranked, in-season — all 5 clauses;
+# ESPN 2024-03-01 + Yardbarker + HockeyFeed corroboration, see sources doc).
+# Members only — jersey_rank stays 2025-26 per the A3 most-recent rule.
+JERSEY_2023_24_FANATICS = [
+    (1, "Connor Bedard"), (2, "Jack Hughes"), (3, "Artemi Panarin"),
+    (4, "Auston Matthews"), (5, "Mika Zibanejad"),
+]
 # Union membership set (folded names) -> jersey_list_member + V1b AUC.
 JERSEY_UNION_FOLD = ({fold(nm) for _, nm in JERSEY_2025_26}
                      | {fold(nm) for _, nm in JERSEY_2024_25}
-                     | {fold(nm) for nm in JERSEY_2023})
+                     | {fold(nm) for nm in JERSEY_2023}
+                     | {fold(nm) for _, nm in JERSEY_2023_24_FANATICS})
 JERSEY_RANK_FOLD = {fold(nm): rank for rank, nm in JERSEY_2025_26}
 
 

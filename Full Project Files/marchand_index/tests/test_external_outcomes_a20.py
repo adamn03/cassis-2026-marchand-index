@@ -33,8 +33,29 @@ def test_v1b_union_spans_all_three_official_lists():
 def test_v1b_union_has_no_soft_sourced_names():
     expected = ({eo.fold(nm) for _, nm in eo.JERSEY_2025_26}
                 | {eo.fold(nm) for _, nm in eo.JERSEY_2024_25}
-                | {eo.fold(nm) for nm in eo.JERSEY_2023})
+                | {eo.fold(nm) for nm in eo.JERSEY_2023}
+                | {eo.fold(nm) for _, nm in eo.JERSEY_2023_24_FANATICS})
     assert eo.JERSEY_UNION_FOLD == expected
+
+
+def test_a37_adopted_list_members_in_union():
+    # A37 sweep (2026-07-18): the 2023-24 Fanatics season-through-February
+    # top-5 qualified (all 5 clauses). Panarin and Zibanejad appear ONLY on
+    # that list -> union members; the union is exactly the four lists.
+    for nm in ("Artemi Panarin", "Mika Zibanejad"):
+        assert eo.fold(nm) in eo.JERSEY_UNION_FOLD
+    expected = ({eo.fold(nm) for _, nm in eo.JERSEY_2025_26}
+                | {eo.fold(nm) for _, nm in eo.JERSEY_2024_25}
+                | {eo.fold(nm) for nm in eo.JERSEY_2023}
+                | {eo.fold(nm) for _, nm in eo.JERSEY_2023_24_FANATICS})
+    assert eo.JERSEY_UNION_FOLD == expected
+
+
+def test_a37_rank_map_still_2025_26_only():
+    # A3 most-recent rule unchanged: the adopted 2023-24 list adds MEMBERS,
+    # never ranks — jersey_rank still comes only from the 2025-26 list.
+    assert len(eo.JERSEY_RANK_FOLD) == 10
+    assert eo.fold("Artemi Panarin") not in eo.JERSEY_RANK_FOLD
 
 
 def test_asg_id_decides_when_present_no_namesake_false_positive():

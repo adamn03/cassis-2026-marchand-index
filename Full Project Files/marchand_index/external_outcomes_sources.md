@@ -5,6 +5,36 @@ Run date: 2026-05-27.
 
 ---
 
+## ADDENDUM 2026-07-18 (A37 — V1b union-completion sweep EXECUTED)
+
+Manifest executed 2026-07-18 (every line, hit/no-hit):
+
+| Manifest line | Verdict |
+|---|---|
+| site:nhl.com best/top-selling jerseys (per season) | hits = already-adopted lists + playoffs item (below); no new qualifying full list |
+| NHL PR top selling jerseys 2024/2025/2026 | hit: 2023-24 Fanatics through-Feb top-5 (ADOPTED, below); 2024-25 top-5 already in union |
+| Fanatics NHL best selling jerseys 2024/2025/2026 | same hits as above; retailer category pages = dynamic inventory, not lists |
+| NHLPA most popular jerseys 2024/2025/2026 | no-hit: NHLPA article pages remain client-rendered SPA, no extractable list |
+| Wayback shop.nhl.com top-sellers snapshots | no snapshot exists (availability API empty) |
+| "top-selling jerseys" midseason (per season) | no new qualifying list (2025-26 hits = the adopted full-season top-10) |
+
+**ADOPTED (all 5 clauses pass): 2023-24 season-through-February Fanatics top-5**
+(1 Bedard, 2 Hughes, 3 Panarin, 4 Matthews, 5 Zibanejad). League-wide;
+Fanatics-attributed; ranked; coverage inside 2023-24; ≥2 independent URLs:
+- https://www.espn.com/nhl/story/_/id/39632170/rookie-connor-bedard-leads-nhl-jersey-sales (2024-03-01, Fanatics-attributed)
+- https://www.yardbarker.com/nhl/articles/connor_bedard_tops_list_of_best_selling_nhl_jerseys_for_2023_24_season/s1_16931_40041935 (2024-03-01)
+- https://www.hockeyfeed.com/nhl-news/top-5-best-selling-nhl-jerseys-from-this-season (corroboration)
+
+New union members: **Artemi Panarin, Mika Zibanejad** → V1b in-pool n = 12 → **14**.
+Ranks NOT adopted (A3 most-recent rule: jersey_rank stays 2025-26).
+
+**Recorded, NOT adopted (failing clause):**
+- ESPN post-Feb-1 2024 top-5 (Hughes, Panarin, Hischier, Zibanejad, Shesterkin) — fails clause 5 (single source; no second independent URL found).
+- NHL.com 2026 playoffs item (Martone/Zegras, NHLShop.com, 2026-04-23) — fails clause 3 (two names, no ranked/top-N list).
+- "Ovechkin led jersey sales Sep–Nov 2024" — fails clause 3 (single-name claim, no list retrievable).
+
+---
+
 ## ADDENDUM 2026-07-18 (A33 — V2 fan-vote union 2022+2023+2024)
 
 Per prereg A33: V2 membership = the union of players selected via an
