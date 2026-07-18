@@ -1380,7 +1380,8 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
         ci_v2 = (float("nan"), float("nan"))
         perm_p_v2 = float("nan")
     results["V2"] = {
-        "test": "AUC OAQ_portable discriminating asg2024_member (1/0)",
+        "test": ("AUC OAQ_portable discriminating fan-vote All-Star union "
+                 "2022+2023+2024 (A33; asg2024_member column, 1/0)"),
         "metric": "auc",
         "value": auc_v2,
         "ci95": list(ci_v2),
@@ -1389,8 +1390,9 @@ def external_validation(df: pd.DataFrame, n_draws: int = BOOTSTRAP_DRAWS,
         "floor": V2_FLOOR,
         "target": V2_TARGET,
         "underpowered": n_pos_v2 < UNDERPOWERED_N,
-        "note": ("asg2024 published as membership only (no fan-vote share "
-                 "available), so V2 is AUC; no Spearman computed."),
+        "note": ("A33 union membership (2022 captains + Last Men In, 2023 "
+                 "fan ballot, 2024 fan vote); no season published per-player "
+                 "vote totals, so V2 is AUC; no Spearman computed."),
         "perm_p": perm_p_v2,   # A31 one-sided, AUC > 0.5
     }
 

@@ -5,6 +5,71 @@ Run date: 2026-05-27.
 
 ---
 
+## ADDENDUM 2026-07-18 (A33 — V2 fan-vote union 2022+2023+2024)
+
+Per prereg A33: V2 membership = the union of players selected via an
+OFFICIAL FAN-VOTE component of the 2022, 2023, and 2024 All-Star
+selections. **Winners only** — roster replacements were league-named,
+never fan-voted, and are excluded (2022: Guentzel replaced Zibanejad, who
+won the vote but withdrew; Pavelski/Josi replaced MacKinnon, Giroux
+replaced Ovechkin). Fan-vote WINNERS keep membership regardless of
+attendance — the vote itself is the fan-attention signal. The CSV column
+keeps its historical name `asg2024_member` (schema stability downstream)
+and now carries the union; per-season membership is in
+`asg_fanvote_seasons`. No season published per-player totals →
+membership-only, as before. All ids verified vs
+`api-web.nhle.com/v1/player/<id>/landing` (`--verify-asg`, 2026-07-18;
+note the 2022 Terry id is 8478873 — matches the pool's cap_hits row).
+
+### 2022 (Vegas, Feb 5 2022) — mechanism: fan-vote CAPTAINS + "Last Men In"
+
+Fans voted the 4 division captains (ballot Dec 11 2021 – Jan 8 2022,
+captains announced Jan 13 2022): **Alex Ovechkin** (MET), **Auston
+Matthews** (ATL), **Nathan MacKinnon** (CEN), **Connor McDavid** (PAC).
+Then the "Last Men In" fan vote (Jan 14–17 2022) added one player per
+division, winners announced Jan 18–19 2022: **Steven Stamkos** (ATL),
+**Nazem Kadri** (CEN), **Mika Zibanejad** (MET), **Troy Terry** (PAC).
+The other 36 roster spots were NHL Hockey-Ops selections (not fan-voted).
+
+Sources (≥2 independent, retrieved 2026-07-18):
+- https://www.nhl.com/news/nhl-reveals-last-men-in-winners-for-2022-nhl-all-star-game/c-329909806 (NHL.com official, Last Men In winners)
+- https://www.nhl.com/news/2022-nhl-all-star-game-rosters-captains-announced-329733482 (NHL.com official, rosters + fan-vote captains)
+- https://www.cbssports.com/nhl/news/steven-stamkos-nazem-kadri-among-nhls-fan-voted-last-men-in-for-2022-all-star-game/ (CBS Sports, Jan 18 2022 — independent corroboration incl. Zibanejad withdrawal/Guentzel replacement)
+- https://www.nbcsports.com/nhl/news/check-out-2022-nhl-all-star-game-rosters-fans-vote-for-last-men-in (NBC Sports — independent corroboration)
+- https://media.nhl.com/public/news/15648 (NHL media site — rosters + Last Men In candidates press release)
+
+### 2023 (Sunrise, Feb 4 2023) — mechanism: fan ballot for the final 12
+
+The NHL named 32 players (Jan 5 2023, Hockey-Ops); fans then voted the
+final 3 per division (2 skaters + 1 goalie; Twitter/NHL.com ballot Jan
+12–24 2023), 12 winners announced Jan 26 2023: ATL **David Pastrnak**,
+**Auston Matthews**, **Andrei Vasilevskiy** (G); MET **Artemi Panarin**,
+**Adam Fox**, **Ilya Sorokin** (G); CEN **Mikko Rantanen**, **Nathan
+MacKinnon**, **Connor Hellebuyck** (G); PAC **Leon Draisaitl**, **Bo
+Horvat**, **Stuart Skinner** (G). No fan-vote captain component in 2023.
+
+Sources (≥2 independent, retrieved 2026-07-18):
+- https://www.nhl.com/news/2023-nhl-all-star-game-fan-vote-winners-340185526 (NHL.com official)
+- https://ca.sports.yahoo.com/news/fans-vote-in-final-12-nhl-all-stars-including-matthews-draisaitl-pastrnak-031659544.html (Yahoo Sports — independent corroboration)
+- https://thehockeynews.com/news/news/nhl-unveils-final-players-voted-to-2023-all-star-game (The Hockey News — independent corroboration)
+
+### 2024 (Toronto, Feb 3 2024) — mechanism: fan vote for the final 12
+
+Already sourced below (2026-05-27 section): NHL.com official release +
+Wikipedia cross-check. 12 fan-vote selections (8 skaters + 4 goalies).
+
+### Union + overlap (774 pool)
+
+Union = 21 unique skaters + 8 unique goalies across the three seasons
+(Matthews and MacKinnon appear in 2022+2023; Draisaitl in 2023+2024).
+Goalies cannot join the skater-only pool by construction. In-pool overlap
+printed by the fetcher on rebuild — see `## Overlap summary (A33)` below.
+Disclosure per A33 rule 5: all three votes predate the attention window
+[2025-04-18, 2026-04-17] — same temporal-mismatch attenuation class as
+V1b's union lists.
+
+---
+
 ## ADDENDUM 2026-07-03 (full build, 774 pool — prereg A20)
 
 Everything below this addendum describes the 2026-05-27 pilot-era run (160 set,
@@ -172,9 +237,16 @@ the 2025-26 list will not publish until ~June 2026, after this run's 2026-05-27 
 
 ---
 
-## Overlap summary
+## Overlap summary (pilot-era, superseded by A33 below)
 
 | Outcome | Published data type | In-set overlap | §9 verdict |
 |---------|---------------------|----------------|------------|
 | V1 jersey list | ranked list (not retrieved) | 0 / 160 | inconclusive — DATA NOT RETRIEVED |
 | V2 ASG-2024 fan vote | membership only (no vote totals) | 4 / 160 | underpowered (< 10) |
+
+## Overlap summary (A33, 774 pool — fetcher run 2026-07-18)
+
+| Outcome | Published data type | In-pool overlap | §9 verdict |
+|---------|---------------------|-----------------|------------|
+| V1 jersey union (2023-24 + 2024-25 + 2025-26) | membership + 2025-26 ranks | 12 / 774 (10 ranked) | n/a — V1b is the A31 primary |
+| V2 fan-vote union (2022 + 2023 + 2024, A33) | membership only (no vote totals any year) | **21 / 774** (8 per season, dedup 21) | **POWERED** (≥ 10) under the unchanged §9 floor |

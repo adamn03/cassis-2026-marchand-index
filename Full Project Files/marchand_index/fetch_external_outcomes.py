@@ -19,10 +19,14 @@ NHL-PR top-5, and the NHL.com 2023-10-10 top-10. V1a (Spearman) uses the
 2025-26 ranks (A3's most-recent rule); V1b (AUC) uses union membership across
 all three lists. Overlap n is reported; <10 -> underpowered.
 
-V2 status: the NHL announced the 12 fan-vote selections (8 skaters + 4 goalies) as
-membership only -- it never published per-player vote totals for 2024. So V2 is
-membership-based (asg2024_votes blank for everyone). Only the skaters can fall
-in-sample; overlap < 10 -> V2 is underpowered per §9. Expected/acceptable.
+V2 status (A33): membership = the UNION of official fan-vote selections
+across 2022 (4 captains + 4 "Last Men In" winners), 2023 (final-12 fan
+ballot) and 2024 (12 fan-vote adds). Winners only; roster replacements are
+league-named and excluded. No season ever published per-player vote totals,
+so V2 stays membership-based (asg2024_votes blank; the `asg2024_member`
+column name is retained for schema stability and now carries the union —
+per-season membership is in `asg_fanvote_seasons`). Only skaters can fall
+in-sample; overlap >= 10 -> powered under the unchanged §9 floor.
 
 Writes:
   marchand_index/external_outcomes.csv          774 rows
@@ -51,7 +55,8 @@ BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 CONTACT_UA = "marchand-index/0.1 (research; ana178@sfu.ca)"
 
 FIELDNAMES = ["player_id", "full_name", "nhl_player_id", "jersey_list_member",
-              "jersey_rank", "asg2024_member", "asg2024_votes", "match_note"]
+              "jersey_rank", "asg2024_member", "asg2024_votes",
+              "asg_fanvote_seasons", "match_note"]
 
 
 def fold(s: str) -> str:
@@ -89,6 +94,61 @@ ASG2024_FAN_VOTE = [
 ]
 ASG2024_IDS = {pid for _, pid, _ in ASG2024_FAN_VOTE}
 ASG2024_FOLD = {fold(nm) for nm, _, _ in ASG2024_FAN_VOTE}
+
+# ---------------------------------------------------------------------------
+# A33: V2 membership = union of the OFFICIAL FAN-VOTE components of the
+# 2022, 2023 and 2024 All-Star selections. WINNERS only — roster
+# replacements (Guentzel for Zibanejad; Pavelski/Josi for MacKinnon;
+# Giroux for Ovechkin) were league-named, never fan-voted, and are
+# excluded. Mechanisms + >=2 independent URLs per season documented in
+# external_outcomes_sources.md. Ids verified vs api-web.nhle.com
+# (--verify-asg, 2026-07-18).
+#
+# 2022 (Vegas, Feb 5 2022): fan vote named the 4 division captains
+# (Dec 11 2021 - Jan 8 2022 ballot) and the 4 "Last Men In" (Jan 14-17
+# 2022 ballot, winners announced Jan 18-19 2022).
+ASG2022_FAN_VOTE = [
+    # (name, nhl_player_id, team_at_selection, component)
+    ("Alex Ovechkin", "8471214", "WSH", "captain"),
+    ("Auston Matthews", "8479318", "TOR", "captain"),
+    ("Nathan MacKinnon", "8477492", "COL", "captain"),
+    ("Connor McDavid", "8478402", "EDM", "captain"),
+    ("Steven Stamkos", "8474564", "TBL", "last_men_in"),
+    ("Nazem Kadri", "8475172", "COL", "last_men_in"),
+    ("Mika Zibanejad", "8476459", "NYR", "last_men_in"),
+    ("Troy Terry", "8478873", "ANA", "last_men_in"),
+]
+# 2023 (Sunrise, Feb 4 2023): fan ballot (Twitter/NHL.com, Jan 12-24 2023)
+# named the final 3 per division (2 skaters + 1 goalie), 12 total,
+# winners announced Jan 26 2023.
+ASG2023_FAN_VOTE = [
+    # (name, nhl_player_id, team_at_selection, division)
+    ("David Pastrnak", "8477956", "BOS", "ATL"),
+    ("Auston Matthews", "8479318", "TOR", "ATL"),
+    ("Andrei Vasilevskiy", "8476883", "TBL", "ATL"),
+    ("Artemi Panarin", "8478550", "NYR", "MET"),
+    ("Adam Fox", "8479323", "NYR", "MET"),
+    ("Ilya Sorokin", "8478009", "NYI", "MET"),
+    ("Mikko Rantanen", "8478420", "COL", "CEN"),
+    ("Nathan MacKinnon", "8477492", "COL", "CEN"),
+    ("Connor Hellebuyck", "8476945", "WPG", "CEN"),
+    ("Leon Draisaitl", "8477934", "EDM", "PAC"),
+    ("Stuart Skinner", "8479973", "EDM", "PAC"),
+    ("Bo Horvat", "8477500", "VAN", "PAC"),
+]
+
+SEASON_FAN_VOTE_IDS = {
+    "2022": {pid for _, pid, _, _ in ASG2022_FAN_VOTE},
+    "2023": {pid for _, pid, _, _ in ASG2023_FAN_VOTE},
+    "2024": ASG2024_IDS,
+}
+SEASON_FAN_VOTE_FOLD = {
+    "2022": {fold(nm) for nm, _, _, _ in ASG2022_FAN_VOTE},
+    "2023": {fold(nm) for nm, _, _, _ in ASG2023_FAN_VOTE},
+    "2024": ASG2024_FOLD,
+}
+ASG_FANVOTE_IDS = set().union(*SEASON_FAN_VOTE_IDS.values())
+ASG_FANVOTE_FOLD = set().union(*SEASON_FAN_VOTE_FOLD.values())
 
 
 # ---------------------------------------------------------------------------
@@ -207,10 +267,17 @@ def discover_jersey_sources() -> None:
 
 
 def verify_asg_ids() -> None:
-    """Verify the 12 ASG-2024 fan-vote player ids against the live NHL API."""
+    """Verify every fan-vote player id (2022+2023+2024) vs the live NHL API."""
     s = requests.Session()
     s.headers.update({"User-Agent": CONTACT_UA})
-    for nm, pid, team in ASG2024_FAN_VOTE:
+    seen: set[str] = set()
+    entries = ([(nm, pid) for nm, pid, _, _ in ASG2022_FAN_VOTE]
+               + [(nm, pid) for nm, pid, _, _ in ASG2023_FAN_VOTE]
+               + [(nm, pid) for nm, pid, _ in ASG2024_FAN_VOTE])
+    for nm, pid in entries:
+        if pid in seen:
+            continue
+        seen.add(pid)
         try:
             j = s.get(f"https://api-web.nhle.com/v1/player/{pid}/landing", timeout=20).json()
             api_nm = f"{j['firstName']['default']} {j['lastName']['default']}"
@@ -239,21 +306,27 @@ def build_rows() -> list[dict]:
         jersey_member = 1 if fn in JERSEY_UNION_FOLD else 0
         jersey_rank: object = JERSEY_RANK_FOLD.get(fn, "")
 
-        # ---- V2 ASG-2024 fan vote (membership only; no published totals) ----
+        # ---- V2 fan-vote union 2022+2023+2024 (A33; membership only) ----
+        # Column keeps its historical name `asg2024_member` for schema
+        # stability downstream; since A33 it carries the three-season union.
         # NHL id decides whenever present (the pool contains namesakes, e.g.
         # two Elias Petterssons); folded name is a backup for blank-id rows only.
         if nhl_id:
-            asg_member = 1 if nhl_id in ASG2024_IDS else 0
+            asg_member = 1 if nhl_id in ASG_FANVOTE_IDS else 0
+            seasons = sorted(s for s, ids in SEASON_FAN_VOTE_IDS.items()
+                             if nhl_id in ids)
         else:
-            asg_member = 1 if fn in ASG2024_FOLD else 0
+            asg_member = 1 if fn in ASG_FANVOTE_FOLD else 0
+            seasons = sorted(s for s, folds in SEASON_FAN_VOTE_FOLD.items()
+                             if fn in folds)
 
         # ---- ambiguous-name note: Sebastian Aho ----
         if fn == "sebastian aho":
             notes.append(
                 "Sebastian Aho disambiguation: nhl_player_id 8478427 = Carolina "
-                "forward (this 160-set player), NOT the NYI defenseman (8480222). "
-                "He was an NHL ASG-2024 *selection*, not a fan-vote pick -> "
-                "asg2024_member=0.")
+                "forward, NOT the NYI defenseman (8480222). He was a league "
+                "*selection* in ASG years, never a fan-vote pick in "
+                "2022/2023/2024 -> asg2024_member=0.")
             if asg_member:
                 notes.append("WARN: name-matched ASG fan vote -- id check failed.")
 
@@ -264,7 +337,8 @@ def build_rows() -> list[dict]:
             "jersey_list_member": jersey_member,
             "jersey_rank": jersey_rank,
             "asg2024_member": asg_member,
-            "asg2024_votes": "",  # never published for 2024 -> blank for all
+            "asg2024_votes": "",  # no per-player totals published any year
+            "asg_fanvote_seasons": ",".join(seasons),
             "match_note": " | ".join(notes),
         })
     return rows
@@ -284,11 +358,17 @@ def main() -> None:
     na = sum(r["asg2024_member"] for r in rows)
     print(f"Wrote {OUT_CSV.name}: {len(rows)} rows")
     print(f"  V1 jersey-list members in pool (union 2023-24 + 2024-25 + 2025-26): {nj}")
-    print(f"  V2 ASG-2024 fan-vote members in pool: {na}")
+    print(f"  V2 fan-vote union members in pool (A33, 2022+2023+2024): {na}")
+    for season in ("2022", "2023", "2024"):
+        ns = sum(1 for r in rows
+                 if season in r["asg_fanvote_seasons"].split(","))
+        print(f"    {season}: {ns} in pool")
     if nj < 10:
         print(f"  NOTE: V1 overlap {nj} < 10 -> inconclusive/underpowered (pre-reg §9)")
     if na < 10:
         print(f"  NOTE: V2 overlap {na} < 10 -> underpowered (pre-reg §9)")
+    else:
+        print(f"  V2 overlap {na} >= 10 -> POWERED under the existing §9 floor (A33 rule 4)")
 
 
 if __name__ == "__main__":
