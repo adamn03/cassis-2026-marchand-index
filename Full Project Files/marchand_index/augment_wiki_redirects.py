@@ -147,14 +147,23 @@ def fetch_daily_pairs(s, pv_domain: str, title: str,
             continue
     # Split-window fallback: the edge sometimes 404s a full-window request
     # while sub-windows 200 (observed live 2026-07-18, fr 'Nathan Gaucher':
-    # full window 404, 20260301-20260417 200). Two halves, merged; only a
-    # both-halves failure is a real null.
+    # full window 404, 20260301-20260417 200).
+    #
+    # FAIL-SAFE (A36 fix, 2026-07-21): the full-window request is
+    # all-or-nothing — a 200 is ALWAYS the complete series; only this split
+    # path can produce a *partial* result. Returning a one-half sum when the
+    # other half is unrecoverable silently truncates the total, and the caller
+    # would then overwrite a good stored full-year series with that partial via
+    # the RESTATED branch (observed live: Brzustewicz full+h2 404 -> h1-only
+    # 6508 vs stored 16153; Whitecloud full+h1 404 -> h2-only 61129 vs 85053).
+    # So BOTH halves must succeed; otherwise return None and let the caller's
+    # canon_total==0 UNRECOVERED guard keep the authoritative stored value.
     if (start, end) == (WINDOW_START, WINDOW_END):
         h1 = fetch_daily_pairs(s, pv_domain, title, "20250418", "20251017")
         h2 = fetch_daily_pairs(s, pv_domain, title, "20251018", "20260417")
-        if h1 is None and h2 is None:
+        if h1 is None or h2 is None:
             return None
-        return merge_daily_by_date([h1 or [], h2 or []])
+        return merge_daily_by_date([h1, h2])
     return None
 
 
