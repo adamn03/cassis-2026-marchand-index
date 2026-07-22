@@ -208,6 +208,7 @@ The same designated-panel rule extends to the A38 λ-portability diagnostic (des
 - [ ] A39 committed before its code; panel confined per extended §H rule
 - [ ] A40 committed before any of its five clauses is computed; panels confined per extended §H rule
 - [ ] A41 committed before the production matcher run; players.csv = 771 rows; pids 637/500/368 absent; A39 count constants re-evaluated (8 / 78)
+- [ ] A42 committed before the matcher re-run; guard set + DF values + threshold sensitivity in matcher log; guarded players carry both disclosure columns; v1 counts never consumed downstream
 - [ ] All tests green (target ~125+, from 102)
 - [ ] Phase-1 acceptance criteria all met (trends 774/774, cap low <5%, dupes resolved, cards verified)
 - [ ] Owner decisions §D recorded in prereg

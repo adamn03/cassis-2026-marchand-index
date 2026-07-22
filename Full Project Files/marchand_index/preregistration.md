@@ -947,6 +947,58 @@ duplicated ids; weights (§4/A12), peer features (§6/A13), λ (A5), denominator
 are unchanged; the pool (§2/A10) changes only by removing duplicate rows of
 already-pooled persons.
 
+**A42 (2026-07-22) — Common-word surname guard for the local Reddit matcher.
+Logged AFTER the first matcher run and BEFORE any composite, OAQ, or validation
+computation. Timing disclosed: `reddit_counts.csv` v1 existed when this was
+written — the defect is only visible in fetched counts; the matcher is
+deterministic from the frozen corpus and is re-run under this rule. No number
+derived from Reddit counts (composite, OAQ, validation, or any §9/A31 quantity)
+was computed before this text.**
+
+**Defect (v1 evidence, recorded):** A15/A21 guard player-vs-player collisions
+only. A folded surname token equal to a common English word matches ordinary
+prose: v1 counted Daniil But 4,330 mentions ("...no NHL Hockey today but there
+is AHL Hockey!"), Oskar Bäck 2,309 (fold "bäck"→"back"), Owen Power 2,268
+("power play"), Brayden Point 1,793, Logan Stanley 1,555 ("Stanley Cup") — four
+of the five above Connor McDavid (2,068), facially invalid.
+
+**Rule (mechanical, applied uniformly):**
+
+1. **Guard set.** DF(sn) = fraction of the frozen corpus's 250,004 submissions
+   whose folded whole-token set (A23 `match_tokens`) contains folded pool
+   surname sn. Guard set = {sn : DF(sn) ≥ 0.01}. The set, every DF value, and
+   the set's stability under thresholds 0.005 and 0.02 are printed by the run
+   and recorded in the matcher log; instability under those bounds would be
+   disclosed.
+2. **Attribution restriction.** A guarded surname's submission may attribute to
+   a guarded player ONLY via the A15 first-name evidence check (folded
+   first-name token prefix, len ≥ 3 / exact for shorter, or the unique-initial
+   "X. Surname" pattern) — the identical checker already pre-registered for
+   shared surnames, now forced for guarded players regardless of pool surname
+   uniqueness. Team-subreddit context (A21 rule 2) and team-nickname
+   co-occurrence (rule 4) are deliberately INSUFFICIENT for guarded surnames:
+   hockey idiom co-occurs with team context ("Sabres power play", "Stanley Cup
+   run"). A guarded member without first-name evidence is excluded from
+   contention for that submission; remaining members proceed under unchanged
+   A21 rules.
+3. **Disclosure columns.** `reddit_common_word_guard` (true/false per player)
+   and `guard_filtered_mentions` (submissions in the player's counting subs
+   containing the guarded surname token but rejected for lack of first-name
+   evidence).
+4. **Bias direction (fixed interpretation):** conservative — casual
+   surname-only references to guarded players ("Power was great tonight") are
+   not counted; guarded players' Reddit counts are lower bounds. Stated on the
+   poster limitations panel next to the Reddit cap disclosure (A23).
+
+**Anti-tuning compliance (§13):** the rule consumes predictor-side corpus token
+frequencies only — no outcome, composite, OAQ, validation, or hypothesis
+quantity existed when it was fixed; the evidence checker it forces is the
+unchanged A15 machinery; threshold set in advance of computing the guard set's
+membership beyond the five facially-invalid names above; weights (§4/A12), peer
+features (§6/A13), λ (A5), denominators (A4/A8), pool (§2/A10 as amended by
+A41), window (A11/A14), seed, and all validation floors (§9, A6/V3, A31)
+unchanged.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
