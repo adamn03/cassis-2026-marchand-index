@@ -366,7 +366,6 @@ player_id,full_name,position,group,line_slot,team_code,nhl_team_code,team_slug,t
 365,David Reinbacher,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8484220,David_Reinbacher,david-reinbacher,nhl_roster_full,2026-06-17,2026-06-17
 366,Jayden Struble,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8481593,Jayden_Struble,jayden-struble,nhl_roster_full,2026-06-17,2026-06-17
 367,Arber Xhekaj,D,d1,d1:D,MON,MTL,montreal-canadiens,Montreal,8482964,Arber_Xhekaj,arber-xhekaj,nhl_roster_full,2026-06-17,2026-06-17
-368,Ross Colton,C,f1,f1:C,NAS,NSH,nashville-predators,Nashville,8479525,Ross_Colton,ross-colton,nhl_roster_full,2026-06-17,2026-06-17
 369,Luke Evangelista,R,f1,f1:R,NAS,NSH,nashville-predators,Nashville,8482146,Luke_Evangelista,luke-evangelista,nhl_roster_full,2026-06-17,2026-06-17
 370,Filip Forsberg,L,f1,f1:L,NAS,NSH,nashville-predators,Nashville,8476887,Filip_Forsberg,filip-forsberg,nhl_roster_full,2026-06-17,2026-06-17
 371,Erik Haula,L,f1,f1:L,NAS,NSH,nashville-predators,Nashville,8475287,Erik_Haula,erik-haula,nhl_roster_full,2026-06-17,2026-06-17
@@ -498,7 +497,6 @@ player_id,full_name,position,group,line_slot,team_code,nhl_team_code,team_slug,t
 497,Garrett Wilson,L,f1,f1:L,PHI,PHI,philadelphia-flyers,Philadelphia,8475253,Garrett_Wilson,garrett-wilson,nhl_roster_full,2026-06-17,2026-06-17
 498,Trevor Zegras,C,f1,f1:C,PHI,PHI,philadelphia-flyers,Philadelphia,8481533,Trevor_Zegras,trevor-zegras,nhl_roster_full,2026-06-17,2026-06-17
 499,Emil Andrae,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8482126,Emil_Andrae,emil-andrae,nhl_roster_full,2026-06-17,2026-06-17
-500,Simon Benoit,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8481122,Simon_Benoit,simon-benoit,nhl_roster_full,2026-06-17,2026-06-17
 501,Oliver Bonk,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8484148,Oliver_Bonk,oliver-bonk,nhl_roster_full,2026-06-17,2026-06-17
 502,Jamie Drysdale,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8482142,Jamie_Drysdale,jamie-drysdale,nhl_roster_full,2026-06-17,2026-06-17
 503,Helge Grans,D,d1,d1:D,PHI,PHI,philadelphia-flyers,Philadelphia,8482169,Helge_Grans,helge-grans,nhl_roster_full,2026-06-17,2026-06-17
@@ -635,7 +633,6 @@ player_id,full_name,position,group,line_slot,team_code,nhl_team_code,team_slug,t
 634,William Nylander,R,f1,f1:R,TOR,TOR,toronto-maple-leafs,Toronto,8477939,William_Nylander,william-nylander,nhl_roster_full,2026-06-17,2026-06-17
 635,Nicholas Robertson,L,f1,f1:L,TOR,TOR,toronto-maple-leafs,Toronto,8481582,Nicholas_Robertson,nicholas-robertson,nhl_roster_full,2026-06-17,2026-06-17
 636,John Tavares,C,f1,f1:C,TOR,TOR,toronto-maple-leafs,Toronto,8475166,John_Tavares,john-tavares,nhl_roster_full,2026-06-17,2026-06-17
-637,Emil Andrae,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8482126,Emil_Andrae,emil-andrae,nhl_roster_full,2026-06-17,2026-06-17
 638,Simon Benoit,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8481122,Simon_Benoit,simon-benoit,nhl_roster_full,2026-06-17,2026-06-17
 639,Brandon Carlo,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8478443,Brandon_Carlo,brandon-carlo,nhl_roster_full,2026-06-17,2026-06-17
 640,Oliver Ekman-Larsson,D,d1,d1:D,TOR,TOR,toronto-maple-leafs,Toronto,8475171,Oliver_Ekman-Larsson,oliver-ekman-larsson,nhl_roster_full,2026-06-17,2026-06-17
