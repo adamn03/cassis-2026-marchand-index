@@ -850,6 +850,103 @@ fixed in advance; nothing in the composite, peer matching, denominators,
 validation floors, or hypotheses changes. Output confined to a single designated
 panel per the §H forking-paths rule, which is extended to name this panel.
 
+**A40 (2026-07-22) — Descriptive measurement-quality batch (five clauses). Logged
+BEFORE the Phase-2 compute; Reddit remains 0/774. DESCRIPTIVE — no floor, no gate,
+not a validation pathway; nothing here can alter the headline under any outcome.**
+(U3 of the 2026-07-11 idea-maximization review; owner-approved 2026-07-13 with the
+U-slate, §14 decision record; text as drafted in that review's §4.)
+
+1. **Split-half reliability of the engagement composite.** The wiki_en and
+   wiki_intl daily vectors (post-A36, zero-filled 365-day, date-indexed) are split
+   odd/even by day index; the Reddit submission pool is split odd/even by
+   submission index after the A15/A21 attribution filter; trends and all non-flow
+   quantities are held at their full-window values in both halves (no sub-window
+   resolution exists; disclosed). engagement_raw is recomputed per half under the
+   unchanged §4/A12 weights and sentinel rules; the Spearman correlation of the
+   two half-composites across the pool is reported with its Spearman–Brown
+   correction and a 1,000-draw player-level bootstrap CI (seed 20260526).
+2. **Permutation-null calibration.** 1,000 whole-pool permutations of
+   engagement_raw across the pool (seed 20260526); OAQ_observed, OAQ_portable, and
+   the V1b AUC recomputed per draw; the null distribution is displayed beside the
+   observed values in one designated calibration figure. Interpretation fixed now:
+   this panel demonstrates pipeline calibration (a null input yields chance-level
+   validation statistics); it is not a hypothesis test and carries no verdict.
+3. **Market-attribution share (case cards only).** Each case-study card reports
+   share_market = λ·max(0, market_z) / engagement_raw (0 when engagement_raw ≤ 0;
+   flagged), labeled "share of measured attention attributable to team market
+   under the locked λ = 0.5 correction." Arithmetic on already-registered
+   quantities; illustration per A31.5, never evidence.
+4. **Drop-one-peer sensitivity (case cards only).** For each case-study player,
+   OAQ_portable is recomputed K times omitting one of the K=10 peers; the min–max
+   range is shown as a secondary whisker beside the §10 bootstrap CI, labeled
+   "peer-set sensitivity (not propagated in the primary CI — see A26 table)."
+5. **Pool-survivorship limitation (poster §G addition, verbatim):** "The pool is
+   the 2026-06-17 roster snapshot; skaters who exited the NHL before the snapshot
+   are absent even where their in-window attention was real."
+
+**Presentation rule (fixed now):** clauses 1–4 appear only in designated
+descriptive panels per the airtight plan §H forking-paths rule, which is extended
+to name them; none is eligible to become the headline under any outcome; no
+number from this amendment is quoted standalone in the abstract-conformance copy.
+
+**Anti-tuning compliance (§13):** logged before the Phase-2 compute while Reddit
+is 0/774, so no composite, OAQ, or validation result could have influenced the
+design; splits, permutation scheme, and card statistics are mechanical and fixed
+in advance; weights (§4/A12), peer features (§6/A13), λ (A5), denominators
+(A4/A8), pool (§2/A10), window (A11/A14), seed, and all validation floors (§9,
+A6/V3, A31) are unchanged.
+
+**A41 (2026-07-22) — Pool deduplication: 774 → 771 (three duplicate persons).
+Logged BEFORE the production Reddit matcher run; Reddit remains 0/774
+(equivalently 0/771 post-dedup — no per-player production counts exist).
+Owner-approved 2026-07-13 (§14 decision record; supplement 2026-07-13 §4b).**
+
+The A21 acceptance dry-run (`raw/reddit_identity_pairs.md`) found three duplicate
+persons in the locked §2/A10 pool — identical `nhl_player_id` under two 2026-06-17
+snapshot teams (mid-move roster artifacts). Without dedup, A21 rule 3 mechanically
+flags each pair fully non-discriminable, zeroing both rows' Reddit counts — a pool
+defect, not true ambiguity. (The two Elias Petterssons are distinct
+`nhl_player_id`s — a real pair, not affected.)
+
+| person | nhl_player_id | kept row | dropped row |
+|---|---|---|---|
+| Emil Andrae | 8482126 | 499 (PHI) | 637 (TOR) |
+| Simon Benoit | 8481122 | 638 (TOR) | 500 (PHI) |
+| Ross Colton | 8479525 | 152 (COL) | 368 (NAS) |
+
+**Mechanical keep rule (fixed now, applied uniformly):** for each duplicated
+`nhl_player_id`, keep the row whose team matches the player's 20252026 NHL
+regular-season team in the NHL API landing `seasonTotals` (gameTypeId == 2,
+leagueAbbrev == "NHL" — the A22/A38 derivation); drop the other row. The 2025-26
+team is unique for all three persons (Andrae: Flyers; Benoit: Maple Leafs;
+Colton: Avalanche), so the rule is decisive with no tie-break; each dropped row is
+a post-window June-2026 move artifact (verified live 2026-07-22: `currentTeamAbbrev`
+TOR / PHI / NSH respectively, all outside the A11 window). Rationale: every
+attention quantity is measured on the A11/A14 window, which the 2025-26 season
+spans; the kept row's team context is the one under which the in-window attention
+accrued.
+
+**Implementation (mechanical):** player_ids 637, 500, 368 are removed from
+`players.csv` before the production matcher run. Per-source raw files keep any
+already-fetched rows for the dropped ids (orphans; every loader joins on the pool,
+so they are inert). `mover_dates.csv` is unaffected (none of the three derives as
+an A38 mover — their moves post-date the window).
+
+**Mechanical propagation (no re-decision):** N = 771 wherever the pool count
+appears; count-typed constants defined by ceil rules re-evaluate on 771 — A39
+top-share counts become ceil(1%·771) = 8 (unchanged) and ceil(10%·771) = 78
+(was 77); the "774" in prior amendment texts is the historical pool at their
+logging time and is not retro-edited.
+
+**Anti-tuning compliance (§13):** logged while Reddit is 0/774 fetched; the keep
+rule is derived from an objective NHL-API season quantity fixed by history, not
+from any attention data (the duplicate rows' wiki vectors are byte-identical, so
+no attention quantity could discriminate them anyway); applied uniformly to all
+duplicated ids; weights (§4/A12), peer features (§6/A13), λ (A5), denominators
+(A4/A8), window (A11/A14), seed, K, and all validation floors (§9, A6/V3, A31)
+are unchanged; the pool (§2/A10) changes only by removing duplicate rows of
+already-pooled persons.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**

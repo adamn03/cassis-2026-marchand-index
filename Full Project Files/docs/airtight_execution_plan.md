@@ -200,12 +200,14 @@ Band assignment (non-OAQ vars, prereg-spec §5) + YouTube fetch under §6/§7 as
 ## §H — Forking-paths labeling rule (poster, verbatim)
 "One primary estimate per claim: raw-scale composite, λ = 0.5, hybrid denominator, seed 20260526. Every other variant (λ ∈ {0,.25,.75,1}, raw-cap/expected-cap lenses, log lens, bias-corrected lens, surname-excluded cut, market-proxy variants, goals-rate peer vector) appears only in a single designated robustness panel, reported as direction-of-change vs primary, never as a ranking, and none was eligible to become the headline under any outcome."
 
-The same designated-panel rule extends to the A38 λ-portability diagnostic (descriptive diagnostics panel) and the A39 attention-concentration panel: estimates with CIs, never a ranking, never headline-eligible (A39's sole exception: shipping-matrix rows 6–8, explicitly labeled descriptive).
+The same designated-panel rule extends to the A38 λ-portability diagnostic (descriptive diagnostics panel) and the A39 attention-concentration panel: estimates with CIs, never a ranking, never headline-eligible (A39's sole exception: shipping-matrix rows 6–8, explicitly labeled descriptive). It further extends to the A40 measurement-quality batch: the split-half reliability panel, the permutation-null calibration figure, and the case-card statistics (market-attribution share, drop-one-peer whisker) are designated panels under this rule; none is headline-eligible under any outcome.
 
 ## §I — Conformance checklist (verify before Phase 2)
 - [ ] A21–A35 + Gate-4 amendments committed BEFORE their code, each with anti-tuning paragraph
 - [ ] A38 committed before its code; mover_dates.csv dates 2-URL corroborated; diagnostic runs post-compute only
 - [ ] A39 committed before its code; panel confined per extended §H rule
+- [ ] A40 committed before any of its five clauses is computed; panels confined per extended §H rule
+- [ ] A41 committed before the production matcher run; players.csv = 771 rows; pids 637/500/368 absent; A39 count constants re-evaluated (8 / 78)
 - [ ] All tests green (target ~125+, from 102)
 - [ ] Phase-1 acceptance criteria all met (trends 774/774, cap low <5%, dupes resolved, cards verified)
 - [ ] Owner decisions §D recorded in prereg
