@@ -82,6 +82,7 @@ COUNTS_FIELDS = [
     "player_id", "full_name", "reddit_subs_searched", "reddit_mentions_12mo",
     "reddit_upvotes_12mo", "unique_authors", "reddit_status",
     "ambiguous_mentions", "surname_shared", "reddit_identity_ambiguous",
+    "reddit_common_word_guard", "guard_filtered_mentions",
     "reddit_mentions_allsubs", "reddit_mentions_fantasy", "fetch_date",
 ]
 DETAIL_FIELDS = ["player_id", "submission_id", "score"]
@@ -135,10 +136,13 @@ def build_surname_map(players: list[dict]) -> dict[str, list[str]]:
     return out
 
 
-def make_evidence_check(full_name: str, surname_map: dict[str, list[str]]):
+def make_evidence_check(full_name: str, surname_map: dict[str, list[str]],
+                        force: bool = False):
     """Return (checker, shared) for a player. checker(title, selftext) -> bool.
 
-    checker is None when the surname is unique in the pool (A2 rule unchanged).
+    checker is None when the surname is unique in the pool (A2 rule unchanged),
+    UNLESS force=True (A42 common-word guard: guarded players require the same
+    first-name evidence even with a pool-unique surname).
     For shared surnames a submission is attributed only if:
       (a) a word in the folded text STARTS WITH the folded first name
           (len >= 3; shorter first names require an exact word match), or
@@ -150,7 +154,7 @@ def make_evidence_check(full_name: str, surname_map: dict[str, list[str]]):
     fn = fold(parts[0])
     sharers = surname_map.get(sn, [fn])
     shared = len(sharers) >= 2
-    if not shared:
+    if not shared and not force:
         return None, False
 
     initial = fn[:1]
@@ -174,7 +178,7 @@ def make_evidence_check(full_name: str, surname_map: dict[str, list[str]]):
             return True
         return False
 
-    return check, True
+    return check, shared
 
 
 # --------------------------------------------------------------------------- #
@@ -197,6 +201,46 @@ def match_tokens(title: str, selftext: str) -> set[str]:
 def prefix_collides(a: str, b: str) -> bool:
     """A21 rule 1: folded first names collide iff one prefixes the other."""
     return a.startswith(b) or b.startswith(a)
+
+
+# --------------------------------------------------------------------------- #
+# A42 — common-word surname guard                                              #
+# --------------------------------------------------------------------------- #
+GUARD_DF_THRESHOLD = 0.01
+GUARD_DF_SENSITIVITY = (0.005, 0.02)
+
+
+def surname_document_frequency(surnames: set[str],
+                               corpus_dir: Path = CORPUS_DIR) -> dict[str, float]:
+    """DF(sn) = fraction of corpus submissions whose folded whole-token set
+    contains sn (A42 rule 1). One streaming pass, dedup by id per sub —
+    identical dedup to scan_corpus so numerator and denominator agree."""
+    hits = {sn: 0 for sn in surnames}
+    total = 0
+    target = frozenset(surnames)
+    for path in sorted(corpus_dir.glob("*.jsonl")):
+        seen: set[str] = set()
+        with path.open("r", encoding="utf-8") as fh:
+            for line in fh:
+                try:
+                    post = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                pid = post.get("id")
+                if pid in seen:
+                    continue
+                seen.add(pid)
+                total += 1
+                for sn in (match_tokens(post.get("title") or "",
+                                        post.get("selftext") or "") & target):
+                    hits[sn] += 1
+    return {sn: (hits[sn] / total if total else 0.0) for sn in surnames}
+
+
+def guard_set(df: dict[str, float],
+              threshold: float = GUARD_DF_THRESHOLD) -> set[str]:
+    """A42 guard membership at a threshold."""
+    return {sn for sn, f in df.items() if f >= threshold}
 
 
 # --------------------------------------------------------------------------- #
@@ -262,15 +306,20 @@ def counting_subs(codes: set[str]) -> list[str]:
 # --------------------------------------------------------------------------- #
 def build_groups(players: list[dict], wteams: dict[str, set[str]],
                  nickname: dict[str, str],
-                 surname_map: dict[str, list[str]]) -> dict[str, list[dict]]:
-    """Folded surname -> attribution group (one member per pool player)."""
+                 surname_map: dict[str, list[str]],
+                 guarded: set[str] | None = None) -> dict[str, list[dict]]:
+    """Folded surname -> attribution group (one member per pool player).
+    `guarded` = A42 common-word surnames: members get a forced checker."""
+    guarded = guarded or set()
     groups: dict[str, list[dict]] = {}
     for p in players:
         parts = p["full_name"].split()
         sn, fn = fold(parts[-1]), fold(parts[0])
-        checker, shared = make_evidence_check(p["full_name"], surname_map)
+        checker, shared = make_evidence_check(p["full_name"], surname_map,
+                                              force=(sn in guarded))
         groups.setdefault(sn, []).append({
             "pid": p["player_id"], "fn": fn, "shared": shared,
+            "guarded": sn in guarded,
             "teams": wteams[p["player_id"]],
             "nicks": {nickname[c] for c in wteams[p["player_id"]] if c in nickname},
             "checker": checker,
@@ -342,6 +391,7 @@ def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
     for group in groups.values():
         for m in group:
             acc[m["pid"]] = {"scores": {}, "authors": set(), "ambiguous": 0,
+                             "guard_filtered": 0,
                              "allsubs_ids": set(), "fantasy_ids": set()}
     count_pids: dict[str, set[str]] = {}   # sub -> pids counting it
     for pid, subs in counting.items():
@@ -372,10 +422,24 @@ def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
                     continue
                 for sn in hit_surnames:
                     group = groups[sn]
-                    winner = attribute(group, title, selftext, tokens, steam)
+                    # A42 rule 2: a guarded member without first-name evidence
+                    # is excluded from contention for this submission; team
+                    # context never suffices for guarded surnames.
+                    eligible = [m for m in group
+                                if not m["guarded"]
+                                or (m["checker"] is not None
+                                    and m["checker"](title, selftext))]
+                    for m in group:
+                        if m not in eligible and sub in counting[m["pid"]]:
+                            acc[m["pid"]]["guard_filtered"] += 1
+                    if not eligible:
+                        continue
+                    winner = attribute(eligible, title, selftext, tokens, steam)
                     if winner is None:
-                        # Ambiguous: disclosed for every member counting this sub.
-                        for m in group:
+                        # Ambiguous: disclosed for every eligible member
+                        # counting this sub (guard-excluded members are in
+                        # guard_filtered, not ambiguous).
+                        for m in eligible:
                             if sub in counting[m["pid"]]:
                                 acc[m["pid"]]["ambiguous"] += 1
                         continue
@@ -402,7 +466,20 @@ def main() -> None:
     wteams = {p["player_id"]: window_teams(sess, p, name_to_code) for p in players}
     counting = {p["player_id"]: counting_subs(wteams[p["player_id"]]) for p in players}
 
-    groups = build_groups(players, wteams, nickname, surname_map)
+    # A42 pre-pass: corpus document frequency of every pool surname.
+    pool_surnames = {fold(p["full_name"].split()[-1]) for p in players}
+    print("A42: computing corpus document frequency for "
+          f"{len(pool_surnames)} surnames ...")
+    df = surname_document_frequency(pool_surnames)
+    guarded = guard_set(df)
+    for thr in GUARD_DF_SENSITIVITY:
+        alt = guard_set(df, thr)
+        print(f"A42 sensitivity: threshold {thr} -> "
+              f"{'IDENTICAL' if alt == guarded else 'DIFFERS: ' + str(sorted(alt ^ guarded))}")
+    print(f"A42 guard set (DF >= {GUARD_DF_THRESHOLD}): "
+          + ", ".join(f"{sn}={df[sn]:.4f}" for sn in sorted(guarded)))
+
+    groups = build_groups(players, wteams, nickname, surname_map, guarded)
     n_shared = sum(1 for g in groups.values() if len(g) >= 2 for _ in g)
     print(f"A15/A21 identity: {n_shared}/{len(players)} players share a surname; "
           f"{sum(1 for g in groups.values() for m in g if m['identity_ambiguous'])} "
@@ -444,6 +521,8 @@ def main() -> None:
             "ambiguous_mentions": a["ambiguous"] if status != "null" else "",
             "surname_shared": str(me["shared"]).lower(),
             "reddit_identity_ambiguous": str(me["identity_ambiguous"]).lower(),
+            "reddit_common_word_guard": str(me["guarded"]).lower(),
+            "guard_filtered_mentions": a["guard_filtered"] if status != "null" else "",
             "reddit_mentions_allsubs": len(a["allsubs_ids"]) if status != "null" else "",
             "reddit_mentions_fantasy": len(a["fantasy_ids"]) if status != "null" else "",
             "fetch_date": fetch_date,
