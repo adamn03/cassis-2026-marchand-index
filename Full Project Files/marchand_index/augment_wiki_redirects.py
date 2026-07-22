@@ -22,7 +22,9 @@ from __future__ import annotations
 import datetime as dt
 import json
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from urllib.parse import quote
 
@@ -35,6 +37,12 @@ WINDOW_START = "20250418"
 WINDOW_END = "20260417"
 SLEEP_PV = 0.2
 SLEEP_MW = 0.15
+# Players are independent in both passes; 6 workers overlap the transient-404
+# retry ladders (22s+ each) that dominate wall time when the pageviews edge is
+# flaky. Aggregate request rate stays ~10 req/s — far under Wikimedia's
+# 100 req/s pageviews guideline.
+# requests-cache 1.3.2 SQLite backend is thread-safe (shared session OK).
+FETCH_WORKERS = 6
 
 
 # --------------------------------------------------------------------------- #
@@ -197,6 +205,55 @@ EN_FIELDS = ["player_id", "full_name", "wikipedia_slug_tried",
 DAILY_FIELDS = ["player_id", "full_name", "n_days", "daily_views"]
 
 
+def _en_one_player(s, r: dict, canonical: str, redirects: list[str]):
+    """Per-player en fetch — logic identical to the pre-thread sequential
+    version; same worker contract as _intl_one_player. updates is None on
+    the UNRECOVERED path (row untouched, audit cols stay blank, as before);
+    n_rd is counted for every submitted player, matching the sequential
+    code's `n_rd_titles += len(redirects)` before the unrecovered check."""
+    log_lines: list[str] = []
+    merged, canon_total, rd_total = _sum_title_and_redirects(
+        s, "en.wikipedia", canonical, redirects)
+    stored = str(r.get("wiki_12mo", "")).strip()
+    # A29-style second pass: a canonical that 404-flaked through the
+    # ladder while a stored series exists gets one full re-attempt.
+    if stored and canon_total == 0 and int(float(stored)) > 0:
+        log_lines.append(f"  RETRY {r['full_name']}: canonical empty vs "
+                         f"stored {stored} — second pass")
+        merged, canon_total, rd_total = _sum_title_and_redirects(
+            s, "en.wikipedia", canonical, redirects)
+    if stored and canon_total == 0 and int(float(stored)) > 0:
+        # Unrecovered fetch failure, NOT a restatement: writing the
+        # redirect-only sum would destroy a good stored series. Keep the
+        # stored total + daily vector untouched; audit cols stay blank.
+        log_lines.append(f"  UNRECOVERED {r['full_name']}: canonical still "
+                         "empty — stored series kept, row untouched")
+        return None, None, 0, 1, len(redirects), None, log_lines
+    n_restated = 0
+    if stored and canon_total != int(float(stored)):
+        n_restated = 1
+        log_lines.append(f"  RESTATED {r['full_name']}: stored {stored} vs "
+                         f"re-fetched canonical {canon_total}")
+    total = canon_total + rd_total
+    share = (rd_total / total) if total else 0.0
+    updates = {
+        "wiki_12mo": total,
+        "n_redirect_titles": len(redirects),
+        "redirect_views_12mo": rd_total,
+        "redirect_share": f"{share:.6f}",
+        "fetch_date": dt.date.today().isoformat(),
+    }
+    daily_entry = {
+        "player_id": r["player_id"], "full_name": r["full_name"],
+        "n_days": 365,
+        "daily_views": "|".join(str(v) for v in zero_fill_365(merged)),
+    }
+    log_lines.append(f"  {r['full_name']:<24} rd_titles={len(redirects):<3} "
+                     f"total={total} rd_share={share:.4f}")
+    return (updates, daily_entry, n_restated, 0, len(redirects), share,
+            log_lines)
+
+
 def augment_en(s, limit: int | None = None) -> dict:
     rows = load_csv(RAW_DIR / "wiki_pageviews.csv")
     daily_by_pid = {r["player_id"]: r
@@ -217,48 +274,31 @@ def augment_en(s, limit: int | None = None) -> dict:
         r.setdefault("n_redirect_titles", "")
         r.setdefault("redirect_views_12mo", "")
         r.setdefault("redirect_share", "")
-        if r.get("wiki_match") == "none" or not r.get("wikipedia_slug_chosen"):
-            continue
-        canonical = r["wikipedia_slug_chosen"].replace("_", " ")
-        redirects = rmap.get(canonical, [])
-        n_rd_titles += len(redirects)
-        merged, canon_total, rd_total = _sum_title_and_redirects(
-            s, "en.wikipedia", canonical, redirects)
-        stored = str(r.get("wiki_12mo", "")).strip()
-        # A29-style second pass: a canonical that 404-flaked through the
-        # ladder while a stored series exists gets one full re-attempt.
-        if stored and canon_total == 0 and int(float(stored)) > 0:
-            print(f"  RETRY {r['full_name']}: canonical empty vs stored "
-                  f"{stored} — second pass")
-            merged, canon_total, rd_total = _sum_title_and_redirects(
-                s, "en.wikipedia", canonical, redirects)
-        if stored and canon_total == 0 and int(float(stored)) > 0:
-            # Unrecovered fetch failure, NOT a restatement: writing the
-            # redirect-only sum would destroy a good stored series. Keep the
-            # stored total + daily vector untouched; audit cols stay blank.
-            n_unrecovered += 1
-            print(f"  UNRECOVERED {r['full_name']}: canonical still empty — "
-                  "stored series kept, row untouched")
-            continue
-        if stored and canon_total != int(float(stored)):
-            n_restated += 1
-            print(f"  RESTATED {r['full_name']}: stored {stored} vs "
-                  f"re-fetched canonical {canon_total}")
-        total = canon_total + rd_total
-        share = (rd_total / total) if total else 0.0
-        shares.append((share, r["full_name"]))
-        r["wiki_12mo"] = total
-        r["n_redirect_titles"] = len(redirects)
-        r["redirect_views_12mo"] = rd_total
-        r["redirect_share"] = f"{share:.6f}"
-        r["fetch_date"] = dt.date.today().isoformat()
-        vec = zero_fill_365(merged)
-        daily_by_pid[r["player_id"]] = {
-            "player_id": r["player_id"], "full_name": r["full_name"],
-            "n_days": 365, "daily_views": "|".join(str(v) for v in vec),
-        }
-        print(f"  {r['full_name']:<24} rd_titles={len(redirects):<3} "
-              f"total={total} rd_share={share:.4f}")
+    # Same worker model as the intl pass: CSV row order is preserved (the
+    # `rows` list is never reordered) and updates are applied by this thread.
+    with ThreadPoolExecutor(max_workers=FETCH_WORKERS) as ex:
+        futs = {}
+        for r in rows:
+            if (r.get("wiki_match") == "none"
+                    or not r.get("wikipedia_slug_chosen")):
+                continue
+            canonical = r["wikipedia_slug_chosen"].replace("_", " ")
+            futs[ex.submit(_en_one_player, s, r, canonical,
+                           rmap.get(canonical, []))] = r
+        for fut in as_completed(futs):
+            r = futs[fut]
+            (updates, daily_entry, nr, nu, nrd,
+             share, log_lines) = fut.result()
+            for line in log_lines:
+                print(line)
+            n_restated += nr
+            n_unrecovered += nu
+            n_rd_titles += nrd
+            if updates is None:
+                continue
+            r.update(updates)
+            shares.append((share, r["full_name"]))
+            daily_by_pid[r["player_id"]] = daily_entry
     return {"rows": rows,
             "daily_rows": [daily_by_pid[r["player_id"]] for r in rows
                            if r["player_id"] in daily_by_pid],
@@ -276,6 +316,108 @@ INTL_FIELDS = ["player_id", "full_name", "wikidata_qid", "editions_available",
 INTL_DAILY_FIELDS = ["player_id", "edition", "n_days", "daily_views"]
 
 
+# Wikidata is far stricter than the pageviews edge: under the 6-worker load
+# that pageviews absorbed all day, wbgetentities started returning 429 for
+# every call (observed live 2026-07-22: 689/771 sitelinks fetches rejected).
+# So sitelinks calls are serialized behind one lock and 429/5xx retry with
+# backoff; only the pageview/redirect fetches run 6-wide.
+_WD_LOCK = threading.Lock()
+
+
+def _sitelinks_serial(s, qid: str) -> dict:
+    with _WD_LOCK:
+        last: Exception | None = None
+        for backoff in (0.0, 5.0, 15.0, 30.0, 60.0):
+            if backoff:
+                time.sleep(backoff)
+            try:
+                j = fetch_sitelinks(s, qid)
+                time.sleep(SLEEP_MW)
+                return j
+            except Exception as e:
+                last = e
+        raise last
+
+
+def _intl_one_player(s, r: dict, eds: list[str], qid: str):
+    """Per-player intl fetch — logic identical to the pre-thread sequential
+    version. Touches no shared state and prints nothing: returns
+    (updates | None, daily_entries, n_restated, n_unrecovered, n_rd_player,
+    share, log_lines) and the caller applies updates / emits log lines
+    atomically per player, so the log format the monitor greps is unchanged.
+    updates is None only on sitelinks failure (player skipped, as before)."""
+    log_lines: list[str] = []
+    try:
+        sitelinks = parse_sitelinks(_sitelinks_serial(s, qid), qid)
+    except Exception as e:
+        log_lines.append(f"  sitelinks {qid}: {e!r}")
+        return None, [], 0, 0, 0, 0.0, log_lines
+    stored_per = {}
+    try:
+        stored_per = json.loads(r.get("per_edition_json") or "{}")
+    except json.JSONDecodeError:
+        pass
+    per_edition = {}
+    rd_total_all = 0
+    total_all = 0
+    n_rd_player = 0
+    n_restated = 0
+    n_unrecovered = 0
+    daily_entries: list[dict] = []
+    for ed in eds:
+        title = sitelinks.get(ed, "")
+        if not title:
+            continue
+        rmap = enumerate_redirects(
+            s, f"https://{ed}.wikipedia.org/w/api.php", [title])
+        redirects = rmap.get(title, [])
+        n_rd_player += len(redirects)
+        merged, canon_total, rd_total = _sum_title_and_redirects(
+            s, f"{ed}.wikipedia", title, redirects)
+        stored_ed = stored_per.get(ed)
+        if stored_ed is not None and canon_total == 0 and int(stored_ed) > 0:
+            log_lines.append(f"  RETRY {r['full_name']} [{ed}]: canonical "
+                             f"empty vs stored {stored_ed} — second pass")
+            merged, canon_total, rd_total = _sum_title_and_redirects(
+                s, f"{ed}.wikipedia", title, redirects)
+        if stored_ed is not None and canon_total == 0 and int(stored_ed) > 0:
+            # Unrecovered fetch failure: keep the stored edition total +
+            # daily vector; never replace a good series with a flake.
+            n_unrecovered += 1
+            log_lines.append(f"  UNRECOVERED {r['full_name']} [{ed}]: stored "
+                             "series kept")
+            per_edition[ed] = int(stored_ed)
+            total_all += int(stored_ed)
+            continue
+        if stored_ed is not None and canon_total != int(stored_ed):
+            n_restated += 1
+            log_lines.append(f"  RESTATED {r['full_name']} [{ed}]: stored "
+                             f"{stored_ed} vs re-fetched canonical "
+                             f"{canon_total}")
+        total = canon_total + rd_total
+        per_edition[ed] = total
+        rd_total_all += rd_total
+        total_all += total
+        daily_entries.append({
+            "player_id": r["player_id"], "edition": ed, "n_days": 365,
+            "daily_views": "|".join(str(v)
+                                    for v in zero_fill_365(merged)),
+        })
+    share = (rd_total_all / total_all) if total_all else 0.0
+    updates = {
+        "per_edition_json": json.dumps(per_edition, ensure_ascii=True),
+        "wiki_intl_12mo": total_all,
+        "n_redirect_titles": n_rd_player,
+        "redirect_views_12mo": rd_total_all,
+        "redirect_share": f"{share:.6f}",
+        "fetch_date": dt.date.today().isoformat(),
+    }
+    log_lines.append(f"  {r['full_name']:<24} intl rd_titles={n_rd_player:<3} "
+                     f"total={total_all} rd_share={share:.4f}")
+    return (updates, daily_entries, n_restated, n_unrecovered, n_rd_player,
+            share, log_lines)
+
+
 def augment_intl(s, limit: int | None = None) -> dict:
     rows = load_csv(RAW_DIR / "wiki_intl_pageviews.csv")
     if limit:
@@ -290,78 +432,35 @@ def augment_intl(s, limit: int | None = None) -> dict:
     n_unrecovered = 0
     n_rd_titles = 0
     shares = []
+    eligible: list[tuple[dict, list[str], str]] = []
     for r in rows:
         r.setdefault("n_redirect_titles", "")
         r.setdefault("redirect_views_12mo", "")
         r.setdefault("redirect_share", "")
         eds = [e for e in str(r.get("editions_fetched", "")).split("|") if e]
         qid = str(r.get("wikidata_qid", "")).strip()
-        if not eds or not qid:
-            continue
-        try:
-            sitelinks = parse_sitelinks(fetch_sitelinks(s, qid), qid)
-        except Exception as e:
-            print(f"  sitelinks {qid}: {e!r}", file=sys.stderr)
-            continue
-        time.sleep(SLEEP_MW)
-        stored_per = {}
-        try:
-            stored_per = json.loads(r.get("per_edition_json") or "{}")
-        except json.JSONDecodeError:
-            pass
-        per_edition = {}
-        rd_total_all = 0
-        total_all = 0
-        n_rd_player = 0
-        for ed in eds:
-            title = sitelinks.get(ed, "")
-            if not title:
+        if eds and qid:
+            eligible.append((r, eds, qid))
+    # CSV row order is preserved: workers only compute; the `rows` list is
+    # never reordered and each row's updates are applied by this thread.
+    with ThreadPoolExecutor(max_workers=FETCH_WORKERS) as ex:
+        futs = {ex.submit(_intl_one_player, s, r, eds, qid): r
+                for r, eds, qid in eligible}
+        for fut in as_completed(futs):
+            r = futs[fut]
+            (updates, daily_entries, nr, nu, nrd,
+             share, log_lines) = fut.result()
+            for line in log_lines:
+                print(line)
+            n_restated += nr
+            n_unrecovered += nu
+            if updates is None:
                 continue
-            rmap = enumerate_redirects(
-                s, f"https://{ed}.wikipedia.org/w/api.php", [title])
-            redirects = rmap.get(title, [])
-            n_rd_player += len(redirects)
-            merged, canon_total, rd_total = _sum_title_and_redirects(
-                s, f"{ed}.wikipedia", title, redirects)
-            stored_ed = stored_per.get(ed)
-            if stored_ed is not None and canon_total == 0 and int(stored_ed) > 0:
-                print(f"  RETRY {r['full_name']} [{ed}]: canonical empty vs "
-                      f"stored {stored_ed} — second pass")
-                merged, canon_total, rd_total = _sum_title_and_redirects(
-                    s, f"{ed}.wikipedia", title, redirects)
-            if stored_ed is not None and canon_total == 0 and int(stored_ed) > 0:
-                # Unrecovered fetch failure: keep the stored edition total +
-                # daily vector; never replace a good series with a flake.
-                n_unrecovered += 1
-                print(f"  UNRECOVERED {r['full_name']} [{ed}]: stored "
-                      "series kept")
-                per_edition[ed] = int(stored_ed)
-                total_all += int(stored_ed)
-                continue
-            if stored_ed is not None and canon_total != int(stored_ed):
-                n_restated += 1
-                print(f"  RESTATED {r['full_name']} [{ed}]: stored "
-                      f"{stored_ed} vs re-fetched canonical {canon_total}")
-            total = canon_total + rd_total
-            per_edition[ed] = total
-            rd_total_all += rd_total
-            total_all += total
-            daily_by_key[(r["player_id"], ed)] = {
-                "player_id": r["player_id"], "edition": ed, "n_days": 365,
-                "daily_views": "|".join(str(v)
-                                        for v in zero_fill_365(merged)),
-            }
-        share = (rd_total_all / total_all) if total_all else 0.0
-        shares.append((share, r["full_name"]))
-        n_rd_titles += n_rd_player
-        r["per_edition_json"] = json.dumps(per_edition, ensure_ascii=True)
-        r["wiki_intl_12mo"] = total_all
-        r["n_redirect_titles"] = n_rd_player
-        r["redirect_views_12mo"] = rd_total_all
-        r["redirect_share"] = f"{share:.6f}"
-        r["fetch_date"] = dt.date.today().isoformat()
-        print(f"  {r['full_name']:<24} intl rd_titles={n_rd_player:<3} "
-              f"total={total_all} rd_share={share:.4f}")
+            r.update(updates)
+            n_rd_titles += nrd
+            shares.append((share, r["full_name"]))
+            for d in daily_entries:
+                daily_by_key[(d["player_id"], d["edition"])] = d
     return {"rows": rows, "daily_rows": list(daily_by_key.values()),
             "n_restated": n_restated, "n_unrecovered": n_unrecovered,
             "n_redirect_titles": n_rd_titles, "shares": shares}
