@@ -810,6 +810,46 @@ unchanged. Output appears only in the designated descriptive diagnostics panel p
 the poster forking-paths rule (§H of the airtight plan), which is extended to name
 this diagnostic.
 
+**A39 (2026-07-21) — Attention-concentration descriptive panel (superstar-economics
+statistics). Logged BEFORE the Phase-2 compute; Reddit remains 0/774. DESCRIPTIVE —
+no floor, no gate, not a validation pathway.**
+
+Superstar economics (Rosen 1981 AER; Adler 1985 AER) predicts convex, highly
+concentrated attention markets. The poster reports the following pre-registered
+concentration statistics, computed once, in a single designated descriptive panel:
+
+1. **Base quantity (fixed now): `wiki_12mo`** (post-A36, canonical+redirect,
+   en-Wikipedia) — chosen because it is the one composite component with NO
+   censoring (the Reddit 1,000-result cap floors star counts, A23), so star-tier
+   concentration is measured, not truncated. The same statistics on
+   `engagement_raw` are reported as a secondary row with the censoring caveat.
+2. Top-share: share of the pool total held by the top 8 players (= ceil(1% of
+   774)) and the top 77 (= ceil(10%)).
+3. Gini coefficient of `wiki_12mo` across the 774 (discrete formula
+   G = Σᵢ Σⱼ |xᵢ − xⱼ| / (2 n² x̄); NULL rows excluded and counted).
+4. The same top-shares and Gini for `cap_hit_M` (cap_quality=low rows excluded
+   and counted) — the payroll-vs-attention concentration contrast
+   (tournament-theory framing, Lazear & Rosen 1981).
+5. Between-team share of attention variance: R² of a one-way ANOVA of
+   log1p(wiki_12mo) on team (SS_between / SS_total) — the driver-vs-constructor
+   decomposition idea (Bell et al. 2016, F1), quantifying how much player
+   attention is team-context before any market adjustment.
+6. Bootstrap 95% CIs on every number: 1,000 player-level resamples, seed 20260526.
+
+**Presentation rule (fixed now):** these are descriptive market facts, reported
+with CIs in one panel; they support the Rosen/Adler framing of WHY a peer-matched
+residual is the right construct, and make no validity claim about OAQ itself. No
+concentration number may be promoted to the headline unless the headline slot is
+already in shipping-matrix rows 6–8 (no validation language available), in which
+case the concentration sentence MAY serve as the poster's quotable descriptive
+fact — explicitly labeled descriptive.
+
+**Anti-tuning compliance (§13):** logged before the Phase-2 compute while Reddit
+is 0/774; statistic list, base quantity, exclusion rules, and presentation rule
+fixed in advance; nothing in the composite, peer matching, denominators,
+validation floors, or hypotheses changes. Output confined to a single designated
+panel per the §H forking-paths rule, which is extended to name this panel.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
