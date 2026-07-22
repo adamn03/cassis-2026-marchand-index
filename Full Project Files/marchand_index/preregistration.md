@@ -736,6 +736,80 @@ V1b exists, so no result could have influenced the rule; floors, AUC constructio
 bootstrap (per A31.1), weights, pool, window unchanged. Pre-A37
 `external_outcomes.csv` retained in git history per §13.
 
+**A38 (2026-07-21) — Empirical market-portability anchor: event-study diagnostic on
+in-window team-changers. Logged BEFORE the Phase-2 compute; Reddit remains 0/774.
+DESCRIPTIVE — not a validation pathway, no floor, cannot alter the λ = 0.5 primary.**
+
+A5 committed λ = 0.5 as the maximum-entropy midpoint because no empirical anchor
+existed for the share of market-driven attention that travels with a player. An
+anchor is derivable from data already collected: skaters who changed NHL teams
+inside the fixed window were observed under two market sizes, and their K=10 peer
+sets (non-movers) provide the counterfactual attention path — the abnormal-attention
+construction of the finance event-study literature (MacKinlay 1997).
+
+**Mover set (mechanical):**
+1. In-season movers: pool skaters with ≥2 distinct-team NHL `seasonTotals` rows for
+   season 20252026 (`gameTypeId==2`, `leagueAbbrev=="NHL"`) — the A22 derivation.
+2. Off-season movers: pool skaters whose last 20242025 NHL team differs from their
+   first 20252026 NHL team (both season rows present).
+3. Event date = the publicly reported transaction date, corroborated by ≥2
+   independent URLs per mover (A20 sourcing pattern), recorded in
+   `marchand_index/mover_dates.csv` with `move_type ∈ {trade, fa_signing, waiver}`.
+   A mover whose date cannot be corroborated by 2 URLs is EXCLUDED and counted.
+4. Eligibility: event date t must leave ≥30 in-window days on each side of the
+   exclusion gap (below). Movers failing this are excluded and counted.
+
+**Estimator (mechanical; wiki_en daily vectors only — the only component with
+per-day resolution; disclosed):**
+- Windows: pre = in-window days in [t−63, t−8]; post = in-window days in
+  [t+8, t+63]. Days within ±7 of t are excluded (transaction-news spike).
+- Per mover i: Δa_i = log1p(mean daily views in post) − log1p(mean daily views in
+  pre), from the zero-filled 365-day `wiki_daily.csv` vector (dates implicit:
+  index 0 = 2025-04-18).
+- Peer control: Δa_peer_i = mean of the same quantity (same calendar windows) over
+  i's `peer_player_ids` that are themselves non-movers; ≥5 usable peers required,
+  else i is excluded and counted. Abnormal change: Δã_i = Δa_i − Δa_peer_i.
+- Market change: Δm_i = market_z(new team) − market_z(old team), using the primary
+  MarketSize_team at compute time (post-A30 if adopted; `market_z_lockedv1`
+  version reported as a sensitivity row).
+- Mover regression: OLS Δã_i = α + β·Δm_i + ε over all eligible movers.
+- Cross-sectional market gradient: OLS log1p(wiki_12mo) ~ market_z + position
+  indicator + the 6 standardized §6/A13 skill features (group-mean imputation as
+  in compute) over all NON-movers; γ̂ = the market_z coefficient.
+- **Empirical anchor: λ̂_emp = clip(β̂ / γ̂, 0, 1)** — the share of the
+  cross-sectional market gradient that a mover's attention actually loses/gains
+  when crossing markets (β̂ ≈ 0 → attention fully portable → λ̂_emp ≈ 0;
+  β̂ ≈ γ̂ → attention fully market-attached → λ̂_emp ≈ 1). If γ̂ ≤ 0, λ̂_emp is
+  reported as "undefined (non-positive market gradient)" with β̂ and γ̂ shown.
+- Uncertainty: 1,000 bootstrap draws, seed 20260526; each draw resamples movers
+  (for β̂) and non-movers (for γ̂) with replacement and recomputes λ̂_emp;
+  percentile 95% CI. Secondary cut: trade-only movers (FA moves are
+  self-selected destinations).
+
+**Interpretation rule (fixed now):** the primary λ = 0.5 is unchanged under every
+outcome. If the λ̂_emp 95% CI contains 0.5, the poster may state "the locked
+midpoint is consistent with an empirical portability estimate from n=N in-window
+team-changers." If the CI excludes 0.5, the poster states the tension verbatim
+("the empirical anchor suggests λ nearer X; the pre-committed λ ladder shows the
+headline's sensitivity") — and nothing else changes. This diagnostic does not
+count toward the ≥3 validation pathways.
+
+**Honest residuals (disclosed in advance):** post-move novelty (new-market
+curiosity) inflates post-attention regardless of market direction, biasing β̂
+toward 0, i.e. toward the portable conclusion — stated next to the estimate;
+deadline-window movers have truncated post-windows (30-day minimum); n is small
+(tens, not hundreds) — this is an anchor, not a validation; wiki-only resolution;
+market_z is a proxy (A30 disclosures apply).
+
+**Anti-tuning compliance (§13):** logged before the Phase-2 compute while Reddit
+is 0/774, so no OAQ, validation, or λ-ladder result could have influenced the
+design; mover set, windows, estimator, and interpretation are mechanical and fixed
+in advance; weights (§4/A12), peer features (§6/A13), λ (A5), denominators
+(A4/A8), pool (§2/A10), window (A11/A14), and all validation floors (§9, A6/V3)
+unchanged. Output appears only in the designated descriptive diagnostics panel per
+the poster forking-paths rule (§H of the airtight plan), which is extended to name
+this diagnostic.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
