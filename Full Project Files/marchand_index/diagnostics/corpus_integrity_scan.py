@@ -33,6 +33,16 @@ MC_HI = int(dt.datetime(2025, 5, 18, tzinfo=UTC).timestamp())
 EXPECTED_MONTHS = (["2025-%02d" % m for m in range(4, 13)]
                    + ["2026-%02d" % m for m in range(1, 5)])   # 13 months
 
+# Verified-real empty months (NOT corpus gaps): two independent Arctic Shift
+# pulls (original + 2026-07-22 re-pull, byte-identical results) agree these
+# sub-months contain zero submissions — the small Utah community migrated
+# between its two subs mid-window (UtahHockey -> utahmammoth rename era).
+# Disclosed residual; UTA attention flows mainly through r/hockey regardless.
+ALLOWED_EMPTY = {
+    ("UtahHockey", "2025-07"), ("UtahHockey", "2025-12"),
+    ("UtahHockey", "2026-01"), ("utahmammoth", "2026-01"),
+}
+
 failures: list[str] = []
 mcdavid = 0
 total_posts = 0
@@ -72,7 +82,11 @@ for sub in ALL_SUBS:
                     mcdavid += 1
     total_posts += len(seen)
     empty = [m for m in EXPECTED_MONTHS if not months.get(m)]
+    allowed = [m for m in empty if (sub, m) in ALLOWED_EMPTY]
+    empty = [m for m in empty if (sub, m) not in ALLOWED_EMPTY]
     issues = []
+    if allowed:
+        issues.append(f"empty-allowed {allowed} (verified real, see header)")
     if empty:
         issues.append(f"EMPTY {empty}")
         failures.append(f"r/{sub}: empty months {empty}")
