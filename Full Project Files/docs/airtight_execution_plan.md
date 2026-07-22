@@ -173,7 +173,7 @@ Sources: E6, J3-F8, A10-scope. Before ANY YouTube fetch. Numbering scheme: use t
 3. **A31 headline structure** sign-off (validation-finding headline; MI demoted to panel).
 
 ## §E — Phase 2: production compute (after creds + Phases 0-1 complete)
-Sequential: purge `raw/reddit_counts.csv` + `raw/reddit_detail.csv` → `python fetch_reddit.py` (A15+A21+A22+A23) → `python fetch_wikipedia_intl.py` re-fetch (intl_match flag) → ONE `python compute_oaq.py` (seed 20260526; emits primary + all pre-registered lenses/sensitivities/invariance panel) → both `diagnostics/*.py` → verdicts written per A31 shipping matrix. NO weight, floor, or rule changes after this point; anything discovered post-compute is reported, not fixed.
+Sequential: purge `raw/reddit_counts.csv` + `raw/reddit_detail.csv` → `python fetch_reddit.py` (A15+A21+A22+A23) → `python fetch_wikipedia_intl.py` re-fetch (intl_match flag) → ONE `python compute_oaq.py` (seed 20260526; emits primary + all pre-registered lenses/sensitivities/invariance panel) → diagnostics: `python diagnostics/source_correlation.py`, `python diagnostics/reddit_robustness.py`, `python diagnostics/lambda_portability.py` (A38), `python diagnostics/attention_concentration.py` (A39) → verdicts written per A31 shipping matrix. NO weight, floor, or rule changes after this point; anything discovered post-compute is reported, not fixed.
 
 ## §F — Phase 3: Gate-4 (long-lead, starts immediately after Gate-4 amendments)
 Band assignment (non-OAQ vars, prereg-spec §5) + YouTube fetch under §6/§7 as amended. OAQ side joins when Phase 2 completes. Escalation rule §6.2.2 governs coverage shortfall — no improvisation.
@@ -200,8 +200,12 @@ Band assignment (non-OAQ vars, prereg-spec §5) + YouTube fetch under §6/§7 as
 ## §H — Forking-paths labeling rule (poster, verbatim)
 "One primary estimate per claim: raw-scale composite, λ = 0.5, hybrid denominator, seed 20260526. Every other variant (λ ∈ {0,.25,.75,1}, raw-cap/expected-cap lenses, log lens, bias-corrected lens, surname-excluded cut, market-proxy variants, goals-rate peer vector) appears only in a single designated robustness panel, reported as direction-of-change vs primary, never as a ranking, and none was eligible to become the headline under any outcome."
 
+The same designated-panel rule extends to the A38 λ-portability diagnostic (descriptive diagnostics panel) and the A39 attention-concentration panel: estimates with CIs, never a ranking, never headline-eligible (A39's sole exception: shipping-matrix rows 6–8, explicitly labeled descriptive).
+
 ## §I — Conformance checklist (verify before Phase 2)
 - [ ] A21–A35 + Gate-4 amendments committed BEFORE their code, each with anti-tuning paragraph
+- [ ] A38 committed before its code; mover_dates.csv dates 2-URL corroborated; diagnostic runs post-compute only
+- [ ] A39 committed before its code; panel confined per extended §H rule
 - [ ] All tests green (target ~125+, from 102)
 - [ ] Phase-1 acceptance criteria all met (trends 774/774, cap low <5%, dupes resolved, cards verified)
 - [ ] Owner decisions §D recorded in prereg
