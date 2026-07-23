@@ -999,6 +999,55 @@ features (§6/A13), λ (A5), denominators (A4/A8), pool (§2/A10 as amended by
 A41), window (A11/A14), seed, and all validation floors (§9, A6/V3, A31)
 unchanged.
 
+**A43 (2026-07-22) — Guard-trigger refinement: two-prong test replaces A42's
+bare DF threshold. Logged after the A42-rule run and BEFORE any composite, OAQ,
+or validation computation (that boundary still holds; the matcher remains
+deterministic from the frozen corpus and is re-run under this rule).**
+
+**Defect in the A42 trigger (v2 evidence, recorded):** DF ≥ 1% cannot separate
+"surname is a common word" from "player is genuinely famous." v2 guarded
+McDavid (DF 0.0141 — fans discussing him) and filtered 1,389 legitimate
+surname-only McDavid submissions (2,068 → 679), and suppressed the three
+Hughes brothers similarly. Its guarding of stanley ("Stanley Cup"), york
+("New York"), and connor (first-name usage: "Connor McDavid") was correct.
+
+**Rule (mechanical; replaces A42 rule 1's trigger; A42 rules 2–4 — the A15
+evidence requirement, disclosure columns, and conservative-bias label — are
+unchanged and now apply to the set below):** a folded pool surname sn is
+guarded iff
+
+1. **English-word prong:** sn appears in the repo-pinned
+   `english_top1000.txt` (first 1,000 entries of the public
+   google-10000-english frequency list, Google Trillion Word Corpus
+   derivation; fetched 2026-07-22; committed with provenance header;
+   never edited); OR
+2. **Phrase-collision prong:** DF(sn) ≥ 0.01 (A42 definition, unchanged) AND,
+   over every occurrence of sn in the corpus token stream, EITHER
+   (a) ≥ 50% of occurrences are immediately followed by another pool surname
+   (first-name usage: "connor mcdavid"), OR
+   (b) a single adjacent-token bigram (previous or next side) covers ≥ 50% of
+   occurrences AND its partner token is not a folded pool first name
+   (partner-token exemption: "connor mcdavid" cannot guard mcdavid via the
+   dominant "connor …" bigram, while "stanley cup" / "new york" do guard
+   stanley / york — cup and new are not pool first names).
+
+The run prints, and the matcher log records: both prongs' membership, DF
+values, each prong-2 candidate's dominant bigram and shares, and the guard
+set's stability under prong-2 occurrence-share thresholds 0.4 and 0.6;
+instability would be disclosed. Expected corrections vs v2 (verified at run
+time): mcdavid and hughes leave the guard (their counts revert to the A15/A21
+machinery); but/back/power/point (prong 1), stanley/york/connor (prong 2)
+remain guarded.
+
+**Anti-tuning compliance (§13):** both prongs consume a fixed public wordlist
+and predictor-side corpus token statistics only; no composite, OAQ, validation,
+or hypothesis quantity has been computed at any point in the A42/A43 sequence;
+the evidence checker is the unchanged A15 machinery; thresholds are round
+numbers fixed in this text before computing prong memberships beyond the named
+v2 evidence; weights (§4/A12), peer features (§6/A13), λ (A5), denominators
+(A4/A8), pool (§2/A10 as amended by A41), window (A11/A14), seed, and all
+validation floors (§9, A6/V3, A31) unchanged.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
