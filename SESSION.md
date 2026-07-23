@@ -1,24 +1,18 @@
 # Session Handoff
-Date: 2026-07-21 (late)
-Active: NHL_Marchand_Index — FULL BUILD. Branch: `marchand-index-full-build`.
+Date: 2026-07-22
+Active: NHL_Marchand_Index — FULL BUILD. Branch: `marchand-index-full-build` (pushed).
 
-LAST: (1) A36 full run relaunched with fixed code (c77f4b5) — owner stopped it at end of day at intl ~96/771; **en pass 771/771 COMPLETE and cached; 0 RESTATED, 0 Traceback, 2 UNRECOVERED (safe — stored kept)**. Atomic write never fired → raw/wiki_*.csv UNCHANGED (verified empty diff). All progress lives in the 24h http cache (entries from ~2026-07-21 evening).
-(2) Parallel (zero cache/wiki contact) A38+A39 batch shipped in 7 LOCAL commits, NOT pushed (owner: "commit everything at the end" → no further commits without owner OK; push pending owner):
-b7b7540 A38 prereg text · 0906d8e A39 prereg text · 298880b citation kit (docs/poster_related_work.md) · d179988 build_mover_list.py+tests · 2de0ecc lambda_portability.py+tests · 175044d attention_concentration.py+tests · 1decb65 airtight §E/§H/§I registration. **227 tests green** (was 216, +11). Both diagnostics' main() refuse to run pre-Phase-2. λ question settled with owner: λ=0.5 stays locked; A38 is Q&A armor, headline never moves.
+LAST: Big data day. (1) **A36 wiki COMPLETE + committed**: 774 en + 764 intl rows, 3 redirect cols, 0 RESTATED, UNRECOVERED en 1 / intl 61 (stored kept, safe). Scraper now 6-thread both passes + wikidata sitelinks serialized w/ 429 backoff (mass-429 incident fixed). (2) A40+A41 texts committed; **A41 APPLIED: players.csv = 771** (dropped pids 637/500/368; keep rule = in-window 2025-26 team). (3) corpus_integrity_scan committed+PASSING (4 Utah empty months verified real via double-pull, allowlisted). (4) **A42 committed+run**: v1 matcher counted English words as surnames (But 4330 > McDavid); DF≥1% guard + A15 first-name evidence fixed that BUT over-guards genuinely-famous names — McDavid 2068→679, Hughes brothers suppressed. reddit_counts.csv v2 committed as INTERIM, NOT final. (5) final_dataset/ per-source folders (wiki/ done). (6) A38 mover_dates.csv skeleton committed (194 movers/211 rows, all needs_date). 234 tests green.
 
-STATUS: working
+STATUS: working — one open design decision
 
-NEXT: Relaunch A36 ASAP on 2026-07-22 (daytime = warm cache from tonight; after ~evening it goes cold ~2h):
-`cd "Full Project Files/marchand_index" && python -u augment_wiki_redirects.py > _a36_full_run.log 2>&1` (background). En pass replays from cache in minutes; intl ~30-60 min cold remainder. UNRECOVERED lines are EXPECTED+SAFE; watch only RESTATED/Traceback.
-Then: verify 774 rows + 3 new cols (n_redirect_titles, redirect_views_12mo, redirect_share) in raw/wiki_pageviews.csv + intl → `pytest -q` (227) → stage A36 data (commit text: `marchand_index: A36 augmented wiki data (full 774 run)`) — ASK OWNER before committing/pushing anything (end-of-batch commit preference).
-Then (cache now free): `python build_mover_list.py` (NHL API, writes mover_dates.csv skeleton) → A38 date research (2 URLs/mover, fill event_date+move_type, mover_dates_sources.md, plan Task 2 step 5) → A40 draft (idea-max §4; U3 approved) → A41 pool dedup 774→771 (Andrae 499/637, Benoit 500/638, Colton 152/368; owner-approved keep rule).
-ONLY after ALL texts committed: corpus_integrity_scan.py (still untracked) → fetch_reddit.py → fetch_trends.py --a35-marchand-row → dry-load compute_oaq.load_inputs(). NO production compute_oaq (Phase-1 hygiene + Gate-4 per §E first).
+BLOCKER: none hard; reddit finalization waits on owner approving **A43** (proposed, NOT implemented): two-prong guard replacing bare DF≥1% — (a) fixed top-1000 English wordlist prong (but/back/power/point), (b) phrase-collision prong: DF≥1% AND ≥50% occurrences in dominant neighbor-bigram ("stanley cup", "new york") or adjacent to pool surname ("connor mcdavid") — un-guards mcdavid/hughes, keeps the 7 junk names. Full guard-set evidence in `_reddit_matcher_run2.log` (gitignored, local).
 
-GOVERNING RULE: every amendment text lands BEFORE fetch_reddit.py writes reddit_counts.csv — texts claim "Reddit is 0/774".
+NEXT: Get owner yes/no on A43 → write A43 prereg text (pattern: post-fetch/pre-compute disclosure like A42) → commit text → implement two-prong guard in fetch_reddit.py + tests → pytest → re-run `python fetch_reddit.py` (~4 min, deterministic) → verify McDavid ~2068 restored, But/Stanley/York still guarded → commit counts as final → copy to final_dataset/reddit/ + update README.
+Then: fetch_trends.py full run (774→771 pool; hours, resumable, pytrends throttling) → A38 date research (2 URLs/mover, fill event_date+move_type) → A40 clauses post-compute.
 
-OWNER (2 items, unchanged): (a) eyeball marchand_index/raw/reddit_identity_pairs.md; (b) YouTube API key → unblocks U1 dry-run + Gate-4.
+OWNER (unchanged): (a) eyeball raw/reddit_identity_pairs.md; (b) YouTube API key → U1 dry-run + Gate-4.
 
-CARRY-FORWARD: 227 tests green; V1b positives 14; V2 21 in-pool POWERED; pool 774 (771 after A41); window [2025-04-18, 2026-04-17]; A12 weights unchanged; impl seed 20260526 / spec seed 20260522 (never harmonize); cache/reddit_corpus/ GITIGNORED LOCAL SOURCE OF RECORD — back up, never delete; wiki edge 404s transient + fail-safe handled; goals_per60 inputs-only. mover_dates.csv fetch was deliberately deferred (shares sqlite http-cache with A36 run — never run both). Citation kit entries UNVERIFIED (protocol runs at poster phase; never add citations from memory). Source docs: airtight plan v1.1 + 2026-07-12 proposals + free-data supplement + cross-domain supplement (A38/A39 now SHIPPED except mover dates + script execution) + idea-max §4 (A40) + decision sheet.
-`_a36_full_run.log` + `diagnostics/_pv_scope.log` gitignored; `raw/_a36_dryrun_*.csv` + `diagnostics/corpus_integrity_scan.py` untracked (pre-existing).
+CARRY-FORWARD: 234 tests green; pool 771 (A41 applied); window [2025-04-18, 2026-04-17]; A12 weights unchanged; impl seed 20260526 / spec seed 20260522 (never harmonize); cache/reddit_corpus/ GITIGNORED LOCAL SOURCE OF RECORD (Utah .bak-20260722 copies alongside); http cache backup `cache/http_cache.backup-20260722.sqlite` (594MB, can delete once A36 data verified stable); logs _a36_full_run.log/_a38_mover_run.log/_reddit_matcher_run*.log/_utah_repull.log gitignored; raw/_a36_dryrun_*.csv untracked scratch. A42 v2 reddit counts = interim (committed for audit; regenerate deterministically). Amendment numbering: next free = A43 (claimed by pending proposal). Governing "texts before reddit" rule: SATISFIED through A42; A43 follows the A42 post-fetch disclosure pattern (no composite/OAQ computed yet — that boundary still holds).
 
-Deadline: poster 2026-09-12 (~7.5 wk).
+Deadline: poster 2026-09-12 (~7.4 wk).
