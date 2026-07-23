@@ -249,7 +249,7 @@ player_id,full_name,reddit_subs_searched,reddit_mentions_12mo,reddit_upvotes_12m
 248,Max Jones,hockey|BostonBruins|EdmontonOilers,43,2886,25,ok,96,true,false,false,0,50,0,2026-07-22
 249,Kasperi Kapanen,hockey|EdmontonOilers|stlouisblues,148,15068,70,ok,51,true,false,false,0,185,1,2026-07-22
 250,Curtis Lazar,hockey|EdmontonOilers|devils,67,4725,36,ok,0,false,false,false,0,91,0,2026-07-22
-251,Connor McDavid,hockey|EdmontonOilers,679,207677,294,ok,0,false,false,true,1389,1148,15,2026-07-22
+251,Connor McDavid,hockey|EdmontonOilers,2068,516755,928,ok,0,false,false,false,0,3530,91,2026-07-22
 252,Ryan Nugent-Hopkins,hockey|EdmontonOilers,0,0,0,ok,0,false,false,false,0,0,0,2026-07-22
 253,Vasily Podkolzin,hockey|EdmontonOilers,208,20734,74,ok,0,false,false,false,0,306,2,2026-07-22
 254,Jack Roslovic,hockey|canes|EdmontonOilers,197,17799,90,ok,0,false,false,false,0,307,9,2026-07-22
@@ -332,7 +332,7 @@ player_id,full_name,reddit_subs_searched,reddit_mentions_12mo,reddit_upvotes_12m
 331,Jonas Brodin,hockey|wildhockey,225,9506,78,ok,0,false,false,false,0,270,1,2026-07-22
 332,Brock Faber,hockey|wildhockey,388,26812,140,ok,0,false,false,false,0,488,17,2026-07-22
 333,Viking Gustafsson Nyberg,hockey|wildhockey,9,1882,6,ok,0,false,false,false,0,9,0,2026-07-22
-334,Quinn Hughes,hockey|wildhockey|canucks,918,207629,470,ok,137,true,false,true,1162,1266,34,2026-07-22
+334,Quinn Hughes,hockey|wildhockey|canucks,1531,259623,835,ok,334,true,false,false,0,1879,34,2026-07-22
 335,Daemon Hunt,hockey|wildhockey,105,3982,54,ok,0,false,false,false,0,286,0,2026-07-22
 336,Matt Kiersted,hockey|FloridaPanthers|wildhockey,20,1258,14,ok,0,false,false,false,0,24,0,2026-07-22
 337,Carson Lambos,hockey|wildhockey,32,1370,26,ok,0,false,false,false,0,37,0,2026-07-22
@@ -390,7 +390,7 @@ player_id,full_name,reddit_subs_searched,reddit_mentions_12mo,reddit_upvotes_12m
 390,Cody Glass,hockey|devils|penguins,629,41245,152,ok,0,false,false,false,0,1326,4,2026-07-22
 391,Arseny Gritsyuk,hockey|devils,291,20985,62,ok,0,false,false,false,0,330,4,2026-07-22
 392,Nico Hischier,hockey|devils,394,22989,93,ok,0,false,false,false,0,516,18,2026-07-22
-393,Jack Hughes,hockey|devils,508,153451,236,ok,236,true,false,true,741,720,41,2026-07-22
+393,Jack Hughes,hockey|devils,508,153451,236,ok,477,true,false,false,0,720,41,2026-07-22
 394,Zack MacEwen,hockey|devils|OttawaSenators,46,4716,21,ok,0,false,false,false,0,65,1,2026-07-22
 395,Timo Meier,hockey|devils,302,13988,72,ok,0,false,false,false,0,399,17,2026-07-22
 396,Dawson Mercer,hockey|devils,260,9553,81,ok,0,false,false,false,0,349,21,2026-07-22
@@ -399,7 +399,7 @@ player_id,full_name,reddit_subs_searched,reddit_mentions_12mo,reddit_upvotes_12m
 399,Dennis Cholowski,hockey|devils|NewYorkIslanders,60,2587,19,ok,0,false,false,false,0,68,0,2026-07-22
 400,Brenden Dillon,hockey|devils,233,14463,62,ok,0,false,false,false,0,314,4,2026-07-22
 401,Dougie Hamilton,hockey|devils,320,20448,104,ok,0,false,false,false,0,557,24,2026-07-22
-402,Luke Hughes,hockey|devils,177,19578,84,ok,157,true,false,true,1151,255,15,2026-07-22
+402,Luke Hughes,hockey|devils,177,19578,84,ok,477,true,false,false,0,255,15,2026-07-22
 403,Johnathan Kovacevic,hockey|devils,120,6461,46,ok,0,false,false,false,0,145,0,2026-07-22
 404,Simon Nemec,hockey|devils,359,26644,124,ok,0,false,false,false,0,480,3,2026-07-22
 405,Brett Pesce,hockey|devils,147,7850,56,ok,0,false,false,false,0,188,0,2026-07-22
@@ -606,9 +606,9 @@ player_id,full_name,reddit_subs_searched,reddit_mentions_12mo,reddit_upvotes_12m
 607,Jake Guentzel,hockey|TampaBayLightning,295,54545,112,ok,0,false,false,false,0,464,11,2026-07-22
 608,Brandon Hagel,hockey|TampaBayLightning,460,77405,185,ok,0,false,false,false,0,673,41,2026-07-22
 609,Pontus Holmberg,hockey|TampaBayLightning|leafs,201,17890,95,ok,0,false,false,false,0,236,0,2026-07-22
-610,Dominic James,hockey|TampaBayLightning,240,20580,115,ok,0,false,false,false,0,667,10,2026-07-22
+610,Dominic James,hockey|TampaBayLightning,58,2595,16,ok,0,false,false,true,182,78,0,2026-07-22
 611,Nikita Kucherov,hockey|TampaBayLightning,656,69490,221,ok,0,false,false,false,0,956,48,2026-07-22
-612,Nick Paul,hockey|TampaBayLightning,421,80311,193,ok,0,false,false,false,0,1204,5,2026-07-22
+612,Nick Paul,hockey|TampaBayLightning,98,4101,43,ok,0,false,false,true,323,161,0,2026-07-22
 613,Corey Perry,hockey|EdmontonOilers|losangeleskings|TampaBayLightning,629,107154,347,ok,0,false,false,false,0,927,5,2026-07-22
 614,Brayden Point,hockey|TampaBayLightning,147,12867,59,ok,0,false,false,true,1646,254,24,2026-07-22
 615,Scott Sabourin,hockey|SanJoseSharks|TampaBayLightning,101,11993,64,ok,0,false,false,false,0,126,0,2026-07-22
