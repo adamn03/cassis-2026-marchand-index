@@ -12,7 +12,7 @@ is re-fetched, re-copy here.
 | `wiki/` | Wikipedia (en + intl editions, Wikimedia pageviews API) | wiki_pageviews.csv (774), wiki_daily.csv, wiki_intl_pageviews.csv (764), wiki_intl_daily.csv — A36 redirect-augmented | 2026-07-22 |
 | `reddit/` | Local reddit_corpus scan (fetch_reddit.py, A42/A43 guard) | reddit_counts.csv (771), reddit_detail.csv | 2026-07-22 |
 | `trends/` | Google Trends via pytrends (fetch_trends.py, A44 pinned anchor) | trends.csv (771) | 2026-07-22 |
-| `movers/` | NHL API + manual date research (build_mover_list.py, A38) | pending — skeleton stage |
+| `movers/` | NHL API + date research (build_mover_list.py + research_mover_dates.py, A38) | mover_dates.csv (192 dated + 19 rename-excluded), mover_dates_sources.md | 2026-07-22 |
 | `youtube/` | YouTube Data API v3 | pending — blocked on API key |
 
 Subfolders appear when their source finalizes (git doesn't track empty dirs).
