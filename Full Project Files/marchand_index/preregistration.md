@@ -1048,6 +1048,43 @@ v2 evidence; weights (§4/A12), peer features (§6/A13), λ (A5), denominators
 (A4/A8), pool (§2/A10 as amended by A41), window (A11/A14), seed, and all
 validation floors (§9, A6/V3, A31) unchanged.
 
+**A44 (2026-07-22) — Trends anchor MID pinned; A16 topic-type test extended
+after Google renamed entity types. Logged BEFORE any composite, OAQ, or
+validation computation (boundary unchanged).**
+
+**Defect (live evidence, recorded):** A16 resolves topic entities as "first
+pytrends suggestion whose type contains 'hockey'." Google now types the anchor
+entity as **"Florida Panthers center"** (suggestions for "Brad Marchand",
+verified live 2026-07-22: person MID `/m/027h_8t` listed with that type) — no
+"hockey" substring, so anchor resolution silently fell back to the raw string
+on the 2026-07-22 resume run. Four players fetched on that run (Dylan
+Holloway, Bo Groulx, Daniil But, Maveric Lamoureux — pids recorded in the run
+log) were measured against the STRING anchor while all earlier rows used the
+TOPIC anchor; their stored ratios are cross-anchor inconsistent.
+
+**Rule (mechanical):**
+
+1. **Primary anchor MID pinned:** `/m/027h_8t` ("Brad Marchand" person
+   entity, verified live 2026-07-22). No run-time resolution for the anchor;
+   the pin removes the failure mode permanently.
+2. **Topic-type test extended (player rows + secondary anchor):** a
+   suggestion's folded type qualifies iff it contains "hockey" OR contains any
+   of the 32 folded NHL franchise names (the fixed `raw/teams.csv` list) —
+   "Florida Panthers center" qualifies via "florida panthers". First
+   qualifying suggestion wins, as before; raw-string fallback and its
+   `trends_method=string` disclosure unchanged.
+3. **Repair (surgical, disclosed):** the four cross-anchor rows are nulled and
+   re-fetched under the pinned anchor; every other stored row is untouched
+   (their fetches used the topic anchor; V-A11-Trends verified the window).
+   Marchand's own row continues to follow A35 clause 1 (secondary anchor),
+   with the secondary anchor resolved under the extended type test.
+
+**Anti-tuning compliance (§13):** transport/entity-resolution repair only; the
+pinned MID is the same entity earlier runs resolved dynamically; the extended
+type test consumes a fixed franchise-name list; no composite, OAQ, validation,
+or hypothesis quantity has been computed; A16's ratio definition, window
+(A11), weights (§4/A12), and all floors are unchanged.
+
 ---
 
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
