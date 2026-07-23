@@ -63,6 +63,7 @@ import json
 import re
 import sys
 import unicodedata
+from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -239,8 +240,100 @@ def surname_document_frequency(surnames: set[str],
 
 def guard_set(df: dict[str, float],
               threshold: float = GUARD_DF_THRESHOLD) -> set[str]:
-    """A42 guard membership at a threshold."""
+    """A42 guard membership at a threshold (superseded as trigger by A43;
+    retained because A43 prong 2 reuses the DF threshold)."""
     return {sn for sn, f in df.items() if f >= threshold}
+
+
+# --------------------------------------------------------------------------- #
+# A43 — two-prong guard trigger                                                #
+# --------------------------------------------------------------------------- #
+GUARD_BIGRAM_SHARE = 0.5
+GUARD_BIGRAM_SENSITIVITY = (0.4, 0.6)
+
+
+def load_english_top1000(path: Path | None = None) -> frozenset[str]:
+    """A43 prong 1: repo-pinned top-1000 English list (comment lines skipped)."""
+    p = path or (Path(__file__).parent / "english_top1000.txt")
+    return frozenset(
+        w.strip() for w in p.read_text(encoding="utf-8-sig").splitlines()
+        if w.strip() and not w.lstrip().startswith("#"))
+
+
+def surname_occurrence_stats(candidates: set[str], pool_surnames: set[str],
+                             corpus_dir: Path = CORPUS_DIR) -> dict[str, dict]:
+    """A43 prong-2 statistics over the corpus token stream: per candidate,
+    occurrence count, occurrences followed by a pool surname (first-name
+    usage), and adjacent-token bigram counts (both sides). Dedup by id per
+    sub, matching surname_document_frequency."""
+    stats = {sn: {"occ": 0, "next_pool_sn": 0, "bigrams": Counter()}
+             for sn in candidates}
+    target = frozenset(candidates)
+    for path in sorted(corpus_dir.glob("*.jsonl")):
+        seen: set[str] = set()
+        with path.open("r", encoding="utf-8") as fh:
+            for line in fh:
+                try:
+                    post = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                pid = post.get("id")
+                if pid in seen:
+                    continue
+                seen.add(pid)
+                toks = match_fold(f"{post.get('title') or ''} "
+                                  f"{post.get('selftext') or ''}").split()
+                for i, t in enumerate(toks):
+                    if t not in target:
+                        continue
+                    st = stats[t]
+                    st["occ"] += 1
+                    if i + 1 < len(toks):
+                        nxt = toks[i + 1]
+                        st["bigrams"][("next", nxt)] += 1
+                        if nxt in pool_surnames:
+                            st["next_pool_sn"] += 1
+                    if i > 0:
+                        st["bigrams"][("prev", toks[i - 1])] += 1
+    return stats
+
+
+def guard_set_a43(df: dict[str, float], en1000: frozenset[str],
+                  stats: dict[str, dict], pool_first_names: set[str],
+                  share: float = GUARD_BIGRAM_SHARE,
+                  df_threshold: float = GUARD_DF_THRESHOLD) -> dict[str, str]:
+    """A43 trigger. Returns {guarded surname -> reason string} for the log.
+
+    P1: surname in the pinned English top-1000.
+    P2 (DF >= threshold only): (a) >=share of occurrences followed by a pool
+    surname (first-name usage), or (b) one adjacent bigram covers >=share of
+    occurrences and its partner is not a pool first name (so "connor mcdavid"
+    cannot guard mcdavid, while "stanley cup" guards stanley)."""
+    guarded: dict[str, str] = {}
+    for sn in sorted(df):
+        if sn in en1000:
+            guarded[sn] = "P1 english-top1000"
+            continue
+        if df[sn] < df_threshold:
+            continue
+        st = stats.get(sn)
+        if not st or not st["occ"]:
+            continue
+        occ = st["occ"]
+        if st["next_pool_sn"] / occ >= share:
+            guarded[sn] = f"P2a first-name-usage {st['next_pool_sn']}/{occ}"
+            continue
+        # Any single bigram covering >= share of occurrences with a partner
+        # that is not a pool first name (per A43 text: "a single adjacent-token
+        # bigram (previous or next side)"; the exemption spares famous names
+        # whose only dominant neighbor is their own first name).
+        for (side, partner), n in st["bigrams"].most_common():
+            if n / occ < share:
+                break
+            if partner not in pool_first_names:
+                guarded[sn] = f"P2b dominant-bigram {side} '{partner}' {n}/{occ}"
+                break
+    return guarded
 
 
 # --------------------------------------------------------------------------- #
@@ -468,16 +561,25 @@ def main() -> None:
 
     # A42 pre-pass: corpus document frequency of every pool surname.
     pool_surnames = {fold(p["full_name"].split()[-1]) for p in players}
+    pool_first_names = {fold(p["full_name"].split()[0]) for p in players}
     print("A42: computing corpus document frequency for "
           f"{len(pool_surnames)} surnames ...")
     df = surname_document_frequency(pool_surnames)
-    guarded = guard_set(df)
-    for thr in GUARD_DF_SENSITIVITY:
-        alt = guard_set(df, thr)
-        print(f"A42 sensitivity: threshold {thr} -> "
-              f"{'IDENTICAL' if alt == guarded else 'DIFFERS: ' + str(sorted(alt ^ guarded))}")
-    print(f"A42 guard set (DF >= {GUARD_DF_THRESHOLD}): "
-          + ", ".join(f"{sn}={df[sn]:.4f}" for sn in sorted(guarded)))
+    # A43 trigger: English-top-1000 prong + phrase-collision prong.
+    en1000 = load_english_top1000()
+    candidates = guard_set(df)   # DF >= threshold: prong-2 candidates
+    print(f"A43: prong-2 candidates (DF >= {GUARD_DF_THRESHOLD}): "
+          + ", ".join(f"{sn}={df[sn]:.4f}" for sn in sorted(candidates)))
+    stats = surname_occurrence_stats(candidates, pool_surnames)
+    guarded_map = guard_set_a43(df, en1000, stats, pool_first_names)
+    for shr in GUARD_BIGRAM_SENSITIVITY:
+        alt = set(guard_set_a43(df, en1000, stats, pool_first_names, share=shr))
+        print(f"A43 sensitivity: occurrence-share {shr} -> "
+              f"{'IDENTICAL' if alt == set(guarded_map) else 'DIFFERS: ' + str(sorted(alt ^ set(guarded_map)))}")
+    print(f"A43 guard set ({len(guarded_map)}):")
+    for sn, reason in sorted(guarded_map.items()):
+        print(f"  {sn:<14} DF={df[sn]:.4f}  {reason}")
+    guarded = set(guarded_map)
 
     groups = build_groups(players, wteams, nickname, surname_map, guarded)
     n_shared = sum(1 for g in groups.values() if len(g) >= 2 for _ in g)
