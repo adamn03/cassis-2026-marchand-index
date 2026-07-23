@@ -37,6 +37,15 @@ def _team(row: dict) -> str:
     return ""
 
 
+def _same_franchise(a: str, b: str) -> bool:
+    """A22 rename rule: Utah Hockey Club / Utah Mammoth are one franchise —
+    a name change between seasons is not a move (2026-07-22: the first
+    skeleton emitted 19 such artifacts, excluded during date research)."""
+    fa, fb = a.casefold(), b.casefold()
+    utah = ("utah", "mammoth")
+    return a == b or (any(k in fa for k in utah) and any(k in fb for k in utah))
+
+
 def derive_moves(season_rows: list[dict]) -> list[tuple[str, str, str]]:
     """(old_team, new_team, kind) moves per A38; NHL regular-season rows only."""
     nhl = [r for r in season_rows
@@ -44,10 +53,10 @@ def derive_moves(season_rows: list[dict]) -> list[tuple[str, str, str]]:
     t2425 = [_team(r) for r in nhl if str(r.get("season")) == "20242025"]
     t2526 = [_team(r) for r in nhl if str(r.get("season")) == "20252026"]
     moves: list[tuple[str, str, str]] = []
-    if t2425 and t2526 and t2425[-1] != t2526[0]:
+    if t2425 and t2526 and not _same_franchise(t2425[-1], t2526[0]):
         moves.append((t2425[-1], t2526[0], "off_season"))
     for a, b in zip(t2526, t2526[1:]):
-        if a != b:
+        if not _same_franchise(a, b):
             moves.append((a, b, "in_season"))
     return moves
 
