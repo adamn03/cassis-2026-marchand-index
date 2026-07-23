@@ -1,0 +1,212 @@
+player_id,full_name,nhl_player_id,old_team,new_team,move_type,event_date,url_1,url_2,status
+4,Mikael Granlund,8475798,Stars,Ducks,,,,,needs_date
+8,Chris Kreider,8475184,Rangers,Ducks,,,,,needs_date
+10,Ryan Poehling,8480068,Flyers,Ducks,,,,,needs_date
+14,Jeffrey Viel,8479705,Bruins,Ducks,,,,,needs_date
+16,John Carlson,8474590,Capitals,Ducks,,,,,needs_date
+25,Viktor Arvidsson,8478042,Oilers,Bruins,,,,,needs_date
+26,Michael Eyssimont,8479591,Kraken,Bruins,,,,,needs_date
+29,Tanner Jeannot,8479661,Kings,Bruins,,,,,needs_date
+32,Sean Kuraly,8476374,Blue Jackets,Bruins,,,,,needs_date
+37,Lukas Reichel,8482117,Blackhawks,Canucks,,,,,needs_date
+37,Lukas Reichel,8482117,Canucks,Bruins,,,,,needs_date
+38,Alex Steeves,8482634,Maple Leafs,Bruins,,,,,needs_date
+41,Jordan Harris,8480887,Blue Jackets,Bruins,,,,,needs_date
+49,Sam Carrick,8475842,Rangers,Sabres,,,,,needs_date
+50,Justin Danforth,8479941,Blue Jackets,Sabres,,,,,needs_date
+51,Josh Doan,8482659,Utah Hockey Club,Sabres,,,,,needs_date
+62,Tanner Pearson,8476871,Golden Knights,Jets,,,,,needs_date
+62,Tanner Pearson,8476871,Jets,Sabres,,,,,needs_date
+70,Michael Kesselring,8480891,Utah Hockey Club,Sabres,,,,,needs_date
+74,Luke Schenn,8474568,Jets,Sabres,,,,,needs_date
+75,Logan Stanley,8479378,Jets,Sabres,,,,,needs_date
+76,Conor Timmins,8479982,Penguins,Sabres,,,,,needs_date
+78,John Beecher,8481556,Bruins,Flames,,,,,needs_date
+90,Victor Olofsson,8478109,Golden Knights,Avalanche,,,,,needs_date
+90,Victor Olofsson,8478109,Avalanche,Flames,,,,,needs_date
+93,Ryan Strome,8476458,Ducks,Flames,,,,,needs_date
+101,Olli Maatta,8476874,Utah Hockey Club,Mammoth,,,,,needs_date
+101,Olli Maatta,8476874,Mammoth,Flames,,,,,needs_date
+104,Zach Whitecloud,8480727,Golden Knights,Flames,,,,,needs_date
+109,Nicolas Deslauriers,8475235,Flyers,Hurricanes,,,,,needs_date
+110,Nikolaj Ehlers,8477940,Jets,Hurricanes,,,,,needs_date
+122,K'Andre Miller,8480817,Rangers,Hurricanes,,,,,needs_date
+124,Mike Reilly,8476422,Islanders,Hurricanes,,,,,needs_date
+130,Andre Burakovsky,8477444,Kraken,Blackhawks,,,,,needs_date
+134,Sam Lafferty,8478043,Sabres,Blackhawks,,,,,needs_date
+136,Andrew Mangiapane,8478233,Capitals,Oilers,,,,,needs_date
+136,Andrew Mangiapane,8478233,Oilers,Blackhawks,,,,,needs_date
+142,Dominic Toninato,8476952,Jets,Blackhawks,,,,,needs_date
+145,Matt Grzelcyk,8476891,Penguins,Blackhawks,,,,,needs_date
+154,Nazem Kadri,8475172,Flames,Avalanche,,,,,needs_date
+164,Nicolas Roy,8478462,Golden Knights,Maple Leafs,,,,,needs_date
+164,Nicolas Roy,8478462,Maple Leafs,Avalanche,,,,,needs_date
+166,Nick Blankenburg,8483565,Predators,Avalanche,,,,,needs_date
+167,Brent Burns,8470613,Hurricanes,Avalanche,,,,,needs_date
+168,Brett Kulak,8476967,Oilers,Penguins,,,,,needs_date
+168,Brett Kulak,8476967,Penguins,Avalanche,,,,,needs_date
+173,Charlie Coyle,8475745,Avalanche,Blue Jackets,,,,,needs_date
+175,Conor Garland,8478856,Canucks,Blue Jackets,,,,,needs_date
+176,Danton Heinen,8478046,Penguins,Blue Jackets,,,,,needs_date
+179,Isac Lundeström,8480806,Ducks,Blue Jackets,,,,,needs_date
+181,Mason Marchment,8478975,Stars,Kraken,,,,,needs_date
+181,Mason Marchment,8478975,Kraken,Blue Jackets,,,,,needs_date
+186,Miles Wood,8477425,Avalanche,Blue Jackets,,,,,needs_date
+193,Brendan Smith,8474090,Stars,Blue Jackets,,,,,needs_date
+195,Egor Zamula,8481178,Flyers,Blue Jackets,,,,,needs_date
+196,Nathan Bastian,8479414,Devils,Stars,,,,,needs_date
+200,Michael Bunting,8478047,Predators,Stars,,,,,needs_date
+204,Radek Faksa,8476889,Blues,Stars,,,,,needs_date
+220,Tyler Myers,8474574,Canucks,Stars,,,,,needs_date
+222,Mason Appleton,8478891,Jets,Red Wings,,,,,needs_date
+230,David Perron,8474102,Senators,Red Wings,,,,,needs_date
+233,James van Riemsdyk,8474037,Blue Jackets,Red Wings,,,,,needs_date
+234,Jacob Bernard-Docker,8480879,Sabres,Red Wings,,,,,needs_date
+237,Justin Faulk,8475753,Blues,Red Wings,,,,,needs_date
+238,Travis Hamonic,8474612,Senators,Red Wings,,,,,needs_date
+241,Colton Dach,8482703,Blackhawks,Oilers,,,,,needs_date
+242,Jason Dickinson,8477450,Blackhawks,Oilers,,,,,needs_date
+250,Curtis Lazar,8477508,Devils,Oilers,,,,,needs_date
+254,Jack Roslovic,8478458,Hurricanes,Oilers,,,,,needs_date
+260,Connor Murphy,8476473,Blackhawks,Oilers,,,,,needs_date
+262,Spencer Stastney,8481056,Predators,Oilers,,,,,needs_date
+269,Vinnie Hinostroza,8476994,Wild,Panthers,,,,,needs_date
+270,Luke Kunin,8479316,Blue Jackets,Panthers,,,,,needs_date
+275,Cole Reinhardt,8481133,Senators,Golden Knights,,,,,needs_date
+275,Cole Reinhardt,8481133,Golden Knights,Panthers,,,,,needs_date
+279,Cole Schwindt,8481655,Golden Knights,Panthers,,,,,needs_date
+288,Donovan Sebrango,8482131,Senators,Panthers,,,,,needs_date
+289,Joel Armia,8476469,Canadiens,Kings,,,,,needs_date
+293,Mathieu Joseph,8478472,Blues,Kings,,,,,needs_date
+298,Scott Laughton,8476872,Maple Leafs,Kings,,,,,needs_date
+301,Artemi Panarin,8478550,Rangers,Kings,,,,,needs_date
+306,Cody Ceci,8476879,Stars,Kings,,,,,needs_date
+309,Brian Dumoulin,8475208,Devils,Kings,,,,,needs_date
+312,Nicolas Aube-Kubel,8477979,Rangers,Wild,,,,,needs_date
+314,Bobby Brink,8481553,Flyers,Wild,,,,,needs_date
+316,Robby Fabbri,8477952,Ducks,Blues,,,,,needs_date
+316,Robby Fabbri,8477952,Blues,Wild,,,,,needs_date
+318,Nick Foligno,8473422,Blackhawks,Wild,,,,,needs_date
+324,Michael McCarron,8477446,Predators,Wild,,,,,needs_date
+325,Nico Sturm,8481477,Panthers,Wild,,,,,needs_date
+326,Vladimir Tarasenko,8475765,Red Wings,Wild,,,,,needs_date
+334,Quinn Hughes,8480800,Canucks,Wild,,,,,needs_date
+336,Matt Kiersted,8482641,Panthers,Wild,,,,,needs_date
+339,Jeff Petry,8473507,Red Wings,Panthers,,,,,needs_date
+339,Jeff Petry,8473507,Panthers,Wild,,,,,needs_date
+344,Zachary Bolduc,8482737,Blues,Canadiens,,,,,needs_date
+347,Phillip Danault,8476479,Kings,Canadiens,,,,,needs_date
+356,Alexandre Texier,8480074,Blues,Canadiens,,,,,needs_date
+357,Joe Veleno,8480813,Blackhawks,Canadiens,,,,,needs_date
+360,Noah Dobson,8480865,Islanders,Canadiens,,,,,needs_date
+371,Erik Haula,8475287,Devils,Predators,,,,,needs_date
+372,Tyson Jost,8479370,Hurricanes,Predators,,,,,needs_date
+380,Nicolas Hague,8479980,Golden Knights,Predators,,,,,needs_date
+382,Nick Perbix,8480246,Lightning,Predators,,,,,needs_date
+385,Nick Bjugstad,8475760,Utah Hockey Club,Blues,,,,,needs_date
+385,Nick Bjugstad,8475760,Blues,Devils,,,,,needs_date
+387,Connor Brown,8477015,Oilers,Devils,,,,,needs_date
+389,Evgenii Dadonov,8474149,Stars,Devils,,,,,needs_date
+394,Zack MacEwen,8479772,Senators,Devils,,,,,needs_date
+398,Maxim Tsyplakov,8484958,Islanders,Devils,,,,,needs_date
+411,Emil Heineman,8482476,Canadiens,Islanders,,,,,needs_date
+417,Ondrej Palat,8476292,Devils,Islanders,,,,,needs_date
+419,Brayden Schenn,8475170,Blues,Islanders,,,,,needs_date
+428,Carson Soucy,8477369,Rangers,Islanders,,,,,needs_date
+433,Tye Kartye,8481789,Kraken,Rangers,,,,,needs_date
+438,Taylor Raddysh,8479390,Capitals,Rangers,,,,,needs_date
+440,Conor Sheary,8477839,Lightning,Rangers,,,,,needs_date
+447,Vladislav Gavrikov,8478882,Kings,Rangers,,,,,needs_date
+448,Vincent Iorio,8482861,Sharks,Rangers,,,,,needs_date
+457,Lars Eller,8474189,Capitals,Senators,,,,,needs_date
+458,Warren Foegele,8477998,Kings,Senators,,,,,needs_date
+463,Arthur Kaliyev,8481560,Rangers,Senators,,,,,needs_date
+464,Kurtis MacDermid,8477073,Devils,Senators,,,,,needs_date
+470,Cameron Crotty,8480075,Wild,Senators,,,,,needs_date
+476,Jordan Spence,8481606,Kings,Senators,,,,,needs_date
+485,Christian Dvorak,8477989,Canadiens,Flyers,,,,,needs_date
+488,Luke Glendening,8476822,Lightning,Devils,,,,,needs_date
+488,Luke Glendening,8476822,Devils,Flyers,,,,,needs_date
+489,Nikita Grebenkin,8483733,Maple Leafs,Flyers,,,,,needs_date
+490,Carl Grundstrom,8479336,Sharks,Flyers,,,,,needs_date
+498,Trevor Zegras,8481533,Ducks,Flyers,,,,,needs_date
+504,David Jiricek,8483460,Wild,Flyers,,,,,needs_date
+505,Noah Juulsen,8478454,Canucks,Flyers,,,,,needs_date
+512,Justin Brazeau,8479638,Wild,Penguins,,,,,needs_date
+513,Egor Chinakhov,8482475,Blue Jackets,Penguins,,,,,needs_date
+522,Anthony Mantha,8477511,Flames,Penguins,,,,,needs_date
+526,Elmer Soderblom,8481725,Red Wings,Penguins,,,,,needs_date
+527,Connor Clifton,8477365,Sabres,Penguins,,,,,needs_date
+528,Samuel Girard,8479398,Avalanche,Penguins,,,,,needs_date
+534,Ilya Solovyov,8482470,Flames,Avalanche,,,,,needs_date
+534,Ilya Solovyov,8482470,Avalanche,Penguins,,,,,needs_date
+536,Parker Wotherspoon,8478450,Bruins,Penguins,,,,,needs_date
+540,Adam Gaudette,8478874,Senators,Sharks,,,,,needs_date
+543,Philipp Kurashev,8480798,Blackhawks,Sharks,,,,,needs_date
+546,Ryan Reaves,8471817,Maple Leafs,Sharks,,,,,needs_date
+548,Kiefer Sherwood,8480748,Canucks,Sharks,,,,,needs_date
+555,John Klingberg,8475906,Oilers,Sharks,,,,,needs_date
+556,Nick Leddy,8475181,Blues,Sharks,,,,,needs_date
+558,Dmitry Orlov,8475200,Hurricanes,Sharks,,,,,needs_date
+562,Frederick Gaudreau,8477919,Wild,Kraken,,,,,needs_date
+565,Bobby McMann,8482259,Maple Leafs,Kraken,,,,,needs_date
+576,Ryan Lindgren,8479324,Avalanche,Kraken,,,,,needs_date
+580,Jonatan Berggren,8481013,Red Wings,Blues,,,,,needs_date
+582,Jonathan Drouin,8477494,Avalanche,Islanders,,,,,needs_date
+582,Jonathan Drouin,8477494,Islanders,Blues,,,,,needs_date
+584,Jack Finley,8482090,Lightning,Blues,,,,,needs_date
+590,Pius Suter,8480459,Canucks,Blues,,,,,needs_date
+596,Justin Holl,8475718,Red Wings,Blues,,,,,needs_date
+598,Logan Mailloux,8482733,Canadiens,Blues,,,,,needs_date
+609,Pontus Holmberg,8480995,Maple Leafs,Lightning,,,,,needs_date
+613,Corey Perry,8470621,Oilers,Kings,,,,,needs_date
+613,Corey Perry,8470621,Kings,Lightning,,,,,needs_date
+615,Scott Sabourin,8477149,Sharks,Lightning,,,,,needs_date
+629,Dakota Joshua,8478057,Canucks,Maple Leafs,,,,,needs_date
+632,Matias Maccelli,8481711,Utah Hockey Club,Maple Leafs,,,,,needs_date
+644,Troy Stecher,8479442,Oilers,Maple Leafs,,,,,needs_date
+648,Michael Carcone,8479619,Utah Hockey Club,Mammoth,,,,,needs_date
+649,Logan Cooley,8483431,Utah Hockey Club,Mammoth,,,,,needs_date
+650,Lawson Crouse,8478474,Utah Hockey Club,Mammoth,,,,,needs_date
+651,Dylan Guenther,8482699,Utah Hockey Club,Mammoth,,,,,needs_date
+652,Barrett Hayton,8480849,Utah Hockey Club,Mammoth,,,,,needs_date
+653,Clayton Keller,8479343,Utah Hockey Club,Mammoth,,,,,needs_date
+654,Alexander Kerfoot,8477021,Utah Hockey Club,Mammoth,,,,,needs_date
+655,Jack McBain,8480855,Utah Hockey Club,Mammoth,,,,,needs_date
+657,Liam O'Brien,8477070,Utah Hockey Club,Mammoth,,,,,needs_date
+658,JJ Peterka,8482175,Sabres,Mammoth,,,,,needs_date
+659,Kevin Rooney,8479291,Flames,Mammoth,,,,,needs_date
+660,Nick Schmaltz,8477951,Utah Hockey Club,Mammoth,,,,,needs_date
+661,Kevin Stenlund,8478831,Utah Hockey Club,Mammoth,,,,,needs_date
+662,Brandon Tanev,8479293,Jets,Mammoth,,,,,needs_date
+663,Kailer Yamamoto,8479977,Utah Hockey Club,Mammoth,,,,,needs_date
+664,Ian Cole,8474013,Utah Hockey Club,Mammoth,,,,,needs_date
+665,Nick DeSimone,8480084,Utah Hockey Club,Mammoth,,,,,needs_date
+666,Sean Durzi,8480434,Utah Hockey Club,Mammoth,,,,,needs_date
+667,Maveric Lamoureux,8483472,Utah Hockey Club,Mammoth,,,,,needs_date
+668,John Marino,8478507,Utah Hockey Club,Mammoth,,,,,needs_date
+670,Nate Schmidt,8477220,Panthers,Mammoth,,,,,needs_date
+671,Mikhail Sergachev,8479410,Utah Hockey Club,Mammoth,,,,,needs_date
+674,MacKenzie Weegar,8477346,Flames,Mammoth,,,,,needs_date
+680,Curtis Douglas,8480876,Lightning,Canucks,,,,,needs_date
+685,Liam Ohgren,8483499,Wild,Canucks,,,,,needs_date
+688,Marco Rossi,8482079,Wild,Canucks,,,,,needs_date
+690,Zeev Buium,8484798,Wild,Canucks,,,,,needs_date
+693,Pierre-Olivier Joseph,8480058,Penguins,Canucks,,,,,needs_date
+701,Nic Dowd,8475343,Capitals,Golden Knights,,,,,needs_date
+710,Mitch Marner,8478483,Maple Leafs,Golden Knights,,,,,needs_date
+713,Colton Sissons,8476925,Predators,Golden Knights,,,,,needs_date
+714,Cole Smith,8482062,Predators,Golden Knights,,,,,needs_date
+718,Rasmus Andersson,8478397,Flames,Golden Knights,,,,,needs_date
+719,Dylan Coghlan,8479639,Jets,Golden Knights,,,,,needs_date
+724,Jeremy Lauzon,8478468,Predators,Golden Knights,,,,,needs_date
+726,Jaycob Megna,8477034,Panthers,Golden Knights,,,,,needs_date
+732,David Kampf,8480144,Maple Leafs,Canucks,,,,,needs_date
+732,David Kampf,8480144,Canucks,Capitals,,,,,needs_date
+740,Justin Sourdif,8482088,Panthers,Capitals,,,,,needs_date
+743,Declan Chisholm,8480990,Wild,Capitals,,,,,needs_date
+747,Timothy Liljegren,8480043,Sharks,Capitals,,,,,needs_date
+756,Cole Koepke,8481043,Bruins,Jets,,,,,needs_date
+760,Gustav Nyquist,8474679,Wild,Jets,,,,,needs_date
+762,Isak Rosen,8482765,Sabres,Jets,,,,,needs_date
+766,Jacob Bryson,8480196,Sabres,Jets,,,,,needs_date
