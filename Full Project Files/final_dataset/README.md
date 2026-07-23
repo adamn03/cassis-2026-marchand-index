@@ -10,7 +10,7 @@ is re-fetched, re-copy here.
 | Folder | Source | Contents | Finalized |
 |---|---|---|---|
 | `wiki/` | Wikipedia (en + intl editions, Wikimedia pageviews API) | wiki_pageviews.csv (774), wiki_daily.csv, wiki_intl_pageviews.csv (764), wiki_intl_daily.csv — A36 redirect-augmented | 2026-07-22 |
-| `reddit/` | Local reddit_corpus scan (fetch_reddit.py) | pending — gated on A40/A41 amendment texts |
+| `reddit/` | Local reddit_corpus scan (fetch_reddit.py, A42/A43 guard) | reddit_counts.csv (771), reddit_detail.csv | 2026-07-22 |
 | `trends/` | Google Trends via pytrends (fetch_trends.py) | pending |
 | `movers/` | NHL API + manual date research (build_mover_list.py, A38) | pending — skeleton stage |
 | `youtube/` | YouTube Data API v3 | pending — blocked on API key |
