@@ -54,7 +54,11 @@ _retry.Retry.__init__ = _retry_init
 from pytrends.request import TrendReq  # noqa: E402
 
 TIMEFRAME = "2025-04-18 2026-04-17"   # A11 fixed window
-ANCHOR_NAME = "Brad Marchand"         # A16 fixed anchor (topic resolved at run)
+ANCHOR_NAME = "Brad Marchand"         # A16 fixed anchor
+# A44: anchor MID pinned (verified live 2026-07-22; Google renamed entity
+# types to "<Team> <position>" — e.g. "Florida Panthers center" — breaking the
+# A16 "hockey"-substring test, so the anchor is never run-time resolved again).
+ANCHOR_MID = "/m/027h_8t"
 # A35 clause 1: the anchor player's OWN row is anchor/anchor ≡ 1.0
 # (degenerate). His row alone is re-measured against this pre-declared
 # secondary anchor and chained back onto the common scale.
@@ -68,11 +72,25 @@ FIELDS = [
 OUT_PATH = RAW_DIR / "trends.csv"
 
 
+def _franchise_names() -> list[str]:
+    """Folded NHL franchise names from raw/teams.csv (A44 rule 2)."""
+    return [t["team_slug"].replace("-", " ").casefold()
+            for t in load_csv(RAW_DIR / "teams.csv")]
+
+
+def _type_qualifies(type_str: str, franchises: list[str]) -> bool:
+    """A44 rule 2: 'hockey' in type, or any NHL franchise name in type
+    (Google renamed player entity types to '<Team> <position>')."""
+    t = type_str.casefold()
+    return "hockey" in t or any(f in t for f in franchises)
+
+
 def resolve_topic_mid(pytrends: TrendReq, name: str) -> str:
-    """First pytrends suggestion whose type mentions hockey -> its MID, else ''."""
+    """First pytrends suggestion whose type qualifies (A44) -> MID, else ''."""
+    franchises = _franchise_names()
     try:
         for s in pytrends.suggestions(name):
-            if "hockey" in str(s.get("type", "")).casefold():
+            if _type_qualifies(str(s.get("type", "")), franchises):
                 return s.get("mid", "") or ""
     except Exception as e:
         print(f"  suggestions({name!r}) failed: {e!r}", file=sys.stderr)
@@ -228,11 +246,10 @@ def main() -> None:
     pytrends = TrendReq(hl="en-US", tz=0, retries=2, backoff_factor=1.5,
                         timeout=(10, 30))
 
-    anchor_mid = resolve_topic_mid(pytrends, ANCHOR_NAME)
-    anchor_kw = anchor_mid or ANCHOR_NAME
-    print(f"A16 anchor: {ANCHOR_NAME!r} -> "
-          f"{'topic ' + anchor_mid if anchor_mid else 'STRING FALLBACK'}")
-    time.sleep(SLEEP)
+    # A44 rule 1: the anchor MID is pinned — never run-time resolved.
+    anchor_mid = ANCHOR_MID
+    anchor_kw = anchor_mid
+    print(f"A16/A44 anchor: {ANCHOR_NAME!r} -> pinned topic {anchor_mid}")
 
     players = load_players()
     order = [p["player_id"] for p in players]

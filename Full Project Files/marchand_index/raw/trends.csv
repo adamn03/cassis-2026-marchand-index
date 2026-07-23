@@ -271,7 +271,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 270,Luke Kunin,Luke Kunin,/g/11bzypshrf,topic,0.000000,0.0000,13.2453,53,2026-07-03
 271,Anton Lundell,Anton Lundell,/g/11g0g4vk8w,topic,0.068376,0.9057,13.2453,53,2026-07-03
 272,Eetu Luostarinen,Eetu Luostarinen,/g/11c5qs6hwx,topic,0.018519,0.2453,13.2453,53,2026-07-03
-273,Brad Marchand,Brad Marchand,/m/027h_8t,topic,,,,0,2026-07-12
+273,Brad Marchand,Brad Marchand,,string,,,,0,2026-07-22
 274,Tomas Nosek,Tomas Nosek,/m/0hzm2tc,topic,0.015670,0.2075,13.2453,53,2026-07-03
 275,Cole Reinhardt,Cole Reinhardt,/g/11f69dnqs8,topic,0.005698,0.0755,13.2453,53,2026-07-03
 276,Sam Reinhart,Sam Reinhart,/m/0wk2jsb,topic,0.189459,2.5094,13.2453,53,2026-07-03
@@ -366,7 +366,6 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 365,David Reinbacher,David Reinbacher,/g/11sj9_ywhd,topic,0.064103,0.8491,13.2453,53,2026-07-11
 366,Jayden Struble,Jayden Struble,/g/11h0z44b2k,topic,0.019943,0.2642,13.2453,53,2026-07-11
 367,Arber Xhekaj,Arber Xhekaj,/g/11p5lcbm18,topic,0.193732,2.5660,13.2453,53,2026-07-11
-368,Ross Colton,Ross Colton,/g/11fj51xp6j,topic,0.011396,0.1509,13.2453,53,2026-07-11
 369,Luke Evangelista,Luke Evangelista,/g/11qqxwglff,topic,0.011396,0.1509,13.2453,53,2026-07-11
 370,Filip Forsberg,Filip Forsberg,/m/0h3mn2m,topic,0.095442,1.2642,13.2453,53,2026-07-11
 371,Erik Haula,Erik Haula,/m/0zdlh0_,topic,0.022792,0.3019,13.2453,53,2026-07-11
@@ -498,7 +497,6 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 497,Garrett Wilson,Garrett Wilson,,string,0.429799,5.6604,13.1698,53,2026-07-11
 498,Trevor Zegras,Trevor Zegras,/g/11hyzc1mlv,topic,0.239255,3.1509,13.1698,53,2026-07-11
 499,Emil Andrae,Emil Andrae,/g/11f0zyf5t3,topic,0.000000,0.0000,13.1698,53,2026-07-11
-500,Simon Benoit,Simon Benoit,/g/11fb1gc5t_,topic,0.017192,0.2264,13.1698,53,2026-07-11
 501,Oliver Bonk,Oliver Bonk,/g/11fhslqq6b,topic,0.004298,0.0566,13.1698,53,2026-07-11
 502,Jamie Drysdale,Jamie Drysdale,/g/11f67bpwqn,topic,0.024355,0.3208,13.1698,53,2026-07-11
 503,Helge Grans,Helge Grans,/g/11g0ph167s,topic,0.000000,0.0000,13.1698,53,2026-07-11
@@ -583,7 +581,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 582,Jonathan Drouin,Jonathan Drouin,/m/0ndxk8k,topic,0.063448,0.8679,13.6792,53,2026-07-12
 583,Dalibor Dvorsky,Dalibor Dvorsky,/g/11rhf9s_8n,topic,0.052414,0.7170,13.6792,53,2026-07-12
 584,Jack Finley,Jack Finley,/g/11n079psfp,topic,0.008276,0.1132,13.6792,53,2026-07-12
-585,Dylan Holloway,Dylan Holloway,/g/11mmj7g3zf,topic,,,,0,2026-07-12
+585,Dylan Holloway,Dylan Holloway,,string,,,,0,2026-07-22
 586,Jordan Kyrou,Jordan Kyrou,/g/11f3r4r776,topic,0.096552,1.3208,13.6792,53,2026-07-12
 587,Jake Neighbours,Jake Neighbours,/g/11ql1k295j,topic,0.005517,0.0755,13.6792,53,2026-07-12
 588,Jimmy Snuggerud,Jimmy Snuggerud,/g/11frdwrdvf,topic,0.046897,0.6415,13.6792,53,2026-07-12
@@ -624,7 +622,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 623,J.J. Moser,J.J. Moser,/g/11h1dbq3sp,topic,0.015172,0.2075,13.6792,53,2026-07-12
 624,Darren Raddysh,Darren Raddysh,/g/11f_jv6nm_,topic,0.028966,0.3962,13.6792,53,2026-07-12
 625,Max Domi,Max Domi,/m/0w1d775,topic,0.176552,2.4151,13.6792,53,2026-07-12
-626,Bo Groulx,Bo Groulx,,string,,,,0,2026-07-12
+626,Bo Groulx,Bo Groulx,,string,,,,0,2026-07-22
 627,Luke Haymes,Luke Haymes,/g/11sdv2kc8k,topic,0.001379,0.0189,13.6792,53,2026-07-12
 628,Calle Jarnkrok,Calle Jarnkrok,/m/0bwfvdg,topic,0.012414,0.1698,13.6792,53,2026-07-12
 629,Dakota Joshua,Dakota Joshua,/g/11cn6jvgc4,topic,0.046897,0.6415,13.6792,53,2026-07-12
@@ -635,7 +633,6 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 634,William Nylander,William Nylander,/m/0w338zr,topic,0.362759,4.9623,13.6792,53,2026-07-12
 635,Nicholas Robertson,Nicholas Robertson,/g/11fn91rxnx,topic,0.064828,0.8868,13.6792,53,2026-07-12
 636,John Tavares,John Tavares,/m/0db4h8,topic,0.233103,3.1887,13.6792,53,2026-07-12
-637,Emil Andrae,Emil Andrae,/g/11f0zyf5t3,topic,0.000000,0.0000,13.6792,53,2026-07-12
 638,Simon Benoit,Simon Benoit,/g/11fb1gc5t_,topic,0.016552,0.2264,13.6792,53,2026-07-12
 639,Brandon Carlo,Brandon Carlo,/g/11b7y6zdhb,topic,0.041379,0.5660,13.6792,53,2026-07-12
 640,Oliver Ekman-Larsson,Oliver Ekman-Larsson,/m/064nyv6,topic,0.055172,0.7547,13.6792,53,2026-07-12
@@ -645,7 +642,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 644,Troy Stecher,Troy Stecher,/g/11c1xny4bc,topic,0.038621,0.5283,13.6792,53,2026-07-12
 645,Chris Tanev,Chris Tanev,/m/0g5r6p1,topic,0.095172,1.3019,13.6792,53,2026-07-12
 646,Andrew Agozzino,Andrew Agozzino,/m/0ndxkzt,topic,0.000000,0.0000,13.6792,53,2026-07-12
-647,Daniil But,Daniil But,/g/11q2xphgt8,topic,,,,0,2026-07-12
+647,Daniil But,Daniil But,,string,,,,0,2026-07-22
 648,Michael Carcone,Michael Carcone,/g/11f4jpkxp4,topic,0.000000,0.0000,13.6792,53,2026-07-12
 649,Logan Cooley,Logan Cooley,/g/11gbj8nbdn,topic,0.089655,1.2264,13.6792,53,2026-07-12
 650,Lawson Crouse,Lawson Crouse,/m/012m84lr,topic,0.001379,0.0189,13.6792,53,2026-07-12
@@ -665,7 +662,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 664,Ian Cole,Ian Cole,/m/02rxlvn,topic,0.000000,0.0000,13.6792,53,2026-07-12
 665,Nick DeSimone,Nick DeSimone,/g/11g6ynv5t4,topic,0.001379,0.0189,13.6792,53,2026-07-12
 666,Sean Durzi,Sean Durzi,/g/11gy4ncw5n,topic,0.004138,0.0566,13.6792,53,2026-07-12
-667,Maveric Lamoureux,Maveric Lamoureux,/g/11g0myw3g3,topic,,,,0,2026-07-12
+667,Maveric Lamoureux,Maveric Lamoureux,,string,,,,0,2026-07-22
 668,John Marino,John Marino,/g/11fnw3gwpq,topic,0.000000,0.0000,13.6792,53,2026-07-12
 669,Scott Perunovich,Scott Perunovich,/g/11h5_vwd78,topic,0.000000,0.0000,13.6792,53,2026-07-12
 670,Nate Schmidt,Nate Schmidt,/m/0s9mw8j,topic,0.027586,0.3774,13.6792,53,2026-07-12
