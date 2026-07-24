@@ -56,17 +56,36 @@ def extract_skill(land: dict | None) -> dict:
             out["age"] = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
         except Exception:
             pass
+    # A player's current-season regular-season line can span MULTIPLE
+    # seasonTotals rows (one per team after a mid-season trade, or split
+    # stints). Sum them for the true season total; a single-row player is
+    # unaffected (sum of one == that row). leagueAbbrev must be NHL so AHL
+    # conditioning rows with the same gameTypeId are never folded in. TOI is
+    # games-weighted across the rows that report it.
+    gp_sum = 0
+    pts_sum = 0
+    toi_num = 0.0
+    toi_den = 0
+    found = False
     for row in (land.get("seasonTotals") or []):
-        if str(row.get("season")) == CURRENT_SEASON and row.get("gameTypeId") == 2:
+        if (str(row.get("season")) == CURRENT_SEASON
+                and row.get("gameTypeId") == 2
+                and row.get("leagueAbbrev") == "NHL"):
+            found = True
             gp = row.get("gamesPlayed") or 0
-            out["games_played"] = gp
-            if gp:
-                out["ppg"] = round((row.get("points") or 0) / gp, 4)
+            gp_sum += gp
+            pts_sum += row.get("points") or 0
             toi = row.get("avgToi") or ""
-            if ":" in str(toi):
+            if ":" in str(toi) and gp:
                 m, ss = str(toi).split(":")[:2]
-                out["toi_per_game"] = round(int(m) + int(ss) / 60, 3)
-            break
+                toi_num += (int(m) + int(ss) / 60) * gp
+                toi_den += gp
+    if found:
+        out["games_played"] = gp_sum
+        if gp_sum:
+            out["ppg"] = round(pts_sum / gp_sum, 4)
+        if toi_den:
+            out["toi_per_game"] = round(toi_num / toi_den, 3)
     return out
 
 
