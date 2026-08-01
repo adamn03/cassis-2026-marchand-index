@@ -189,3 +189,95 @@ def test_label_mentions_drops_unknown_submissions():
         aff.build_move_timeline(_movers()),
     )
     assert len(out) == 0
+
+
+def _agg_players() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "player_id": [1, 2],
+            "full_name": ["Own Heavy", "Road Show"],
+            "team_code": ["BOS", "MON"],
+        }
+    )
+
+
+def _agg_labelled() -> pd.DataFrame:
+    rows = []
+    # Player 1: 6 own mentions in a small sub, 2 other in a big sub.
+    rows += [(1, "BostonBruins", "own", 10)] * 6
+    rows += [(1, "Habs", "other", 10)] * 2
+    # Player 2: 2 own in a big sub, 6 other spread over two rival subs.
+    rows += [(2, "Habs", "own", 10)] * 2
+    rows += [(2, "BostonBruins", "other", 10)] * 4
+    rows += [(2, "leafs", "other", 10)] * 2
+    rows += [(2, "hockey", "neutral", 10)] * 5
+    return pd.DataFrame(rows, columns=["player_id", "subreddit", "bucket", "score"])
+
+
+_SUB_VOLUME = {"BostonBruins": 3000, "Habs": 15000, "leafs": 10000, "hockey": 50000}
+
+
+def test_aggregate_counts_each_bucket():
+    out = aff.aggregate_players(_agg_labelled(), _SUB_VOLUME, _agg_players())
+    p1 = out.set_index("player_id").loc[1]
+    assert p1["own_mentions"] == 6
+    assert p1["other_mentions"] == 2
+    assert p1["neutral_mentions"] == 0
+
+
+def test_aggregate_normalizes_by_submission_volume():
+    out = aff.aggregate_players(_agg_labelled(), _SUB_VOLUME, _agg_players())
+    p1 = out.set_index("player_id").loc[1]
+    assert p1["own_intensity"] == pytest.approx(6 / 3000)
+    assert p1["other_intensity"] == pytest.approx(2 / 15000)
+
+
+def test_normalization_changes_the_ranking():
+    """Raw counts and normalized rates disagree — that is the whole point.
+
+    Player 2 has more raw other-mentions than player 1 has own-mentions, but
+    after dividing by venue volume player 1 is far more own-concentrated.
+    """
+    out = aff.aggregate_players(_agg_labelled(), _SUB_VOLUME, _agg_players())
+    idx = out.set_index("player_id")
+    assert idx.loc[1, "own_share"] > idx.loc[2, "own_share"]
+
+
+def test_own_share_is_a_proportion_of_attributed_only():
+    # Neutral mentions must not enter own_share's denominator.
+    out = aff.aggregate_players(_agg_labelled(), _SUB_VOLUME, _agg_players())
+    p2 = out.set_index("player_id").loc[2]
+    expected = (2 / 15000) / ((2 / 15000) + (4 / 3000) + (2 / 10000))
+    assert p2["own_share"] == pytest.approx(expected)
+
+
+def test_rival_reach_counts_distinct_rival_subs():
+    out = aff.aggregate_players(_agg_labelled(), _SUB_VOLUME, _agg_players())
+    idx = out.set_index("player_id")
+    assert idx.loc[1, "rival_reach"] == 1
+    assert idx.loc[2, "rival_reach"] == 2
+
+
+def test_top_rival_is_the_highest_rate_rival_sub():
+    # Player 2: BostonBruins 4/3000 beats leafs 2/10000 despite both being
+    # rivals, and beats it on rate even though the raw counts are closer.
+    out = aff.aggregate_players(_agg_labelled(), _SUB_VOLUME, _agg_players())
+    assert out.set_index("player_id").loc[2, "top_rival"] == "BostonBruins"
+
+
+def test_low_n_flag_set_below_threshold():
+    out = aff.aggregate_players(_agg_labelled(), _SUB_VOLUME, _agg_players())
+    # Both fixture players are far below LOW_N_MIN=30 attributed mentions.
+    assert out["low_n"].all()
+
+
+def test_player_with_no_mentions_gets_a_row():
+    players = pd.DataFrame(
+        {"player_id": [1, 2, 3], "full_name": ["a", "b", "c"],
+         "team_code": ["BOS", "MON", "VAN"]}
+    )
+    out = aff.aggregate_players(_agg_labelled(), _SUB_VOLUME, players)
+    p3 = out.set_index("player_id").loc[3]
+    assert p3["attributed_mentions"] == 0
+    assert pd.isna(p3["own_share"])
+    assert bool(p3["low_n"]) is True

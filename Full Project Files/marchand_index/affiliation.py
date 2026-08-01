@@ -178,3 +178,90 @@ def label_mentions(
 
     df["bucket"] = buckets
     return df[["player_id", "subreddit", "bucket", "score"]].reset_index(drop=True)
+
+
+# Minimum attributed (own + other) mentions before own_share is trustworthy.
+# Median pool player has 165 total mentions and ~63% are attributable, so this
+# keeps roughly the top three quartiles. Pre-registered in A45; do not tune it
+# after seeing results.
+LOW_N_MIN = 30
+
+
+def _rates(group: pd.DataFrame, sub_volume: dict[str, int], weight: str) -> pd.Series:
+    """Per-subreddit rate for one player: weight summed, divided by volume."""
+    summed = group.groupby("subreddit")[weight].sum()
+    volumes = pd.Series(
+        {sub: sub_volume.get(sub, 0) for sub in summed.index}, dtype=float
+    )
+    return (summed / volumes.replace(0, np.nan)).dropna()
+
+
+def aggregate_players(
+    labelled: pd.DataFrame,
+    sub_volume: dict[str, int],
+    players: pd.DataFrame,
+) -> pd.DataFrame:
+    """One row per player in `players`, with volume-normalized shares.
+
+    `sub_volume` maps subreddit name -> number of submissions collected for it.
+    Dividing by it is what makes a Bruin comparable to a Hab: r/Habs carries
+    ~5x r/BostonBruins' submissions despite a smaller subscriber base, so raw
+    mention counts encode venue activity rather than player attention.
+    """
+    work = labelled.copy()
+    work["unit"] = 1.0
+    work["weight"] = work["score"].clip(lower=0).astype(float) + 1.0
+
+    records = []
+    by_player = dict(tuple(work.groupby("player_id")))
+
+    for row in players.itertuples(index=False):
+        pid = int(row.player_id)
+        group = by_player.get(pid)
+        if group is None:
+            group = work.iloc[0:0]
+
+        counts = group["bucket"].value_counts()
+        own_n = int(counts.get("own", 0))
+        other_n = int(counts.get("other", 0))
+        neutral_n = int(counts.get("neutral", 0))
+        attributed = own_n + other_n
+
+        intensity = {}
+        scored = {}
+        for bucket in ("own", "other", "neutral"):
+            sub = group[group["bucket"] == bucket]
+            intensity[bucket] = float(_rates(sub, sub_volume, "unit").sum())
+            scored[bucket] = float(_rates(sub, sub_volume, "weight").sum())
+
+        denom = intensity["own"] + intensity["other"]
+        own_share = intensity["own"] / denom if denom > 0 else np.nan
+
+        denom_s = scored["own"] + scored["other"]
+        own_share_scored = scored["own"] / denom_s if denom_s > 0 else np.nan
+
+        rivals = group[group["bucket"] == "other"]
+        rival_rates = _rates(rivals, sub_volume, "unit")
+        top_rival = str(rival_rates.idxmax()) if len(rival_rates) else ""
+
+        records.append(
+            {
+                "player_id": pid,
+                "full_name": row.full_name,
+                "team_code": row.team_code,
+                "own_mentions": own_n,
+                "other_mentions": other_n,
+                "neutral_mentions": neutral_n,
+                "attributed_mentions": attributed,
+                "own_intensity": intensity["own"],
+                "other_intensity": intensity["other"],
+                "neutral_intensity": intensity["neutral"],
+                "own_share": own_share,
+                "own_share_scored": own_share_scored,
+                "rival_reach": int(len(rival_rates)),
+                "top_rival": top_rival,
+                "low_n": attributed < LOW_N_MIN,
+            }
+        )
+
+    return pd.DataFrame.from_records(records)
