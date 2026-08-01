@@ -281,3 +281,37 @@ def test_player_with_no_mentions_gets_a_row():
     assert p3["attributed_mentions"] == 0
     assert pd.isna(p3["own_share"])
     assert bool(p3["low_n"]) is True
+
+
+import json
+from pathlib import Path
+
+import compute_affiliation as ca
+
+
+def test_build_submission_index_parses_corpus(tmp_path: Path):
+    corpus = tmp_path / "reddit_corpus"
+    corpus.mkdir()
+    recs = [
+        {"id": "a1", "subreddit": "canucks", "created_utc": "1744934436"},
+        {"id": "a2", "subreddit": "canucks", "created_utc": "1744934500"},
+    ]
+    with (corpus / "canucks.jsonl").open("w", encoding="utf-8") as fh:
+        for r in recs:
+            fh.write(json.dumps(r) + "\n")
+
+    index, volume = ca.build_submission_index(corpus)
+    assert set(index["submission_id"]) == {"a1", "a2"}
+    assert volume["canucks"] == 2
+    assert str(index["created_at"].dtype).startswith("datetime64")
+
+
+def test_build_submission_index_skips_malformed_lines(tmp_path: Path):
+    corpus = tmp_path / "reddit_corpus"
+    corpus.mkdir()
+    with (corpus / "leafs.jsonl").open("w", encoding="utf-8") as fh:
+        fh.write('{"id": "b1", "subreddit": "leafs", "created_utc": "1744934436"}\n')
+        fh.write("not json at all\n")
+    index, volume = ca.build_submission_index(corpus)
+    assert len(index) == 1
+    assert volume["leafs"] == 1
