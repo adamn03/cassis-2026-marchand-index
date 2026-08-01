@@ -66,7 +66,7 @@ if sn in pool_first_names:
 1. Add P3 + tests: fires for all 13; existing 9 stay guarded; `mcdavid` NOT guarded (its only dominant neighbour is its own first name — the existing P2b exemption must survive).
 2. Re-run `python fetch_reddit.py` (runtime minutes; landing JSONs cached).
 3. `git diff` `raw/reddit_counts.csv` + `raw/reddit_detail.csv` vs HEAD. **Expect them to move — that is the point.** Produce a before/after table of which players shift and by how much.
-4. Write prereg amendment **A45** — "P3: surname-is-pool-first-name" — documenting that the DF gate created an arbitrary cutoff.
+4. Write prereg amendment **A48** — "P3: surname-is-pool-first-name" — documenting that the DF gate created an arbitrary cutoff.
 
 **Est. 1.5 hours.**
 
@@ -105,7 +105,7 @@ Unguarded ceiling probe (`diagnostics/probe_rival_reach.py`): own 85,103 / **RIV
 2. Emit `raw/reddit_detail_allsubs.csv` — player_id, submission_id, subreddit, score (~8 lines near line 633).
 3. Point `compute_affiliation.py` at it; take `subreddit` from the file instead of joining the corpus index.
 4. Flip `compute_affiliation.py:PUBLISH_DELIVERABLE` to `True`.
-5. Prereg **A47** for the rival split (A45 = P3 guard, A46 = market_z lens).
+5. Prereg **A45** for the rival split (the test file already bears that number).
 
 **Est. 1 hour. DO THIS SECOND** — rival subs would otherwise multiply Defect 1 across 31 more subreddits (Cole Caufield is discussed everywhere).
 
@@ -119,7 +119,7 @@ Unguarded ceiling probe (`diagnostics/probe_rival_reach.py`): own 85,103 / **RIV
 - `diagnostics/probe_rival_reach.py`, `diagnostics/probe_surname_collision.py` — the evidence above, re-runnable, results in their headers.
 - `attention_affiliation.csv` — 771 rows. **Untracked and unpublished on purpose** (invalid `other_*` columns).
 
-Phase A plan Tasks 6-7 (diagnostics, prereg) **deliberately skipped** — pre-registering a metric known to be broken would be wrong. **A45 is now reallocated to the P3 guard fix.**
+Phase A plan Tasks 6-7 (diagnostics, prereg) **deliberately skipped** — pre-registering a metric known to be broken would be wrong. **A45 stays reserved for the affiliation/rival split** — `tests/test_affiliation_a45.py` and 5 commits already claim it.
 
 **Keep this design decision:** normalize by **submissions**, never subscribers. r/BostonBruins has more subscribers than r/Habs (119,306 vs 101,589) but ~1/5 the submissions (3,070 vs 14,510).
 
@@ -168,8 +168,8 @@ Subscribers rank MON 7th; activity ranks MON 1st — exactly the mechanism #3B p
 
 ---
 
-NEXT: Fix Defect 1 (P3 guard prong, `fetch_reddit.py:313-318`, 4 lines + tests + re-run + before/after diff + prereg A45, ~1.5 h). Show the owner the impact table before proceeding. Then Defect 2 (rival detail emission, ~1 h). Then Phase A republishes and Phase B becomes viable. Plan A46 (market_z sensitivity, ~2 h) is independent of both and can run any time.
+NEXT: Fix Defect 1 (P3 guard prong, `fetch_reddit.py:313-318`, 4 lines + tests + re-run + before/after diff + prereg A48, ~1.5 h). Show the owner the impact table before proceeding. Then Defect 2 (rival detail emission, ~1 h). Then Phase A republishes and Phase B becomes viable. Plan A46 (market_z sensitivity, ~2 h) is independent of both and can run any time.
 
-CARRY-FORWARD: 269 tests; pool 771; window [2025-04-18, 2026-04-17]; corpus 250,004 submissions / 36 subs; A12 weights unchanged; impl seed 20260526 / spec seed 20260522 (never harmonize); `cache/reddit_corpus/` GITIGNORED LOCAL SOURCE OF RECORD; `english_top1000.txt` pinned (never edit). Amendment numbers: **A45 = P3 guard fix**, **A46 = market_z activity lens (plan written)**, **A47 = rival split**. Next free after those: A48. Still NO production `compute_oaq` run (gated: Phase-1 hygiene + Gate-4).
+CARRY-FORWARD: 269 tests; pool 771; window [2025-04-18, 2026-04-17]; corpus 250,004 submissions / 36 subs; A12 weights unchanged; impl seed 20260526 / spec seed 20260522 (never harmonize); `cache/reddit_corpus/` GITIGNORED LOCAL SOURCE OF RECORD; `english_top1000.txt` pinned (never edit). Amendment numbers: **A45 = affiliation/rival split** (claimed by `test_affiliation_a45.py` + commits), **A46 = market_z activity lens** (plan written), **A48 = P3 guard fix**. A47 unused. Next free: A49. Still NO production `compute_oaq` run (gated: Phase-1 hygiene + Gate-4).
 
 Deadline: poster 2026-09-12 (~6.0 wk).
