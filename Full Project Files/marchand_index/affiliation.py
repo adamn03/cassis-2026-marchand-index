@@ -129,3 +129,52 @@ def team_at(
         if event_date > when:
             team = old_team
     return team
+
+
+# Measurement window, matching the rest of the project (SESSION.md
+# CARRY-FORWARD). Both bounds inclusive.
+WINDOW_START = pd.Timestamp("2025-04-18")
+WINDOW_END = pd.Timestamp("2026-04-17")
+
+
+def label_mentions(
+    detail: pd.DataFrame,
+    submissions: pd.DataFrame,
+    players: pd.DataFrame,
+    venue_map: dict[str, str],
+    timeline: dict[int, list[tuple[pd.Timestamp, str]]],
+) -> pd.DataFrame:
+    """Attach a own/other/neutral bucket to every mention pair.
+
+    `detail`      : player_id, submission_id, score
+    `submissions` : submission_id, subreddit, created_at
+    `players`     : player_id, team_code (team at end of window)
+
+    Returns player_id, subreddit, bucket, score. Mentions whose submission is
+    absent from the index, or which fall outside the window, are dropped.
+    """
+    df = detail.merge(submissions, on="submission_id", how="inner")
+    df = df[
+        (df["created_at"] >= WINDOW_START) & (df["created_at"] <= WINDOW_END)
+    ].copy()
+
+    end_team = dict(
+        zip(players["player_id"].astype(int), players["team_code"].astype(str))
+    )
+
+    buckets = []
+    for row in df.itertuples(index=False):
+        owner = venue_team(row.subreddit, venue_map)
+        if owner is None:
+            buckets.append("neutral")
+            continue
+        player_team = team_at(
+            int(row.player_id),
+            row.created_at,
+            end_team.get(int(row.player_id), ""),
+            timeline,
+        )
+        buckets.append("own" if owner == player_team else "other")
+
+    df["bucket"] = buckets
+    return df[["player_id", "subreddit", "bucket", "score"]].reset_index(drop=True)

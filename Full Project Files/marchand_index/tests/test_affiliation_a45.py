@@ -107,3 +107,85 @@ def test_team_at_on_exact_move_date_uses_new_team():
     tl = aff.build_move_timeline(_movers())
     got = aff.team_at(25, pd.Timestamp("2026-01-15"), "MON", tl)
     assert got == "MON"
+
+
+def _submissions() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "submission_id": ["s1", "s2", "s3", "s4", "s5"],
+            "subreddit": ["BostonBruins", "Habs", "hockey", "BostonBruins", "Habs"],
+            "created_at": pd.to_datetime(
+                [
+                    "2025-10-01",
+                    "2025-10-01",
+                    "2025-10-01",
+                    "2026-03-01",
+                    "2020-01-01",  # before the window
+                ]
+            ),
+        }
+    )
+
+
+def _players() -> pd.DataFrame:
+    return pd.DataFrame({"player_id": [25], "team_code": ["MON"]})
+
+
+def _labelled() -> pd.DataFrame:
+    detail = pd.DataFrame(
+        {
+            "player_id": [25, 25, 25, 25, 25],
+            "submission_id": ["s1", "s2", "s3", "s4", "s5"],
+            "score": [10, 20, 30, 40, 50],
+        }
+    )
+    return aff.label_mentions(
+        detail,
+        _submissions(),
+        _players(),
+        aff.build_venue_map(_market_proxy()),
+        aff.build_move_timeline(_movers()),
+    )
+
+
+def test_label_mentions_own_before_trade():
+    # Player 25 was on BOS on 2025-10-01, so r/BostonBruins is own.
+    out = _labelled()
+    assert out.loc[out.subreddit == "BostonBruins"].iloc[0]["bucket"] == "own"
+
+
+def test_label_mentions_other_before_trade():
+    out = _labelled()
+    row = out[(out.subreddit == "Habs")].iloc[0]
+    assert row["bucket"] == "other"
+
+
+def test_label_mentions_flips_after_trade():
+    # Traded to MON on 2026-01-15, so r/BostonBruins on 2026-03-01 is other.
+    out = _labelled()
+    late = out[out.subreddit == "BostonBruins"].iloc[1]
+    assert late["bucket"] == "other"
+
+
+def test_label_mentions_neutral_venue():
+    out = _labelled()
+    assert (out[out.subreddit == "hockey"]["bucket"] == "neutral").all()
+
+
+def test_label_mentions_drops_out_of_window_rows():
+    out = _labelled()
+    assert 50 not in set(out["score"])
+
+
+def test_label_mentions_drops_unknown_submissions():
+    detail = pd.DataFrame(
+        {"player_id": [25], "submission_id": ["nope"], "score": [1]}
+    )
+    out = aff.label_mentions(
+        detail,
+        _submissions(),
+        _players(),
+        aff.build_venue_map(_market_proxy()),
+        aff.build_move_timeline(_movers()),
+    )
+    assert len(out) == 0
