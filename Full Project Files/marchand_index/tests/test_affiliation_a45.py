@@ -44,3 +44,66 @@ def test_venue_team_is_case_insensitive():
 def test_venue_team_returns_none_for_unknown_sub():
     vm = aff.build_venue_map(_market_proxy())
     assert aff.venue_team("soccer", vm) is None
+
+
+def _movers() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "player_id": [25, 25, 99, 7],
+            "old_team": ["Oilers", "Bruins", "Maple Leafs", "Utah Hockey Club"],
+            "new_team": ["Bruins", "Canadiens", "Wild", "Mammoth"],
+            "event_date": ["2025-07-01", "2026-01-15", "2025-11-20", "2025-06-01"],
+            "status": ["dated", "dated", "dated", "excluded_rename_artifact"],
+        }
+    )
+
+
+def test_nickname_map_covers_every_mover_team():
+    movers = pd.read_csv("mover_dates.csv")
+    movers = movers[movers["status"] == "dated"]
+    names = set(movers["old_team"].dropna()) | set(movers["new_team"].dropna())
+    missing = sorted(n for n in names if n not in aff.NICKNAME_TO_CODE)
+    assert missing == [], f"nicknames absent from NICKNAME_TO_CODE: {missing}"
+
+
+def test_build_move_timeline_drops_rename_artifacts():
+    tl = aff.build_move_timeline(_movers())
+    assert 7 not in tl
+
+
+def test_build_move_timeline_is_chronological():
+    tl = aff.build_move_timeline(_movers())
+    dates = [d for d, _ in tl[25]]
+    assert dates == sorted(dates)
+
+
+def test_team_at_returns_end_team_after_last_move():
+    tl = aff.build_move_timeline(_movers())
+    got = aff.team_at(25, pd.Timestamp("2026-03-01"), "MON", tl)
+    assert got == "MON"
+
+
+def test_team_at_reverts_one_move():
+    # Between the two moves: joined BOS 2025-07-01, left for MON 2026-01-15.
+    tl = aff.build_move_timeline(_movers())
+    got = aff.team_at(25, pd.Timestamp("2025-10-01"), "MON", tl)
+    assert got == "BOS"
+
+
+def test_team_at_reverts_all_moves():
+    tl = aff.build_move_timeline(_movers())
+    got = aff.team_at(25, pd.Timestamp("2025-05-01"), "MON", tl)
+    assert got == "EDM"
+
+
+def test_team_at_for_player_with_no_moves():
+    tl = aff.build_move_timeline(_movers())
+    got = aff.team_at(1234, pd.Timestamp("2025-10-01"), "VAN", tl)
+    assert got == "VAN"
+
+
+def test_team_at_on_exact_move_date_uses_new_team():
+    # A move dated 2026-01-15 means the player is on the new team that day.
+    tl = aff.build_move_timeline(_movers())
+    got = aff.team_at(25, pd.Timestamp("2026-01-15"), "MON", tl)
+    assert got == "MON"
