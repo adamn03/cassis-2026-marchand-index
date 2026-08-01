@@ -46,13 +46,18 @@ def test_fetch_failure_classified_fetch_failed_and_stays_nan():
     assert np.isnan(out.loc[1, "wiki_12mo"])
 
 
-def test_trends_no_mid_is_no_entity():
+def test_trends_no_mid_is_fetch_failed_since_a47():
+    """SUPERSEDED BY A47. A25 read a blank query_mid as "no Google entity" and
+    imputed raw 0. After A47 every Trends refusal blanks the MID — including a
+    429 — and a missing Trends entity is namesake/coverage-driven rather than
+    evidence of zero interest. All NULL trends now renormalize. The wiki and
+    wiki_intl clauses of A25 are unchanged (tested above)."""
     df = _base_df()
     df.loc[2, "trends_12mo"] = np.nan
     df.loc[2, "query_mid"] = ""
     reasons = co.classify_null_reasons(df)
-    assert reasons["trends_12mo"][2] == co.NULL_NO_ENTITY
-    # With a MID present the same null is a fetch failure.
+    assert reasons["trends_12mo"][2] == co.NULL_FETCH_FAILED
+    # With a MID present it was already a fetch failure.
     df.loc[3, "trends_12mo"] = np.nan
     reasons = co.classify_null_reasons(df)
     assert reasons["trends_12mo"][3] == co.NULL_FETCH_FAILED

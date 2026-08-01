@@ -449,12 +449,24 @@ def classify_null_reasons(df: pd.DataFrame) -> dict[str, list[str]]:
     Mechanical classification from the fetchers' verdict columns:
       wiki_12mo NULL + wiki_match == "none"      -> no_entity_exists
       wiki_intl_12mo NULL + intl_match == "none" -> no_entity_exists
-      trends_12mo NULL + no topic MID            -> no_entity_exists
+      EVERY NULL trends_12mo (A47)               -> fetch_failed
       everything else NULL (HTTP failure, block, missing row/column,
       unclassifiable vintage)                    -> fetch_failed
     Returns component -> list of "" | no_entity_exists | fetch_failed.
     Defensive: verdict columns absent (synthetic fixtures, old CSV vintages)
     default to fetch_failed, which preserves pre-A25 renorm behavior.
+
+    A47: no NULL Trends value is `no_entity_exists` any more. A25 inferred it
+    from a blank `query_mid`, which after A47 covers every refusal — so a 429
+    ("resolve_failed") or a namesake tie ("ambiguous_topic") would have been
+    scored as zero search interest. Even the genuine "no_hockey_topic" case is
+    not evidence of zero: a missing Google Trends ENTITY reflects
+    knowledge-graph coverage and namesake crowding, not public interest. Will
+    Smith (SJ, 4th overall 2023) has no hockey MID because the actor owns the
+    name. All three refusals therefore renormalize (rule 2), which is exactly
+    equivalent to imputing his weight-averaged z-score across the components
+    that DID resolve. Wikipedia keeps the raw-0 rule: a missing ARTICLE really
+    does mean no encyclopedic salience.
     """
     n = len(df)
 
@@ -465,7 +477,6 @@ def classify_null_reasons(df: pd.DataFrame) -> dict[str, list[str]]:
 
     wiki_match = col_str("wiki_match")
     intl_match = col_str("intl_match")
-    query_mid = col_str("query_mid")
 
     out: dict[str, list[str]] = {}
     for c in COMPONENTS:
@@ -478,8 +489,6 @@ def classify_null_reasons(df: pd.DataFrame) -> dict[str, list[str]]:
             elif c == "wiki_12mo" and wiki_match[i].lower() == "none":
                 reasons.append(NULL_NO_ENTITY)
             elif c == "wiki_intl_12mo" and intl_match[i].lower() == "none":
-                reasons.append(NULL_NO_ENTITY)
-            elif c == "trends_12mo" and query_mid[i] == "" and "query_mid" in df.columns:
                 reasons.append(NULL_NO_ENTITY)
             else:
                 reasons.append(NULL_FETCH_FAILED)

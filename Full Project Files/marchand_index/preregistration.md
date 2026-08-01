@@ -1087,6 +1087,204 @@ or hypothesis quantity has been computed; A16's ratio definition, window
 
 ---
 
+**A47 (2026-08-01) — Trends raw-string fallback RETIRED; position tie-break for
+shared full names; refusal reasons split for the A25 taxonomy. Logged BEFORE
+any composite, OAQ, or validation computation (boundary unchanged).**
+
+**Defect (measured from the stored file, recorded):** A16 clause 2, as amended
+by A44, kept a raw-name fallback whenever no suggestion qualified — and A44
+left `trends_method=string` as a "disclosed sensitivity cut" rather than a
+refusal. A bare name string measures whoever else owns that name. 23 of 771
+stored rows are on that path, and the resulting values are not a tail:
+
+| rank /771 | `trends_12mo` | player | what the string measures |
+|---|---|---|---|
+| **1** | **9.6647** | Will Smith | the actor — 4.9x McDavid, 9.7x the anchor |
+| 15 | 0.4298 | Garrett Wilson | the NFL wide receiver |
+| 20 | 0.3766 | Alex Ovechkin | undercount — should sit top-3 |
+| 28 | 0.3390 | Trevor Moore | ambiguous |
+| 34 | 0.3105 | Ben Jones | the NFL center |
+| 47 | 0.2251 | Taylor Ward | the MLB outfielder |
+| 170 | 0.0703 | Brayden Point | undercount |
+
+The error runs **both directions**: a common name imports a stranger's search
+volume, while a hockey-only name loses the volume a topic MID aggregates
+(Ovechkin, Point, Parayko, Perfetti, Beniers, Weegar are all string rows and
+all rank implausibly low). The trigger is usually not "Google has no entity"
+but throttling — `RetryError(... 'too many 429 error responses')` dominates
+every stored run log, and `resolve_topic_mid` caught that exception and
+returned the same empty string a genuine no-match returns.
+
+**Second defect, same clause:** "first qualifying suggestion wins" cannot
+separate two pooled players who share a full name. The Canucks' **Elias
+Pettersson (C, `nhl_player_id` 8480012)** and **Elias Pettersson (D, 8483678)**
+both carry MID `/g/11ddxds8fn` and an identical `trends_12mo = 0.222069`
+(ranks 47-48/771). The D is credited with the C's search volume. `A41` deduped
+the pool to 771 but left this pair as two distinct persons, correctly.
+
+**Third defect, found by the A47 re-run itself (recorded):** A44 rule 2 tested
+Google's entity type for a franchise name by raw-casefold substring against the
+`raw/teams.csv` slugs. The slug `st-louis-blues` folds to `"st louis blues"`,
+but Google writes **`"St. Louis Blues defenseman"`** — the period breaks the
+substring. Verified live 2026-08-01: Colton Parayko, Dylan Holloway and Pius
+Suter each return a correctly-typed St. Louis entity as their FIRST suggestion,
+and all three were refused `no_hockey_topic` — the one refusal reason A25
+imputes as raw 0. The punctuation miss would therefore have scored three real
+NHLers as zero search interest. Both sides of the comparison are now folded to
+accent-free, punctuation-free, single-spaced lowercase (`_strip_punct`); the
+same folding is applied to the clause-1 position test.
+
+**Rule (mechanical):**
+
+0. **Type folding.** Before any test, a Google entity type and every franchise
+   name are NFKD-normalized, stripped of combining marks, and reduced to
+   alphanumerics and single spaces. "hockey" substring test unchanged.
+1. **Selection.** Among pytrends suggestions, take those whose folded type
+   qualifies under the A44 rule 2 test (as folded by clause 0).
+   - exactly one qualifies -> its MID, `trends_method=topic`;
+   - more than one qualifies -> **position tie-break**: keep the suggestions
+     whose folded type contains a word for the player's `players.csv`
+     position (`C` -> "center"/"centre"; `L` -> "left wing"; `R` -> "right
+     wing"; `D` -> "defense"/"defence", which also cover
+     "defenseman"/"defenceman" and the "-er" wing forms). Exactly one
+     survivor -> its MID, `trends_method=topic_position`.
+2. **Refusal replaces the string fallback.** No code path may query a raw
+   name again. A refusal writes `trends_12mo` NULL, `query_mid` empty, and
+   **stores no query string**, under exactly one reason:
+   - `no_hockey_topic` — no suggestion qualified;
+   - `ambiguous_topic` — the tie survived the position test;
+   - `resolve_failed` — the `suggestions()` call raised or was blocked.
+3. **A25 taxonomy amended for Trends (this is the load-bearing clause).** A25
+   classified a NULL `trends_12mo` as `no_entity_exists` — **raw-0
+   imputation** — from a blank `query_mid`. Every refusal above blanks the
+   MID, so that inference would have scored a throttled Ovechkin as zero
+   search interest. **A47 retires the Trends `no_entity_exists` branch
+   entirely: all three refusal reasons are `fetch_failed` and renormalize
+   (A25 rule 2), for any CSV vintage, with or without a `trends_method`
+   column.**
+
+   Including `no_hockey_topic`. A missing Google Trends **entity** reflects
+   knowledge-graph coverage and namesake crowding, not absence of public
+   interest — Will Smith (SJ, 4th overall 2023) has no hockey MID because the
+   actor owns the name, and Google returns the actor, the Chris Rock incident,
+   a Dodgers catcher, a book and a TV series before any hockey entity. Raw-0
+   would assert nobody searches for him; renormalization says only that Trends
+   did not measure him, which is what we observed. This is **exactly
+   equivalent to imputing his weight-averaged z-score over the components that
+   did resolve** (weights sum to 0.84, so `0.84m + 0.16m = m`) — no separate
+   imputation step is needed or permitted.
+
+   **Scoped to Trends.** `wiki_12mo` and `wiki_intl_12mo` keep A25's raw-0
+   rule: a missing *article* really does mean no encyclopedic salience,
+   whereas Trends entity coverage is sparse and namesake-driven.
+4. **Secondary anchor.** A35 clause 1's secondary anchor (Sidney Crosby) is
+   resolved under the same rule; if it refuses, the anchor-row re-measurement
+   **aborts** rather than chaining the scale onto a raw string.
+5. **Repair (surgical, disclosed).** Re-fetch exactly the rows that cannot be
+   trusted: the 23 `trends_method=string` rows, plus **any set of rows sharing
+   one `query_mid`** (a shared MID is prima facie an unbroken tie) — the two
+   Pettersson rows. **25 of 771 re-fetched; the other 746 are untouched**,
+   their MIDs and ratios bit-identical. The resume filter enforces this: a
+   stored row is reused only if its value is non-null, its method is a
+   resolution method, and its MID is unshared.
+
+**Repair outcome (executed 2026-08-01; 25 rows, none of the other 746 moved):**
+
+| player | before | after | method |
+|---|---|---|---|
+| Will Smith | **9.664671** | **NULL** | no_hockey_topic |
+| Garrett Wilson | 0.429799 | NULL | no_hockey_topic |
+| **Alex Ovechkin** | 0.376552 | **1.963329** | topic |
+| Trevor Moore | 0.339031 | NULL | no_hockey_topic |
+| Ben Jones | 0.310541 | NULL | no_hockey_topic |
+| Taylor Ward | 0.225071 | NULL | no_hockey_topic |
+| **Elias Pettersson (C)** | 0.222069 | **0.220028** | topic_position |
+| **Elias Pettersson (D)** | 0.222069 | **0.002821** | topic_position |
+| Liam O'Brien | 0.093793 | NULL | no_hockey_topic |
+| Brayden Point | 0.070345 | 0.080395 | topic |
+| Jeremy Davies | 0.060690 | NULL | no_hockey_topic |
+| Dylan Holloway | 0.045455 | 0.052186 | topic |
+| Colton Parayko | 0.035862 | 0.067701 | topic |
+| Pius Suter | 0.020690 | 0.026798 | topic |
+| Cole Perfetti | 0.020690 | 0.046544 | topic |
+| Matty Beniers | 0.019310 | 0.035261 | topic |
+| MacKenzie Weegar | 0.011034 | 0.032440 | topic |
+| Aliaksei Protas | 0.008276 | 0.064880 | topic |
+| Bo Groulx | 0.005510 | NULL | no_hockey_topic |
+| Erik Cernak | 0.004138 | 0.014104 | topic |
+| Adam Engstrom | 0.002849 | NULL | no_hockey_topic |
+| Jared Wright | 0.000000 | NULL | no_hockey_topic |
+| Max Shabanov | 0.000000 | NULL | no_hockey_topic |
+| Dmitri Simashev | 0.000000 | NULL | no_hockey_topic |
+| Hendrix Lapierre | 0.000000 | 0.001410 | topic |
+
+Final file: 771 rows — 756 `topic`, 2 `topic_position`, 1
+`topic_secondary_anchor`, **12 `no_hockey_topic`**, 0 `ambiguous_topic`, 0
+`resolve_failed`. Every string row is gone. The Pettersson D was carrying the
+C's volume at **78x** his own. The 13 rows that re-resolved to a topic all
+moved **up**, confirming the string query was also losing the volume a topic
+MID aggregates; Ovechkin gains 5.2x and the top of the distribution becomes
+face-valid (Crosby, McDavid, Ovechkin, J. Hughes, Celebrini, Bedard, Marchand,
+Matthews) where it was previously led by a film actor.
+
+**Verification of the untouched 746.** The clause-0 folding only ever adds
+qualifying suggestions, so rows resolved under the stricter pre-A47 test could
+in principle have selected a different entity. Spot-checked live 2026-08-01
+against the three STL rows most exposed to the period defect — Jordan Kyrou,
+Robert Thomas, Pavel Buchnevich (the latter two typed "St. Louis Blues …",
+which qualifies only after clause 0). All three re-resolve to the **same
+stored MID**. Entity identity is stable across the rule change; the 746 are
+not re-fetched.
+
+**Residual, disclosed:** the 12 `no_hockey_topic` players carry no Trends
+measurement and are scored on their remaining four components (0.84 of the
+composite, renormalized). Live inspection confirms the refusals are genuine
+absences rather than lookup failures — Google returns 5 suggestions for "Will
+Smith" with no hockey entity at all, and "Trevor Moore" returns only the
+comedian.
+
+**Rejected alternative — the `"<name> hockey"` scale (tested, recorded).**
+Before settling on renormalization we tested filling the 12 from a parallel
+run querying `"<player name> hockey"` for every player against the same pinned
+anchor, then rank-transferring onto the primary scale. A 7-player probe
+(2026-08-01, 4 refused + 3 with known primary values) rejected it:
+
+| player | primary | `"<name> hockey"` |
+|---|---|---|
+| Will Smith | — | **0.188999** |
+| **Connor McDavid** | **1.972934** | **0.083216** |
+| Trevor Moore / Garrett Wilson / Ben Jones | — | 0.000000 |
+| Cole Perfetti | 0.046544 | 0.000000 |
+| Erik Cernak | 0.014104 | 0.000000 |
+
+The scale does not measure salience; it measures **how often a name requires
+disambiguation**. Will Smith outranks McDavid on it 2.3x — precisely because
+of the actor, i.e. the contamination A47 exists to remove, re-entering through
+the query string. Five of seven probes return exactly 0, including three of
+the four players the fill was meant to rescue, so the rank map is degenerate
+where it is needed. Not adopted; no data from this probe enters any file. The
+probe cost 7 live queries and is recorded here so the option is not re-opened.
+
+**Limit of claim.** The position tie-break assumes Google types the competing
+entities with distinct positions. Where it does not, A47 refuses rather than
+guesses, and the player renormalizes — a lost measurement, never a borrowed
+one. `no_hockey_topic` is still an inference that low Google salience implies
+near-zero search interest; that was already A25's standing assumption and is
+unchanged here.
+
+**Anti-tuning compliance (§13):** entity-resolution and missingness-
+classification repair only; no threshold was fitted, and the position map is
+mechanical from `players.csv`. The refusal direction is pre-committed as the
+conservative one (drop a measurement, never substitute a proxy). No composite,
+OAQ, validation, or hypothesis quantity has been computed. A16's ratio
+definition, the A11 window, the §4/A12 weights, and all floors are unchanged.
+Tests: `tests/test_fetch_trends_a47.py` (25),
+`tests/test_trends_null_taxonomy_a47.py` (8); suite 269 -> 302.
+`tests/test_null_taxonomy_a25.py::test_trends_no_mid_is_no_entity` is renamed
+and inverted to record the supersession; A25's wiki clauses are untouched.
+
+---
+
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
 
 **V-A11-Trends (2026-06-26) — live spot-check confirming `raw/trends.csv` was fetched on the A11 fixed window, not a run-anchored one.** `fetch_trends.py:52` uses `timeframe="2025-04-18 2026-04-17"`, but the stored `trends.csv` carries `fetch_date=2026-06-20` and the fixed-window code only landed 2026-06-20 13:21 (commit `0c3ccbe`); whether the file predated the fix that day was not decidable from git/data alone. A single live `pytrends` call resolves it (the test is window-vintage, so one salient distinctive-name player suffices). **Player: Connor McDavid** (stored `trends_12mo = 24.7358`; he had a 2026 playoff run, so the two windows diverge maximally). Result: a fresh **fixed-window** [2025-04-18, 2026-04-17] fetch gives mean **26.13** (n=53) — **5.6 % from stored, within Trends sampling noise → MATCH**, i.e. the stored file used the fixed window. The same player's **run-anchored** (`today 12-m`) series shows the expected post-window playoff spike the fixed window correctly excludes — weeks 2026-04-19 = 32, **2026-04-26 = 47 (peak)**, 2026-05-03 = 33, all after the 2026-04-17 window end. Conclusion: the `trends` component (§4/A12 weight 0.16) is on the A11 window and **excludes the 2026-playoff confound**; the SESSION residual is closed by live evidence. No file or weight changes; verification only. (One live call; perishable, so not re-run across the set.)
