@@ -3,14 +3,28 @@ Date: 2026-08-02
 Active: NHL_Marchand_Index — FULL BUILD. Branch: `marchand-index-full-build`.
 
 LAST: Designed + measured the **Defect 1** fix instead of building it. Probe
-`diagnostics/probe_firstname_guard_options.py` (new, UNTRACKED) compares four
-options on the live corpus. Owner selected **C'**. No pipeline code touched.
+`diagnostics/probe_firstname_guard_options.py` (committed `3a96f8e`) compares
+four options on the live corpus. Owner selected **C'**. No pipeline code
+touched.
 
 STATUS: working — pipeline unchanged, suite still **302, all green**.
 
 NEXT: implement **C'** in `fetch_reddit.py` (4 edit sites), then tests, re-run,
 diff, prereg **A48**. **~2.5-3.5 h and it REQUIRES a `fetch_reddit.py` re-run** —
 that is why it was deferred. Full spec below.
+
+**FIX ORDER — do them in this order, one at a time:**
+
+| order | defect | why here | cost |
+|---|---|---|---|
+| 1st | **Defect 1** — name collision guard (C') | rewrites `reddit_detail.csv`, which everything downstream reads | 2.5-3.5 h + re-run |
+| 2nd | **Defect 2** — own-vs-rival split | opening 31 more subs first would multiply Defect 1's collision | ~1 h |
+| 3rd | **Defect 4** — wiki_intl stale QID | independent, self-corrects on re-run | ~10 min |
+| 4th | **Defect 5** — reddit null-vs-zero | folds into the A48 amendment | small |
+
+**There is NO "Defect 0".** The Phase A plan calls the Defect 1 fix `Task 0`
+purely because it runs before that plan's Task 1. Same fix, same work, nothing
+extra. **Defect 6** is a known limit, not scheduled work — do not block on it.
 
 ---
 
