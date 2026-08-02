@@ -242,8 +242,11 @@ is dead code today. `fetch_wikipedia` (en) is the **reference implementation**.
 # PLANS
 
 - `docs/superpowers/plans/2026-07-31-phase-a-attention-affiliation.md` — Tasks
-  1-5 done, 6-7 skipped. **Owner said delete when done.** Keep until Defect 2
-  is fixed (Tasks 3-5 are the template for the corrected re-run), then delete.
+  1-5 done, 6-7 skipped. **Now also holds the Defect 1 C' fix as a blocking
+  `Task 0`** (added 2026-08-02) — full spec, evidence tables, 5 checkbox steps,
+  known limits. That is the executable version; the Defect 1 section above is
+  the summary. **Owner said delete when done.** Keep until BOTH Defect 1
+  (Task 0) and Defect 2 are fixed, then delete.
 - `docs/superpowers/plans/2026-07-31-market-z-activity-sensitivity.md`
   (**A46**) — NOT executed, still fully valid, independent of every defect.
   ~2 h. Do not delete.

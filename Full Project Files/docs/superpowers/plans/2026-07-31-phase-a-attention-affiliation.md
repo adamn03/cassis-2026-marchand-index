@@ -8,6 +8,29 @@
 
 **Tech Stack:** Python 3, pandas, numpy, pytest. Same conventions as the rest of `marchand_index/`.
 
+---
+
+## STATUS (2026-08-02) — Tasks 1–5 built, output NOT publishable
+
+Tasks 1–5 are implemented; Tasks 6–7 were skipped. `attention_affiliation.csv`
+is deliberately **untracked** because its `other_*` columns are invalid: A22
+searched only r/hockey, r/nhl, r/fantasyhockey and own-team subs, so the rival
+bucket came out at **3.1%** (max `rival_reach` = 3) when the real signal is
+68,396 off-sub mentions across 756/771 players, median `rival_reach` 20.
+
+**Two blockers, in order. Neither is optional and the order matters.**
+
+| # | Blocker | Effect on this plan |
+|---|---|---|
+| **0** | **Defect 1 — first-name surname collisions** (Task 0 below) | Rewrites `raw/reddit_detail.csv`, this plan's primary input. Every Task 3–5 number is computed from contaminated attribution until it lands. |
+| **1** | **Defect 2 — `allsubs_ids` never written out** | The rival split needs `raw/reddit_detail_allsubs.csv`, which does not exist yet. ~1 h. |
+
+**Defect 1 must be fixed BEFORE Defect 2.** Opening the rival subs first would
+multiply the collision across 31 more subreddits instead of 1.
+
+Tasks 3–5 are the template for the corrected re-run — **do not delete this plan
+until both blockers are cleared**, then delete per the owner's instruction.
+
 ## Global Constraints
 
 - Working directory for all commands is `Full Project Files/marchand_index/`. `pytest` runs from inside that directory.
@@ -16,7 +39,8 @@
 - Team codes are the project's own set, **not** standard NHL abbreviations: `LA` (not LAK), `NAS` (not NSH), `MON` (not MTL), `VEG` (not VGK), `NJ`, `SJ`, `TB`, `WAS`.
 - No sentiment, no LLM, no network calls anywhere in this phase.
 - `cache/reddit_corpus/` is gitignored and is the local source of record. Never modify it.
-- New pre-registration amendment number for this work is **A45** (next free per SESSION.md). Do not reuse A1–A44.
+- New pre-registration amendment number for this work is **A45** (next free per SESSION.md). Do not reuse A1–A44. **Task 0 carries its own number, A48** — do not merge the two amendments; they are separate rules with separate evidence.
+- **`raw/reddit_detail.csv` row counts quoted throughout this plan (163,937 rows, 61,163 r/hockey pairs) are PRE-Task-0 figures.** They change when Task 0 runs. Re-derive them from the regenerated file rather than trusting the numbers inline below.
 - Do not modify `compute_oaq.py`. Phase A is a companion output, not a change to OAQ.
 - Do not run a production `compute_oaq` — it remains gated on Phase-1 hygiene + Gate-4.
 
@@ -41,6 +65,183 @@ Inputs, all already on disk:
 | `players.csv` | `player_id, full_name, team_code, team_slug` — 771 players |
 | `mover_dates.csv` | 211 rows of `player_id, old_team, new_team, event_date, status` |
 | `market_proxy.csv` | `team_code, team_sub` — the 32-team subreddit mapping |
+
+---
+
+### Task 0 (BLOCKING, added 2026-08-02): Defect 1 — first-name surname collision guard, option C'
+
+**Amendment A48. ~2.5–3.5 h. Requires a full `python fetch_reddit.py` re-run.**
+Nothing in Tasks 1–7 is trustworthy until this lands, because it rewrites
+`raw/reddit_detail.csv`.
+
+#### The bug
+
+13 pool surnames are also another pool player's FIRST name, and each is unique
+in the pool — so `attribute()` (`fetch_reddit.py:437`, *"Single-member groups
+always win"*) hands every hit over with no evidence check. Every "Quinn Hughes"
+mention credits **Jack Quinn**; every "Cole Caufield" credits **Ian Cole**.
+
+The 13: `beck blake cole colton connor frank james joshua paul quinn reilly
+shea thomas`. Only `connor` / `james` / `paul` are guarded today.
+
+Root cause is a threshold artifact, not a design flaw. Prong **P2a** in
+`guard_set_a43` already implements the right rule (*"≥share of occurrences
+followed by a pool surname"*), but `fetch_reddit.py:317` gates all of P2 behind
+`GUARD_DF_THRESHOLD = 0.01`, and `quinn` DF is 0.00931 — short by 0.0007.
+`cole` 0.00865, `thomas` 0.00518.
+
+#### The rule — C'
+
+Per submission containing collision surname `sn` (owner = the player carrying
+it as a surname), classify into exactly one state:
+
+| state | condition | verdict |
+|---|---|---|
+| **S1** | EVERY occurrence of `sn` is immediately followed by the surname of a pool player whose FIRST name is `sn` | proven first-name usage → owner ineligible |
+| **S2** | ≥1 standalone occurrence AND the owner's A15 checker fires | owner eligible |
+| **S3** | ≥1 standalone occurrence, no first-name evidence | UNKNOWN → resolve by venue |
+
+S3 resolution: **eligible if the submission is in the owner's own team sub;
+otherwise ambiguous** (disclosed, counted for nobody). r/hockey never resolves
+S3 — that is precisely where the contamination lives.
+
+**S1 takes precedence over S2.** Verified: 14 r/hockey posts have every
+`connor` followed by a pool surname *and* the checker firing, e.g.
+`"Instagram story posted by Lauren Kyle (Connor McDavid's wife)"`. Kyle Connor
+is credited for those today.
+
+#### Two scoping rules — do not drop either
+
+1. **P1-strict (this is the `'` in C').** A surname already guarded by A43
+   prong **P1** (common English word) gets **NO own-sub allowance**. Own-sub
+   context resolves a *rival-player* confuser; it cannot resolve an
+   *ordinary-word* confuser, which appears in every sub equally. Verified: of
+   the 13, exactly **`james` and `paul`** are in `english_top1000.txt`. Without
+   this rule, bare "stanley" in r/winnipegjets counts for **Logan Stanley** and
+   reopens open item #2.
+2. **The own-sub allowance applies ONLY to collision surnames**, never to
+   P1/P2b guards generally. The other 6 guarded players stay untouched, so the
+   13 below are the **complete blast radius** — no unmeasured spillover.
+
+#### Measured evidence (probe, live corpus, 250,004 submissions)
+
+| token | owner | hits | S1 | S2 | S3 | S3 own-sub | S3 r/hockey |
+|---|---|---|---|---|---|---|---|
+| connor | Kyle Connor | 1539 | 55% | 18% | 27% | 84 | 325 |
+| quinn | Jack Quinn | 735 | 44% | 35% | 21% | 95 | 56 |
+| cole | Ian Cole | 589 | **75%** | 9% | 17% | 1 | 97 |
+| thomas | Robert Thomas | 495 | 27% | 36% | 38% | 71 | 116 |
+| paul | Nick Paul | 421 | 10% | 22% | **68%** | 49 | 239 |
+| blake | Jackson Blake | 404 | 21% | 43% | 36% | 103 | 43 |
+| frank | Ethen Frank | 355 | 31% | 23% | 47% | 27 | 139 |
+| reilly | Mike Reilly | 286 | 16% | 15% | **69%** | 22 | 174 |
+| james | Dominic James | 240 | 13% | 24% | 62% | 52 | 98 |
+| colton | Ross Colton | 219 | 53% | 32% | 16% | 23 | 12 |
+| beck | Owen Beck | 215 | 20% | 40% | 40% | 79 | 6 |
+| joshua | Dakota Joshua | 212 | 4% | 48% | 48% | 78 | 24 |
+| shea | Ryan Shea | 212 | 31% | 35% | 34% | 54 | 19 |
+
+| option | mentions | delta | → ambiguous |
+|---|---|---|---|
+| today | 4152 | — | |
+| **A** blanket guard (the original SESSION plan) | 1545 | **−2607 (−63%)** | 0 |
+| **B** bigram only | 3631 | −521 | 0 |
+| **C** bigram + own-sub | 2283 | −1869 | 1348 |
+| **C' SELECTED** | **2182** | **−1970** | 1449 |
+
+**Option A is rejected** — do not re-propose the 4-line blanket guard. It
+destroys 63% of these players' Reddit signal, which is a worse error than the
+contamination it removes.
+
+Expect **Ian Cole 589 → 53** (should close the Ian Cole half of open item #2)
+and **Kyle Connor 280 → 364 (+84)**. That increase is the point: C' is also a
+**recall** fix, because the existing A42 guard has been silently deleting real
+mentions for the 9 guarded players.
+
+Bigram rule is **not knife-edge**: tight (next token = surname of a player
+whose first name is `sn`) vs loose (next token = any pool surname) differ by
+≤26 posts per name, and by **1** for `cole`. Use tight.
+
+#### Steps
+
+- [ ] **Step 1: Implement C' — 4 edit sites in `fetch_reddit.py`**
+
+| # | Site | Change |
+|---|---|---|
+| 1 | ~line 564 | Build the collision set (surname unique in pool AND in `pool_first_names`), plus per surname `fn_surnames` = surnames of players whose first name is that token. |
+| 2 | `build_groups` (~400) | Carry `collision`, `fn_surnames`, `p1` onto each member dict. |
+| 3 | `scan_corpus` (~512, 521) | `tokens` is currently a SET (`match_tokens`); the bigram test needs ORDER. Restructure to `toks = match_fold(...).split()` then `tokens = set(toks)` — same work, no extra cost. Then the 3-state eligibility block replaces lines 521–524. |
+| 4 | counts output (~626) | Disclosure column(s). |
+
+**Read the new member fields via `m.get(...)`, not `m[...]`.** That keeps
+`test_fetch_reddit_a42.py`'s `_member` helper and all 43 existing reddit tests
+passing untouched, with no signature change to `scan_corpus` / `build_groups`.
+
+Confirmed safe: **no non-test code reads the guard columns** (`affiliation.py`
+only says "guard" in prose). Downstream is `reddit_counts.csv` +
+`reddit_detail.csv` consumers only, and there is still no production
+`compute_oaq` run, so nothing cascades.
+
+- [ ] **Step 2: Tests — `tests/test_fetch_reddit_a48.py`**
+
+Must cover: each of S1 / S2 / S3; S1 precedence over S2 (the Lauren Kyle case);
+own-sub allowance fires for a collision surname; own-sub allowance does NOT
+fire for a P1 surname; the existing 9 guarded players stay guarded; and
+**`mcdavid` is NOT guarded** (the P2b `partner not in pool_first_names`
+exemption must survive — this is the regression that matters).
+
+- [ ] **Step 3: Re-run**
+
+```bash
+python fetch_reddit.py        # minutes; landing JSONs are cached
+```
+
+- [ ] **Step 4: Verify against the probe oracle**
+
+```bash
+python diagnostics/probe_firstname_guard_options.py
+```
+
+Assert pipeline `reddit_mentions_12mo` **equals the probe's C' column for all
+13**. This makes the before/after step pass/fail rather than eyeballing a diff.
+The probe is read-only, makes no network calls, and imports folding /
+tokenizing / the A15 checker from `fetch_reddit` rather than reimplementing
+them. Committed at `3a96f8e`.
+
+Then diff `raw/reddit_counts.csv` + `raw/reddit_detail.csv` across **all 771
+rows**, not just the 13, and produce a before/after table.
+
+- [ ] **Step 5: Pre-registration amendment A48**
+
+A48 must document, not bury: the 3-state rule; P1-strict scoping; that it
+**overrides A42 rule 2** (*"team context never suffices for guarded
+surnames"*); that it **overrides P2** for collision surnames (`connor` is
+P2-guarded today and C' is strictly more permissive for it — defensible
+because per-post bigram evidence beats a token-level aggregate, but it is a
+real prereg change); and the tight-vs-loose bigram sensitivity. Fold **Defect 5**
+(reddit null-vs-zero for the two Petterssons) into the same amendment.
+
+#### Two open implementation risks
+
+1. **Bucket split.** S1 ("proven not him") and S3-in-r/hockey ("unknown") are
+   different disclosures — `guard_filtered` vs `ambiguous`. A third column may
+   be needed to keep them clean (+20 min).
+2. **Movement outside the 13.** The positional-token switch should change no
+   other player's count. If the 771-row diff shows movement elsewhere, explain
+   it before proceeding.
+
+#### Known limits — carry to the poster, do not quietly drop
+
+- **The own-sub allowance (605 mentions) rests on a base-rate judgment, not on
+  labelled data.** The owner declined the ~20–30 min hand-label validation on
+  2026-08-02 for time: *"surname and/or team name mention is enough to make it
+  accurate enough most of the time."* Deliberate call, recorded as an
+  honest-limits (criterion 6) item. Re-offer if the schedule loosens.
+- **Defect 6 — A15 checker false positives.** The checker fires on the first
+  name appearing ANYWHERE in the post, so "Lauren Kyle" credits Kyle Connor.
+  Under C' these land in **S2**, the keep-bucket, so every option carries a
+  small residual over-count. C' is less wrong, not right. Quantified only for
+  `connor` (14 posts). Not worth fixing before the poster; note it in limits.
 
 ---
 
@@ -1206,15 +1407,29 @@ git commit -m "docs(a45): pre-register reddit affiliation split"
 
 ## Verification
 
+**Task 0 first** — it has its own oracle and gates everything below:
+
+```bash
+python fetch_reddit.py                                  # re-run after the C' change
+python diagnostics/probe_firstname_guard_options.py     # must match C' for all 13
+```
+
 After all tasks:
 
 ```bash
-pytest -q                                  # 271 passing
+pytest -q                                  # see note
 python compute_affiliation.py              # regenerates the CSV
 python -m diagnostics.affiliation_report   # prints the #3B evidence
 ```
 
+Test count: this plan was written when the suite was 240 and predicted 271. The
+suite is now **302** (A47 landed since), and Task 0 adds ~10–12 more. Treat 271
+as stale — assert "no regressions against the count at the start of the
+session", not a fixed number.
+
 `attention_affiliation.csv` should hold 771 rows. The `own`/`other`/`neutral`
 split printed by the driver should be close to 63% attributed / 37% neutral —
-that ratio is set by r/hockey's 61,163 mention pairs out of 163,937 and is the
-single best signal that the venue map is complete.
+**but that ratio, and the 61,163 / 163,937 figures behind it, are PRE-Task-0.**
+Task 0 removes ~1,970 contaminated attributions and moves ~1,449 into the
+ambiguous bucket, so re-derive the expected split from the regenerated
+`reddit_detail.csv` before treating any mismatch as a venue-map bug.
