@@ -17,10 +17,12 @@ that is why it was deferred. Full spec below.
 
 | order | defect | why here | cost |
 |---|---|---|---|
-| 1st | **Defect 1** — name collision guard (C') | rewrites `reddit_detail.csv`, which everything downstream reads | 2.5-3.5 h + re-run |
+| 1st | **Defect 1 + Defect 5 TOGETHER** | both edit `fetch_reddit.py` and share ONE re-run; splitting them costs a second full re-run for no benefit | 3-4 h + one re-run |
 | 2nd | **Defect 2** — own-vs-rival split | opening 31 more subs first would multiply Defect 1's collision | ~1 h |
-| 3rd | **Defect 4** — wiki_intl stale QID | independent, self-corrects on re-run | ~10 min |
-| 4th | **Defect 5** — reddit null-vs-zero | folds into the A48 amendment | small |
+| 3rd | **Defect 4** — wiki_intl stale QID | independent, no code, self-corrects on re-run | ~10 min |
+
+All four are fully spec'd — edit sites, conditions and tests are written down.
+No design work left; next session is execution.
 
 **There is NO "Defect 0".** The Phase A plan calls the Defect 1 fix `Task 0`
 purely because it runs before that plan's Task 1. Same fix, same work, nothing
@@ -216,13 +218,90 @@ across 31 more subreddits.
 94/764). `wiki_pageviews` fixed this via its `nhl_id` tier; intl was never
 regenerated. Weight 0.11. **Self-corrects on re-run** — no code change.
 
-# DEFECT 5 (low, folds into A48) — reddit null-vs-zero
+# DEFECT 5 — reddit null-vs-zero. SPEC'D 2026-08-02. ~30 min. DO IT WITH DEFECT 1.
 
 Both Petterssons: `reddit_mentions_12mo=0`, `reddit_upvotes_12mo=0`,
 `unique_authors=0`, **`reddit_status="ok"`**, 433 `ambiguous_mentions`
 discarded. No-cross-credit is the right call, but an $11.6M franchise center
 scoring a true zero on 44% of CES weight while flagged "ok" reads as measured.
 Should be NULL -> renorm, not 0. (Same principle A47 settled for Trends.)
+
+**Do this in the SAME edit pass as Defect 1** — both touch `fetch_reddit.py`
+and both need the same re-run. Done together it costs **zero extra re-runs**;
+done separately it costs a second full one.
+
+## The rule
+
+A zero is *measured* only if we looked and found nothing. If the surname
+appeared in the corpus but every occurrence was discarded, we did not measure
+zero — **we failed to measure.** Those are different and must not share a
+status value.
+
+New `reddit_status` value **`unmeasurable`**, set when all three hold:
+
+```
+status would otherwise be "ok" or "partial"
+AND reddit_mentions_12mo == 0
+AND (ambiguous_mentions > 0 OR guard_filtered_mentions > 0)
+```
+
+A player with 0 mentions, 0 ambiguous and 0 guard-filtered is a **genuine**
+zero and stays `ok`. That distinction is the whole point of the defect.
+
+## Measured blast radius (from the current CSV, no re-run needed)
+
+| bucket | rows |
+|---|---|
+| status != null with 0 mentions | 12 |
+| -> `unmeasurable` via `ambiguous > 0` | **2** (both Elias Petterssons, 433 each) |
+| -> `unmeasurable` via `guard_filtered` only | 0 |
+| -> TRUE zero, stays `ok` | 10 |
+
+**The rule is defined by the condition, not by that list.** Defect 1's C' fix
+changes `ambiguous_mentions` and `guard_filtered_mentions` for the 13 collision
+players, so re-check the counts after the re-run — the set can grow.
+
+## Edit sites — 2 files
+
+1. **`fetch_reddit.py:605-612`** — the status ladder. Add the `unmeasurable`
+   branch after `ok`/`partial` are decided (it needs `a["ambiguous"]` and
+   `a["guard_filtered"]`, which are already in `acc`).
+   **Keep every disclosure column populated** for `unmeasurable` rows — unlike
+   `"null"`, which blanks them at lines 621-629. The evidence for why the row
+   is NULL must stay visible in the CSV.
+2. **`compute_oaq.py:280`** — extend `null_mask`:
+
+```python
+null_mask = (status.isna() | (status == "null") | (status == "")
+             | (status == "unmeasurable"))
+```
+
+Line 281 then NULLs both reddit columns, and renormalization is already the
+post-A47 default — same path Trends NULLs take. **No renormalization code to
+write.**
+
+**`detail_rows` (line 632) needs no change**: an `unmeasurable` row has
+`mentions == 0`, so `a["scores"]` is empty and it contributes no detail rows
+either way.
+
+## Tests
+
+- `unmeasurable` fires: 0 mentions + ambiguous > 0.
+- `unmeasurable` fires: 0 mentions + guard_filtered > 0, ambiguous == 0.
+- Stays `ok`: 0 mentions, 0 ambiguous, 0 guard_filtered (the 10 true zeros).
+- Stays `ok`: mentions > 0 with ambiguous > 0 (ambiguity alone must NOT trigger).
+- `"null"` still wins when no corpus file is present.
+- `compute_oaq` NULLs both reddit columns on `unmeasurable` and the weights
+  renormalize (assert to 1e-12, as `test_trends_null_taxonomy_a47.py` does).
+- Disclosure columns remain populated on an `unmeasurable` row.
+
+## Prereg
+
+Folds into **A48**. Record that `unmeasurable` is a *third* state distinct from
+both `ok` and `null`: `null` = the source was unavailable, `unmeasurable` = the
+source was read but the player could not be separated within it. Cite the
+A47 Trends precedent for NULL -> renormalize, and note the **Wiki raw-0
+exception still stands** (a missing article does mean no salience).
 
 # Non-defect, cosmetic
 
