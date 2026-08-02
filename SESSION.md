@@ -2,16 +2,22 @@
 Date: 2026-08-02
 Active: NHL_Marchand_Index — FULL BUILD. Branch: `marchand-index-full-build`.
 
-LAST: Designed + measured the **Defect 1** fix instead of building it. Probe
-`diagnostics/probe_firstname_guard_options.py` (committed `3a96f8e`) compares
-four options on the live corpus. Owner selected **C'**. No pipeline code
-touched.
+LAST: **Planning session — zero production code written, by design.** Measured
+the Defect 1 fix instead of building it (owner had no time for a re-run), then
+spec'd the remaining defects so next session is pure execution. Built probe
+`diagnostics/probe_firstname_guard_options.py` comparing four fix options on
+the live corpus; owner selected **C'**. Spec'd Defect 5. Folded the Defect 1
+spec into the Phase A plan as blocking `Task 0`. Added two doc-hygiene rules to
+`CLAUDE.md`.
 
-STATUS: working — pipeline unchanged, suite still **302, all green**.
+STATUS: working — pipeline untouched, suite still **302, all green**. Nothing
+half-applied.
 
-NEXT: implement **C'** in `fetch_reddit.py` (4 edit sites), then tests, re-run,
-diff, prereg **A48**. **~2.5-3.5 h and it REQUIRES a `fetch_reddit.py` re-run** —
-that is why it was deferred. Full spec below.
+NEXT: implement **Defect 1 (C') + Defect 5 together** in `fetch_reddit.py`,
+then tests, one re-run, verify against the probe oracle, diff, prereg **A48**.
+**3-4 h and it REQUIRES a `fetch_reddit.py` re-run** — that is the only reason
+it was deferred. Full specs below; executable checklist is Task 0 of the Phase
+A plan.
 
 **FIX ORDER — do them in this order, one at a time:**
 
@@ -27,6 +33,27 @@ No design work left; next session is execution.
 **There is NO "Defect 0".** The Phase A plan calls the Defect 1 fix `Task 0`
 purely because it runs before that plan's Task 1. Same fix, same work, nothing
 extra. **Defect 6** is a known limit, not scheduled work — do not block on it.
+
+## Where each spec lives
+
+| defect | spec |
+|---|---|
+| 1 (C') | **Task 0** of `docs/superpowers/plans/2026-07-31-phase-a-attention-affiliation.md` — checkbox steps, evidence tables, limits. Summary below. |
+| 5 | Defect 5 section below — rule, blast radius, 2 edit sites, 7 tests |
+| 2 | Defect 2 section below — 5 steps, line numbers re-verified 2026-08-02 |
+| 4 | Defect 4 section below — no code, re-run only |
+
+## Commits this session (all docs, no code)
+
+`3a96f8e` probe + SESSION rewrite · `fc6207b` Task 0 into Phase A plan + 2
+CLAUDE.md rules · `c409d08` fix order + "no Defect 0" · `13c1215` Defect 5 spec
+
+New in `CLAUDE.md`, both prompted by problems hit this session:
+**File hygiene** (append to the file that owns the topic; new files only for
+runnable artifacts) and **Spec-to-code reconciliation** (after writing code,
+reconcile the driving md — with an explicit carve-out that `preregistration.md`
+is NEVER edited to match code; divergence means fixing the code or writing a
+new numbered amendment).
 
 ---
 
@@ -388,9 +415,10 @@ OF RECORD; `english_top1000.txt` pinned (never edit). Amendments: **A45 =
 affiliation/rival split** (claimed by `test_affiliation_a45.py` + 5 commits),
 **A46 = market_z activity lens** (plan written), **A47 = Trends entity guard
 (DONE, committed)**, **A48 = Defect 1 C' guard + Defect 5 null rule**. Next
-free: **A49**. UNTRACKED ON PURPOSE: `attention_affiliation.csv` (invalid
-`other_*` columns) and `diagnostics/probe_firstname_guard_options.py` (new this
-session, not yet committed). Still NO production `compute_oaq` run (gated:
-Phase-1 hygiene + Gate-4).
+free: **A49**. A48 also introduces `reddit_status = "unmeasurable"`, a THIRD
+state alongside `ok` and `null`. UNTRACKED ON PURPOSE: `attention_affiliation.csv`
+only (invalid `other_*` columns). `diagnostics/probe_firstname_guard_options.py`
+IS committed (`3a96f8e`) and is the verification oracle for Defect 1. Still NO
+production `compute_oaq` run (gated: Phase-1 hygiene + Gate-4).
 
 Deadline: poster 2026-09-12 (~5.9 wk).
