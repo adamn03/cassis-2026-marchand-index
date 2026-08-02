@@ -384,22 +384,14 @@ is dead code today. `fetch_wikipedia` (en) is the **reference implementation**.
 - **#4** — degenerate peer set for thin rows with extreme rate features
   (Kevin Rooney).
 - **Owner data request — IG DONE 2026-08-02, X BLOCKED.**
-  `raw/team_social.csv`, 32 rows, team codes verified against `market_proxy.csv`.
-  IG is an exogenous *stock* fixing reddit's English/US skew — different job
-  from the activity *flow*, not a replacement.
-  - **Instagram: all 32 collected** from public profile pages. PIT 2.8M is the
-    top by a wide margin; UTA 286K the bottom. **Spearman(ig_followers,
-    team_sub_subscribers) = 0.728** — correlated with the Reddit measure but
-    not redundant, which is the case for using it as an independent stock.
-  - **X/Twitter: NOT OBTAINABLE at $0.** `x.com` returns **HTTP 402 Payment
-    Required**, Socialblade **403**. Column exists but is empty for all 32 with
-    `x_status = blocked_402`. Needs hand collection or a paid API — do not
-    burn time re-attempting the scrape.
-  - **Precision is NOT uniform — read `ig_precision` before using the column.**
-    Sub-1M teams are 3 sig figs (±0.1%); the 6 teams over 1M are rounded to
-    0.1M (WAS "1M" is ±5%). The worst precision sits on exactly the big-market
-    teams that do the most work in a skew correction. If IG reaches a headline
-    number, either hand-verify those 6 or use rank rather than level.
+  `raw/team_social.csv`, 32 rows, team level only, codes verified against
+  `market_proxy.csv`. Numbers are recorded exactly as the IG profile pages
+  reported them: `ig_followers_verbatim` is the raw string, `ig_followers` the
+  parsed integer, `ig_precision` notes which are rounded to 0.1M.
+  **X/Twitter: not obtainable** — `x.com` returns HTTP 402, Socialblade 403.
+  Column present, empty for all 32, `x_status = blocked_402`. Needs hand
+  collection; don't re-attempt the scrape.
+  No downstream use decided yet.
 
 # Design decisions not yet pre-registered
 
