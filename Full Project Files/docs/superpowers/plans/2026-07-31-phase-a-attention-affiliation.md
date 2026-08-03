@@ -10,7 +10,15 @@
 
 ---
 
-## STATUS (2026-08-02) — Tasks 1–5 built, output NOT publishable
+## STATUS (2026-08-03) — PLAN COMPLETE, DELETE-ELIGIBLE
+
+All tasks done (0–7; 6 and 7 built 2026-08-03 once the output became valid).
+`attention_affiliation.csv` is valid, tracked, and published to
+`final_dataset/affiliation/`. Owner pre-authorized deleting this file once
+Defect 1 + Defect 2 both landed — an automated delete was blocked by
+tooling permissions, so the owner should remove it (git history retains it).
+
+## OLD STATUS (2026-08-02) — Tasks 1–5 built, output NOT publishable
 
 Tasks 1–5 are implemented; Tasks 6–7 were skipped. `attention_affiliation.csv`
 is deliberately **untracked** because its `other_*` columns are invalid: A22
@@ -23,7 +31,7 @@ bucket came out at **3.1%** (max `rival_reach` = 3) when the real signal is
 | # | Blocker | Effect on this plan |
 |---|---|---|
 | **0** | **DONE 2026-08-03 — Defect 1 C' landed** (Task 0 below, all steps ticked). `raw/reddit_detail.csv` regenerated: 161,947 rows (was 163,937). Oracle passed 13/13. Prereg A48 written. | cleared |
-| **1** | **Defect 2 — `allsubs_ids` never written out** | The rival split needs `raw/reddit_detail_allsubs.csv`, which does not exist yet. ~1 h. Prepared change set staged (see SESSION). |
+| **1** | **DONE 2026-08-03 — Defect 2 landed** (commits `46679ed` code, `700a143` data + prereg A45). `raw/reddit_detail_allsubs.csv` written (224,510 rows); affiliation split: own 43.6% / other 24.7% / neutral 31.7%. | cleared |
 
 **Defect 1 must be fixed BEFORE Defect 2.** Opening the rival subs first would
 multiply the collision across 31 more subreddits instead of 1.
