@@ -185,6 +185,18 @@ def _to_num(df: pd.DataFrame, cols: list[str]) -> None:
         df[c] = pd.to_numeric(df[c], errors="coerce")
 
 
+def reddit_null_mask(status: pd.Series) -> pd.Series:
+    """True where both reddit columns must be NULL (-> renormalize, A47 path).
+
+    Covers a missing row / blank, explicit "null" (source unavailable), and
+    A48 "unmeasurable" (the corpus was read but the player could not be
+    separated within it — every candidate mention was discarded as ambiguous
+    or guard-filtered). Failing to measure is not measuring zero.
+    """
+    s = status.astype("string").str.strip().str.lower()
+    return s.isna() | s.isin(("null", "", "unmeasurable"))
+
+
 def load_inputs() -> pd.DataFrame:
     """Join all inputs on player_id into one wide DataFrame (one row per pooled player).
 
@@ -274,10 +286,10 @@ def load_inputs() -> pd.DataFrame:
     if "reddit_status" not in df.columns:
         df["reddit_status"] = np.nan
 
-    # Reddit NULL rule: status 'null' (or missing row) -> NULL both reddit cols.
+    # Reddit NULL rule: status 'null' / missing row / A48 'unmeasurable'
+    # -> NULL both reddit cols (renormalization is the default downstream).
     _to_num(df, ["reddit_mentions_12mo", "reddit_upvotes_12mo"])
-    status = df["reddit_status"].astype("string").str.strip().str.lower()
-    null_mask = status.isna() | (status == "null") | (status == "")
+    null_mask = reddit_null_mask(df["reddit_status"])
     df.loc[null_mask, ["reddit_mentions_12mo", "reddit_upvotes_12mo"]] = np.nan
 
     _to_num(
