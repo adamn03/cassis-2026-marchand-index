@@ -315,3 +315,33 @@ def test_build_submission_index_skips_malformed_lines(tmp_path: Path):
     index, volume = ca.build_submission_index(corpus)
     assert len(index) == 1
     assert volume["leafs"] == 1
+
+
+from diagnostics import affiliation_report as ar
+
+
+def test_team_own_share_excludes_low_n_rows():
+    affil = pd.DataFrame(
+        {
+            "player_id": [1, 2, 3],
+            "team_code": ["MON", "MON", "BOS"],
+            "own_share": [0.9, 0.1, 0.5],
+            "low_n": [False, True, False],
+        }
+    )
+    out = ar.team_own_share(affil).set_index("team_code")
+    assert out.loc["MON", "n_players"] == 1
+    assert out.loc["MON", "median_own_share"] == pytest.approx(0.9)
+
+
+def test_team_own_share_sorted_descending():
+    affil = pd.DataFrame(
+        {
+            "player_id": [1, 2],
+            "team_code": ["BOS", "MON"],
+            "own_share": [0.2, 0.8],
+            "low_n": [False, False],
+        }
+    )
+    out = ar.team_own_share(affil)
+    assert list(out["team_code"]) == ["MON", "BOS"]

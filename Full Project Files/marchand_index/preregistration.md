@@ -1384,6 +1384,74 @@ introduced: none — the rule is evidence-conditional, not fitted. A11 window,
 
 ---
 
+**A45 (definition fixed 2026-07-31; recorded 2026-08-03) — Reddit attention
+affiliation split (Phase A).** Recorded out of numeric order: the number was
+reserved when the Phase A plan was written (2026-07-31), which fixed every
+definition and threshold below; A47 and A48 were locked in the interim. This
+amendment is appended BEFORE the corrected (all-subs) output is computed or
+inspected.
+
+**Provenance disclosure (not hidden).** A first `attention_affiliation.csv`
+was computed 2026-07-31 from `raw/reddit_detail.csv`, which is scoped to each
+player's A22 counting subs. Its own/neutral buckets were valid but the rival
+bucket measured trade history by construction (551/771 players at
+`rival_reach` 0, max 3, `other` share 3.1%). That file was never published
+(untracked on purpose, `PUBLISH_DELIVERABLE = False`) and its diagnosis IS
+Defect 2. The corrected input is `raw/reddit_detail_allsubs.csv`: every
+attributed winner across all 36 corpus subreddits with venue kept, generated
+AFTER the A48 collision guard so the first-name collision class never entered
+rival venues (ordering pre-committed in SESSION 2026-08-02). No definition,
+threshold, or bucket rule changed between the two runs — only the input scope
+Defect 2 repaired.
+
+**What it measures.** For each pool player, the share of their Reddit
+attention originating from their own fanbase versus rival fanbases.
+Descriptive companion output only: it does not enter `compute_oaq.py`, changes
+no CES weight, and does not alter `OAQ_portable`. No sentiment, no LLM, no
+causal claim.
+
+**Buckets.** Each `(player_id, submission_id)` mention pair is assigned
+exactly one bucket by the subreddit it appeared in: `own` — the sub belongs to
+a team the player was on at that submission's timestamp; `other` — any other
+team's sub; `neutral` — r/hockey, r/nhl, r/fantasyhockey. Team-at-time is
+reconstructed from `players.csv` (end-of-window team) walked backwards through
+`mover_dates.csv` rows with `status == "dated"`; `excluded_rename_artifact`
+rows are dropped; both Utah subs map to UTA.
+
+**Normalizer — submissions, not subscribers.** Every count is divided by the
+collected submission count of its subreddit. Subscriber count is explicitly
+rejected: r/BostonBruins has more subscribers than r/Habs (119,306 vs 101,589)
+but ~1/5 the submissions, so a subscriber-normalized figure would encode
+posting culture as player attention.
+`own_share = own_intensity / (own_intensity + other_intensity)`, where each
+intensity sums `mentions_in_sub / submissions_in_sub` over subs. Neutral
+mentions are reported but excluded from `own_share`'s denominator.
+`own_share_scored` (score+1 weighting) is a robustness check; the count-based
+figure is primary.
+
+**Publish gate.** `low_n = attributed_mentions < 30` (`LOW_N_MIN`, fixed in
+the 2026-07-31 plan). `low_n` rows are excluded from every published ranking
+and diagnostic table; the threshold will not be adjusted after inspection.
+A48 `unmeasurable` players contribute no detail rows, so they appear with
+`attributed_mentions = 0`, `low_n` true — consistent with their NULL
+treatment in OAQ.
+
+**Limits of claim.** Subreddit is a proxy for fanbase allegiance, not proof
+(a rival fan can post anywhere). Neutral-venue pairs cannot be attributed;
+shares are computed on the attributed remainder and reported as such. The
+corpus covers submissions only, not comments. Collection volume differs
+across subreddits; normalization fixes the arithmetic, not any sampling bias
+in what was collected. Any use of `own_share` to interpret `OAQ_portable`
+(open item #3B) is an observed association, not a correction.
+
+**Anti-tuning compliance (§13):** definitions and the `low_n` threshold
+predate the corrected output; the only post-hoc change is input scope
+(Defect 2 repair). No composite, OAQ, validation, or hypothesis quantity is
+touched. Tests: `tests/test_affiliation_a45.py` (29),
+`tests/test_reddit_allsubs_a45.py` (4); suite 327 → 331.
+
+---
+
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
 
 **V-A11-Trends (2026-06-26) — live spot-check confirming `raw/trends.csv` was fetched on the A11 fixed window, not a run-anchored one.** `fetch_trends.py:52` uses `timeframe="2025-04-18 2026-04-17"`, but the stored `trends.csv` carries `fetch_date=2026-06-20` and the fixed-window code only landed 2026-06-20 13:21 (commit `0c3ccbe`); whether the file predated the fix that day was not decidable from git/data alone. A single live `pytrends` call resolves it (the test is window-vintage, so one salient distinctive-name player suffices). **Player: Connor McDavid** (stored `trends_12mo = 24.7358`; he had a 2026 playoff run, so the two windows diverge maximally). Result: a fresh **fixed-window** [2025-04-18, 2026-04-17] fetch gives mean **26.13** (n=53) — **5.6 % from stored, within Trends sampling noise → MATCH**, i.e. the stored file used the fixed window. The same player's **run-anchored** (`today 12-m`) series shows the expected post-window playoff spike the fixed window correctly excludes — weeks 2026-04-19 = 32, **2026-04-26 = 47 (peak)**, 2026-05-03 = 33, all after the 2026-04-17 window end. Conclusion: the `trends` component (§4/A12 weight 0.16) is on the A11 window and **excludes the 2026-playoff confound**; the SESSION residual is closed by live evidence. No file or weight changes; verification only. (One live call; perishable, so not re-run across the set.)

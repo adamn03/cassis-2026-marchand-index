@@ -376,7 +376,11 @@ is dead code today. `fetch_wikipedia` (en) is the **reference implementation**.
 - **#2** — `OAQ_portable` low tail. Ian Cole half expected to resolve on the
   Defect 1 re-run (589 -> 53); **Logan Stanley half unaffected, still open**.
 - **#3A** — missing-skill star via imputation (Barkov #15 on NaN skill).
-- **#3B** — MON floods top-100. Spearman(subscribers, in-window submissions) =
+- **#3B** — A45 affiliation evidence (2026-08-03, valid allsubs run): MON
+  median own_share **0.738, rank 7/32** (league median 0.639) — elevated but
+  not extreme, leans interpretation (b): Habs players genuinely over-index;
+  not a clean market-strip failure. UTA 0.121 is the rename data hole, ignore.
+- **#3B (original)** — MON floods top-100. Spearman(subscribers, in-window submissions) =
   **0.299** across 32 teams. MON 101,589 subs / **14,510 submissions** (1st) vs
   TOR 359,680 / 9,603. UTA is a data hole (rename split the sub) and its bad
   subscriber figure is **already inside the A30 primary**. A46 turns this into
