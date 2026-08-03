@@ -1,33 +1,33 @@
-team_code,team_name,ig_handle,ig_followers,ig_followers_verbatim,ig_precision,x_followers,x_status,source,retrieved_on
-ANA,Anaheim Ducks,anaheimducks,626000,626K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-BOS,Boston Bruins,nhlbruins,1800000,1.8M,millions_rounded,,blocked_402,instagram_public_profile,2026-08-02
-BUF,Buffalo Sabres,buffalosabres,597000,597K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-CGY,Calgary Flames,nhlflames,508000,508K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-CAR,Carolina Hurricanes,canes,695000,695K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-CHI,Chicago Blackhawks,nhlblackhawks,1800000,1.8M,millions_rounded,,blocked_402,instagram_public_profile,2026-08-02
-COL,Colorado Avalanche,coloradoavalanche,931000,931K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-CBJ,Columbus Blue Jackets,bluejacketsnhl,477000,477K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-DAL,Dallas Stars,dallasstars,731000,731K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-DET,Detroit Red Wings,detroitredwings,997000,997K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-EDM,Edmonton Oilers,edmontonoilers,1100000,1.1M,millions_rounded,,blocked_402,instagram_public_profile,2026-08-02
-FLA,Florida Panthers,flapanthers,634000,634K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-LA,Los Angeles Kings,lakings,770000,770K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-MIN,Minnesota Wild,minnesotawild,782000,782K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-MON,Montreal Canadiens,canadiensmtl,1300000,1.3M,millions_rounded,,blocked_402,instagram_public_profile,2026-08-02
-NAS,Nashville Predators,predsnhl,514000,514K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-NJ,New Jersey Devils,njdevils,615000,615K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-NYI,New York Islanders,nyislanders,517000,517K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-NYR,New York Rangers,nyrangers,1300000,1.3M,millions_rounded,,blocked_402,instagram_public_profile,2026-08-02
-OTT,Ottawa Senators,senators,436000,436K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-PHI,Philadelphia Flyers,philadelphiaflyers,860000,860K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-PIT,Pittsburgh Penguins,penguins,2800000,2.8M,millions_rounded,,blocked_402,instagram_public_profile,2026-08-02
-SJ,San Jose Sharks,sanjosesharks,901000,901K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-SEA,Seattle Kraken,seattlekraken,646000,646K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-STL,St. Louis Blues,stlouisblues,725000,725K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-TB,Tampa Bay Lightning,tblightning,810000,810K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-TOR,Toronto Maple Leafs,mapleleafs,1500000,1.5M,millions_rounded,,blocked_402,instagram_public_profile,2026-08-02
-UTA,Utah Mammoth,utahmammoth,286000,286K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-VAN,Vancouver Canucks,canucks,781000,781K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-VEG,Vegas Golden Knights,vegasgoldenknights,854000,854K,thousands,,blocked_402,instagram_public_profile,2026-08-02
-WAS,Washington Capitals,capitals,1000000,1M,millions_rounded,,blocked_402,instagram_public_profile,2026-08-02
-WPG,Winnipeg Jets,nhljets,548000,548K,thousands,,blocked_402,instagram_public_profile,2026-08-02
+team_code,team_name,ig_handle,ig_followers,ig_followers_verbatim,ig_precision,x_followers,x_status,source,retrieved_on,x_followers_verbatim,x_precision,x_source,x_retrieved_on
+ANA,Anaheim Ducks,anaheimducks,626000,626K,thousands,576000,manual_scrape_public,instagram_public_profile,2026-08-02,576K,thousands,public_profile_manual,2026-08-03
+BOS,Boston Bruins,nhlbruins,1800000,1.8M,millions_rounded,1500000,manual_scrape_public,instagram_public_profile,2026-08-02,~1.5M,approx,public_profile_manual,2026-08-03
+BUF,Buffalo Sabres,buffalosabres,597000,597K,thousands,873000,manual_scrape_public,instagram_public_profile,2026-08-02,873K,thousands,public_profile_manual,2026-08-03
+CGY,Calgary Flames,nhlflames,508000,508K,thousands,637000,manual_scrape_public,instagram_public_profile,2026-08-02,637K,thousands,public_profile_manual,2026-08-03
+CAR,Carolina Hurricanes,canes,695000,695K,thousands,576200,manual_scrape_public,instagram_public_profile,2026-08-02,576.2K,thousands,public_profile_manual,2026-08-03
+CHI,Chicago Blackhawks,nhlblackhawks,1800000,1.8M,millions_rounded,1500000,manual_scrape_public,instagram_public_profile,2026-08-02,~1.5M,approx,public_profile_manual,2026-08-03
+COL,Colorado Avalanche,coloradoavalanche,931000,931K,thousands,663000,manual_scrape_public,instagram_public_profile,2026-08-02,663K,thousands,public_profile_manual,2026-08-03
+CBJ,Columbus Blue Jackets,bluejacketsnhl,477000,477K,thousands,492000,manual_scrape_public,instagram_public_profile,2026-08-02,492K,thousands,public_profile_manual,2026-08-03
+DAL,Dallas Stars,dallasstars,731000,731K,thousands,1100000,manual_scrape_public,instagram_public_profile,2026-08-02,1.1M,millions_rounded,public_profile_manual,2026-08-03
+DET,Detroit Red Wings,detroitredwings,997000,997K,thousands,1100000,manual_scrape_public,instagram_public_profile,2026-08-02,1.1M,millions_rounded,public_profile_manual,2026-08-03
+EDM,Edmonton Oilers,edmontonoilers,1100000,1.1M,millions_rounded,947000,manual_scrape_public,instagram_public_profile,2026-08-02,947K,thousands,public_profile_manual,2026-08-03
+FLA,Florida Panthers,flapanthers,634000,634K,thousands,486800,manual_scrape_public,instagram_public_profile,2026-08-02,486.8K,thousands,public_profile_manual,2026-08-03
+LA,Los Angeles Kings,lakings,770000,770K,thousands,1000000,manual_scrape_public,instagram_public_profile,2026-08-02,1.0M,millions_rounded,public_profile_manual,2026-08-03
+MIN,Minnesota Wild,minnesotawild,782000,782K,thousands,721000,manual_scrape_public,instagram_public_profile,2026-08-02,721K,thousands,public_profile_manual,2026-08-03
+MON,Montreal Canadiens,canadiensmtl,1300000,1.3M,millions_rounded,1400000,manual_scrape_public,instagram_public_profile,2026-08-02,1.4M,millions_rounded,public_profile_manual,2026-08-03
+NAS,Nashville Predators,predsnhl,514000,514K,thousands,612000,manual_scrape_public,instagram_public_profile,2026-08-02,612K,thousands,public_profile_manual,2026-08-03
+NJ,New Jersey Devils,njdevils,615000,615K,thousands,728000,manual_scrape_public,instagram_public_profile,2026-08-02,728K,thousands,public_profile_manual,2026-08-03
+NYI,New York Islanders,nyislanders,517000,517K,thousands,560000,manual_scrape_public,instagram_public_profile,2026-08-02,560K,thousands,public_profile_manual,2026-08-03
+NYR,New York Rangers,nyrangers,1300000,1.3M,millions_rounded,1600000,manual_scrape_public,instagram_public_profile,2026-08-02,1.6M,millions_rounded,public_profile_manual,2026-08-03
+OTT,Ottawa Senators,senators,436000,436K,thousands,559300,manual_scrape_public,instagram_public_profile,2026-08-02,559.3K,thousands,public_profile_manual,2026-08-03
+PHI,Philadelphia Flyers,philadelphiaflyers,860000,860K,thousands,1400000,manual_scrape_public,instagram_public_profile,2026-08-02,1.4M,millions_rounded,public_profile_manual,2026-08-03
+PIT,Pittsburgh Penguins,penguins,2800000,2.8M,millions_rounded,1700000,manual_scrape_public,instagram_public_profile,2026-08-02,1.7M,millions_rounded,public_profile_manual,2026-08-03
+SJ,San Jose Sharks,sanjosesharks,901000,901K,thousands,780000,manual_scrape_public,instagram_public_profile,2026-08-02,~780K,approx,public_profile_manual,2026-08-03
+SEA,Seattle Kraken,seattlekraken,646000,646K,thousands,370000,manual_scrape_public,instagram_public_profile,2026-08-02,~370K,approx,public_profile_manual,2026-08-03
+STL,St. Louis Blues,stlouisblues,725000,725K,thousands,798000,manual_scrape_public,instagram_public_profile,2026-08-02,798K,thousands,public_profile_manual,2026-08-03
+TB,Tampa Bay Lightning,tblightning,810000,810K,thousands,804900,manual_scrape_public,instagram_public_profile,2026-08-02,804.9K,thousands,public_profile_manual,2026-08-03
+TOR,Toronto Maple Leafs,mapleleafs,1500000,1.5M,millions_rounded,1900000,manual_scrape_public,instagram_public_profile,2026-08-02,1.9M,millions_rounded,public_profile_manual,2026-08-03
+UTA,Utah Mammoth,utahmammoth,286000,286K,thousands,67000,manual_scrape_public,instagram_public_profile,2026-08-02,67K,thousands,public_profile_manual,2026-08-03
+VAN,Vancouver Canucks,canucks,781000,781K,thousands,1100000,manual_scrape_public,instagram_public_profile,2026-08-02,~1.1M,approx,public_profile_manual,2026-08-03
+VEG,Vegas Golden Knights,vegasgoldenknights,854000,854K,thousands,960000,manual_scrape_public,instagram_public_profile,2026-08-02,~960K,approx,public_profile_manual,2026-08-03
+WAS,Washington Capitals,capitals,1000000,1M,millions_rounded,745000,manual_scrape_public,instagram_public_profile,2026-08-02,745K,thousands,public_profile_manual,2026-08-03
+WPG,Winnipeg Jets,nhljets,548000,548K,thousands,615000,manual_scrape_public,instagram_public_profile,2026-08-02,~615K,approx,public_profile_manual,2026-08-03
