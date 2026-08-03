@@ -1285,6 +1285,105 @@ and inverted to record the supersession; A25's wiki clauses are untouched.
 
 ---
 
+**A48 (decided 2026-08-02, locked 2026-08-03) — First-name collision guard,
+option C' (Defect 1) + `unmeasurable` reddit status (Defect 5).** Recorded
+after a read-only diagnostic probe measured the candidate fixes on the live
+corpus, and BEFORE the production re-run whose output it governs; no
+composite, OAQ, validation, or hypothesis quantity has been computed.
+
+**Defect (recorded).** 13 pool surnames are unique in the pool AND are another
+pool player's FIRST name (`beck blake cole colton connor frank james joshua
+paul quinn reilly shea thomas`). For a unique surname `attribute()` awards
+every matching submission to its owner with no evidence check ("single-member
+groups always win", A2), so every "Quinn Hughes" credited Jack Quinn and every
+"Cole Caufield" credited Ian Cole. Root cause is a threshold artifact: A43
+prong P2a implements the right idea but is gated on DF ≥ 0.01, and `quinn`
+(0.0093), `cole` (0.0087), `thomas` (0.0052) sit under the gate. Only
+`connor`/`james`/`paul` were guarded.
+
+**Rule (mechanical).** Per submission containing collision surname `sn`
+(owner = the single pool player carrying it as a surname), classify into
+exactly one state over the ordered folded token stream:
+
+1. **S1** — every occurrence of `sn` is immediately followed by the surname of
+   a pool player whose first name is `sn` (tight bigram) → proven first-name
+   usage; owner ineligible; disclosed in `guard_filtered_mentions`.
+2. **S2** — ≥1 standalone occurrence AND the owner's A15 checker fires →
+   owner eligible. **S1 takes precedence over S2** (verified: 14 r/hockey
+   posts fire the checker via e.g. "Lauren Kyle (Connor McDavid's wife)" while
+   every `connor` is bigram-bound; they are S1).
+3. **S3** — ≥1 standalone occurrence, no first-name evidence → eligible ONLY
+   in the owner's own team subreddit; otherwise disclosed in
+   `ambiguous_mentions` and counted for nobody.
+
+**Scoping (the `'` in C'):** (a) a collision surname in the pinned English
+top-1000 (`james`, `paul` — P1) gets NO own-sub allowance: own-sub context can
+resolve a rival-player confuser, not an ordinary-word confuser, which appears
+in every sub equally (bare "stanley" in r/winnipegjets is "Stanley Cup", not
+Logan Stanley). (b) The own-sub allowance applies ONLY to collision surnames,
+never to P1/P2b guards generally — the other 6 guarded players are untouched
+and the 13 are the complete blast radius.
+
+**Supersessions (explicit, not buried).** For collision surnames A48
+**overrides A42 rule 2** ("team context never suffices for guarded surnames")
+and **overrides the A43 P2 guard**: `connor` was P2a-guarded and C' is
+strictly MORE permissive for it. Defensible because per-post positional bigram
+evidence is stronger than the token-level aggregate P2a uses; it is
+nonetheless a real rule change and is recorded as one. Non-collision guarded
+surnames keep A42/A43 semantics unchanged.
+
+**Evidence (probe, 250,004 submissions, recorded before the re-run).** Options
+measured: A = blanket guard (−63% of these players' real signal — rejected),
+B = bigram only (−521), C = bigram + own-sub (−1,869), C' = C with P1-strict
+(−1,970, 1,449 → ambiguous). C' selected. The tight-vs-loose bigram choice is
+not knife-edge: ≤26 posts per name, 1 for `cole`; tight adopted. C' is also a
+recall fix: the A42 guard had been deleting real Kyle Connor mentions
+(280 → 364 under C').
+
+**Verification (post-re-run).** Pipeline `reddit_mentions_12mo` equals the
+probe's C' column **exactly for all 13**; the 771-row diff shows movement
+confined to the 13 collision owners plus the two Defect-5 status flips below;
+detail rows 163,937 → 161,947 (−1,990 = probe −1,970 + the probe's
+root-caused self-check drift, connor −14 / paul −6). New disclosure column
+`reddit_firstname_collision` marks the 13 rows.
+
+**Defect 5 — `unmeasurable` (third status, same amendment).** A zero is
+measured only if we looked and found nothing. If the surname appeared but
+every occurrence was discarded, we failed to measure — that must not share a
+status with a measured zero. New `reddit_status` value `unmeasurable`, set
+mechanically when status would otherwise be ok/partial AND
+`reddit_mentions_12mo == 0` AND (`ambiguous_mentions > 0` OR
+`guard_filtered_mentions > 0`). Distinct from both `ok` (a player with 0
+mentions and 0 discarded candidates is a genuine zero and stays ok) and
+`null` (source unavailable); `unmeasurable` = source read, player inseparable
+within it. Downstream `compute_oaq` NULLs both reddit columns and
+renormalizes — the A47 Trends precedent (NULL → renormalize, never impute 0).
+The **Wikipedia raw-0 exception stands** (a missing article does mean no
+encyclopedic salience). Unlike `null`, an `unmeasurable` row keeps every
+disclosure column populated. Measured blast radius on the regenerated file:
+exactly the two VAN Elias Petterssons (433 ambiguous each, A21 rule 3
+non-discriminable pair); Marcus Pettersson (94 mentions, 433 ambiguous)
+correctly stays `ok` — ambiguity alone never triggers.
+
+**Limits of claim (carried to the poster).** (a) The own-sub allowance
+(~605 mentions) rests on a base-rate judgment, not labelled data: the owner
+declined a ~20–30 min hand-label validation of S3-in-own-sub on 2026-08-02
+("surname and/or team name mention is enough to make it accurate enough most
+of the time") — a deliberate, disclosed trade; re-offer if the schedule
+loosens. (b) Defect 6, recorded not fixed: the A15 checker fires on the first
+name appearing anywhere in the post, so S2 carries a small residual
+over-count (quantified only for `connor`: 14 r/hockey posts). C' is less
+wrong, not right.
+
+**Anti-tuning compliance (§13):** identity-resolution repair only. The option
+choice used the probe's attribution counts (how many mentions each rule keeps
+or discards), never any composite, ranking, or hypothesis quantity. Thresholds
+introduced: none — the rule is evidence-conditional, not fitted. A11 window,
+§4/A12 weights, and all floors unchanged. Tests:
+`tests/test_fetch_reddit_a48.py` (25); suite 302 → 327.
+
+---
+
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
 
 **V-A11-Trends (2026-06-26) — live spot-check confirming `raw/trends.csv` was fetched on the A11 fixed window, not a run-anchored one.** `fetch_trends.py:52` uses `timeframe="2025-04-18 2026-04-17"`, but the stored `trends.csv` carries `fetch_date=2026-06-20` and the fixed-window code only landed 2026-06-20 13:21 (commit `0c3ccbe`); whether the file predated the fix that day was not decidable from git/data alone. A single live `pytrends` call resolves it (the test is window-vintage, so one salient distinctive-name player suffices). **Player: Connor McDavid** (stored `trends_12mo = 24.7358`; he had a 2026 playoff run, so the two windows diverge maximally). Result: a fresh **fixed-window** [2025-04-18, 2026-04-17] fetch gives mean **26.13** (n=53) — **5.6 % from stored, within Trends sampling noise → MATCH**, i.e. the stored file used the fixed window. The same player's **run-anchored** (`today 12-m`) series shows the expected post-window playoff spike the fixed window correctly excludes — weeks 2026-04-19 = 32, **2026-04-26 = 47 (peak)**, 2026-05-03 = 33, all after the 2026-04-17 window end. Conclusion: the `trends` component (§4/A12 weight 0.16) is on the A11 window and **excludes the 2026-playoff confound**; the SESSION residual is closed by live evidence. No file or weight changes; verification only. (One live call; perishable, so not re-run across the set.)

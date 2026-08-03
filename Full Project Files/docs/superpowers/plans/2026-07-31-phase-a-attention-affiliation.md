@@ -22,8 +22,8 @@ bucket came out at **3.1%** (max `rival_reach` = 3) when the real signal is
 
 | # | Blocker | Effect on this plan |
 |---|---|---|
-| **0** | **Defect 1 — first-name surname collisions** (Task 0 below) | Rewrites `raw/reddit_detail.csv`, this plan's primary input. Every Task 3–5 number is computed from contaminated attribution until it lands. |
-| **1** | **Defect 2 — `allsubs_ids` never written out** | The rival split needs `raw/reddit_detail_allsubs.csv`, which does not exist yet. ~1 h. |
+| **0** | **DONE 2026-08-03 — Defect 1 C' landed** (Task 0 below, all steps ticked). `raw/reddit_detail.csv` regenerated: 161,947 rows (was 163,937). Oracle passed 13/13. Prereg A48 written. | cleared |
+| **1** | **Defect 2 — `allsubs_ids` never written out** | The rival split needs `raw/reddit_detail_allsubs.csv`, which does not exist yet. ~1 h. Prepared change set staged (see SESSION). |
 
 **Defect 1 must be fixed BEFORE Defect 2.** Opening the rival subs first would
 multiply the collision across 31 more subreddits instead of 1.
@@ -69,6 +69,11 @@ Inputs, all already on disk:
 ---
 
 ### Task 0 (BLOCKING, added 2026-08-02): Defect 1 — first-name surname collision guard, option C'
+
+**COMPLETE 2026-08-03.** Implemented with Defect 5 in the same pass (commits
+`0b66fa8` code+tests, `f006ad3` data, plus the prereg A48 commit). Pipeline
+matched the probe C' oracle exactly for all 13; the 771-row diff moved only
+the 13 collision owners + the two Pettersson status flips. Suite 302 → 327.
 
 **Amendment A48. ~2.5–3.5 h. Requires a full `python fetch_reddit.py` re-run.**
 Nothing in Tasks 1–7 is trustworthy until this lands, because it rewrites
@@ -164,7 +169,9 @@ whose first name is `sn`) vs loose (next token = any pool surname) differ by
 
 #### Steps
 
-- [ ] **Step 1: Implement C' — 4 edit sites in `fetch_reddit.py`**
+- [x] **Step 1: Implement C' — 4 edit sites in `fetch_reddit.py`** (done; the
+  eligibility block also gained the S1→`guard_filtered` / S3→`ambiguous`
+  bucket split, resolving open risk 1 with no third column)
 
 | # | Site | Change |
 |---|---|---|
@@ -182,7 +189,8 @@ only says "guard" in prose). Downstream is `reddit_counts.csv` +
 `reddit_detail.csv` consumers only, and there is still no production
 `compute_oaq` run, so nothing cascades.
 
-- [ ] **Step 2: Tests — `tests/test_fetch_reddit_a48.py`**
+- [x] **Step 2: Tests — `tests/test_fetch_reddit_a48.py`** (25 tests, all
+  listed cases covered incl. mcdavid P2b exemption; suite 302 → 327)
 
 Must cover: each of S1 / S2 / S3; S1 precedence over S2 (the Lauren Kyle case);
 own-sub allowance fires for a collision surname; own-sub allowance does NOT
@@ -190,13 +198,16 @@ fire for a P1 surname; the existing 9 guarded players stay guarded; and
 **`mcdavid` is NOT guarded** (the P2b `partner not in pool_first_names`
 exemption must survive — this is the regression that matters).
 
-- [ ] **Step 3: Re-run**
+- [x] **Step 3: Re-run** (2026-08-03; 769 ok / 0 partial / 0 null /
+  2 unmeasurable)
 
 ```bash
 python fetch_reddit.py        # minutes; landing JSONs are cached
 ```
 
-- [ ] **Step 4: Verify against the probe oracle**
+- [x] **Step 4: Verify against the probe oracle** (13/13 exact; 771-row diff
+  clean — movement confined to the 13 + the two Defect-5 status flips;
+  detail 163,937 → 161,947, −1,990 = probe −1,970 + known drift −20)
 
 ```bash
 python diagnostics/probe_firstname_guard_options.py
@@ -211,7 +222,8 @@ them. Committed at `3a96f8e`.
 Then diff `raw/reddit_counts.csv` + `raw/reddit_detail.csv` across **all 771
 rows**, not just the 13, and produce a before/after table.
 
-- [ ] **Step 5: Pre-registration amendment A48**
+- [x] **Step 5: Pre-registration amendment A48** (written to
+  `marchand_index/preregistration.md`, includes Defect 5)
 
 A48 must document, not bury: the 3-state rule; P1-strict scoping; that it
 **overrides A42 rule 2** (*"team context never suffices for guarded
@@ -221,7 +233,9 @@ because per-post bigram evidence beats a token-level aggregate, but it is a
 real prereg change); and the tight-vs-loose bigram sensitivity. Fold **Defect 5**
 (reddit null-vs-zero for the two Petterssons) into the same amendment.
 
-#### Two open implementation risks
+#### Two open implementation risks — both resolved 2026-08-03 (1: bucket
+split done with existing columns, S1→`guard_filtered`, S3→`ambiguous`;
+2: diff showed zero movement outside the 13)
 
 1. **Bucket split.** S1 ("proven not him") and S3-in-r/hockey ("unknown") are
    different disclosures — `guard_filtered` vs `ambiguous`. A third column may
@@ -1423,7 +1437,7 @@ python -m diagnostics.affiliation_report   # prints the #3B evidence
 ```
 
 Test count: this plan was written when the suite was 240 and predicted 271. The
-suite is now **302** (A47 landed since), and Task 0 adds ~10–12 more. Treat 271
+suite is now **327** (A47 landed, then Task 0 added 25). Treat any inline count
 as stale — assert "no regressions against the count at the start of the
 session", not a fixed number.
 
