@@ -139,7 +139,7 @@ def test_s3_rival_sub_counts_for_nobody(tmp_path):
     assert a["scores"] == {}
     assert a["ambiguous"] == 0
     assert a["guard_filtered"] == 0
-    assert a["allsubs_ids"] == set()
+    assert a["allsubs_ids"] == {}   # dict since A45 allsubs detail
 
 
 def test_trailing_occurrence_is_standalone(tmp_path):

@@ -30,23 +30,13 @@ CORPUS_DIR = PILOT_DIR / "cache" / "reddit_corpus"
 OUT_PATH = PILOT_DIR / "attention_affiliation.csv"
 DELIVERABLE_DIR = PILOT_DIR.parent / "final_dataset" / "affiliation"
 
-# BLOCKED — do not publish to final_dataset/ yet.
-#
-# `raw/reddit_detail.csv` was built by fetch_reddit.py under the A22 rule:
-# each player was searched ONLY in r/hockey, r/nhl, r/fantasyhockey, and the
-# team subreddit(s) they were rostered on inside the window. Rival subreddits
-# were never scanned for that player.
-#
-# The `own` and `neutral` buckets are therefore valid, but `other` is empty by
-# construction: 551 of 771 players have rival_reach 0, and `rival_reach` maxes
-# out at 3 because it can only count a player's own FORMER team subs. The
-# `other_*`, `own_share`, `rival_reach`, and `top_rival` columns measure trade
-# history, not rival-fanbase attention.
-#
-# Fix requires re-matching all 771 players against all 36 corpus subreddits
-# (the corpus itself holds all 250,004 submissions — only the matching was
-# scoped). Flip this to True once that re-scan lands.
-PUBLISH_DELIVERABLE = False
+# A45 (Defect 2 fixed): input is raw/reddit_detail_allsubs.csv — every
+# attributed winner across all 36 corpus subreddits with venue kept, written
+# by fetch_reddit.py AFTER the A48 collision guard landed (order matters:
+# opening rival subs first would have multiplied the first-name collision
+# across 31 more subreddits). The other/rival columns are now real signal,
+# not trade history.
+PUBLISH_DELIVERABLE = True
 
 
 def build_submission_index(corpus_dir: Path) -> tuple[pd.DataFrame, dict[str, int]]:
@@ -88,7 +78,11 @@ def main() -> None:
     players = pd.read_csv(PILOT_DIR / "players.csv")
     movers = pd.read_csv(PILOT_DIR / "mover_dates.csv")
     market = pd.read_csv(PILOT_DIR / "market_proxy.csv")
-    detail = pd.read_csv(RAW_DIR / "reddit_detail.csv")
+    # usecols is load-bearing: the CSV carries its own audit `subreddit`
+    # column, but label_mentions takes venue from the corpus index; loading
+    # both would collide in the merge.
+    detail = pd.read_csv(RAW_DIR / "reddit_detail_allsubs.csv",
+                         usecols=["player_id", "submission_id", "score"])
 
     print(f"corpus scan: {CORPUS_DIR}")
     index, sub_volume = build_submission_index(CORPUS_DIR)

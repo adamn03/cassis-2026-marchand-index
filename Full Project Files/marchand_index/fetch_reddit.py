@@ -71,6 +71,10 @@ Writes: marchand_index/raw/reddit_counts.csv (COUNTS_FIELDS below; status is
 one of ok | partial | null | unmeasurable)
   + marchand_index/raw/reddit_detail.csv (player_id, submission_id, score)
     for the §10 bootstrap
+  + marchand_index/raw/reddit_detail_allsubs.csv (player_id, submission_id,
+    subreddit, score) — every attributed winner over the full 36-sub corpus,
+    venue kept, for the A45 affiliation split (descriptive only, never
+    composite)
 """
 from __future__ import annotations
 
@@ -104,6 +108,7 @@ COUNTS_FIELDS = [
     "reddit_mentions_allsubs", "reddit_mentions_fantasy", "fetch_date",
 ]
 DETAIL_FIELDS = ["player_id", "submission_id", "score"]
+DETAIL_ALLSUBS_FIELDS = ["player_id", "submission_id", "subreddit", "score"]
 
 # DailyFaceoff team_code -> team subreddit (r/hockey is always counted too).
 TEAM_SUB = {
@@ -530,14 +535,16 @@ def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
     """Stream every corpus file once, distributing matches to players.
 
     Returns (acc by pid, missing_subs). acc fields: scores (id->score, counting
-    subs, deduped), authors, ambiguous, allsubs_ids, fantasy_ids.
+    subs, deduped), authors, ambiguous, guard_filtered,
+    allsubs_ids ({id: (subreddit, score)} over the full 36-sub corpus),
+    fantasy_ids.
     """
     acc: dict[str, dict] = {}
     for group in groups.values():
         for m in group:
             acc[m["pid"]] = {"scores": {}, "authors": set(), "ambiguous": 0,
                              "guard_filtered": 0,
-                             "allsubs_ids": set(), "fantasy_ids": set()}
+                             "allsubs_ids": {}, "fantasy_ids": set()}
     count_pids: dict[str, set[str]] = {}   # sub -> pids counting it
     for pid, subs in counting.items():
         for s in subs:
@@ -616,7 +623,10 @@ def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
                                 acc[m["pid"]]["ambiguous"] += 1
                         continue
                     a = acc[winner]
-                    a["allsubs_ids"].add(post["id"])
+                    # A45: venue + score kept so the affiliation split can use
+                    # the full 36-sub corpus (raw/reddit_detail_allsubs.csv).
+                    a["allsubs_ids"][post["id"]] = (sub,
+                                                    int(post.get("score") or 0))
                     if sub == "fantasyhockey":
                         a["fantasy_ids"].add(post["id"])
                     if sub in counting[winner]:
@@ -703,7 +713,7 @@ def main() -> None:
         print(f"WARNING: corpus missing for {missing} — affected players get "
               "partial/null status.", file=sys.stderr)
 
-    counts_rows, detail_rows = [], []
+    counts_rows, detail_rows, detail_allsubs_rows = [], [], []
     by_pid = {p["player_id"]: p for p in players}
     for pid in order:
         p = by_pid[pid]
@@ -743,16 +753,23 @@ def main() -> None:
             detail_rows.extend(
                 {"player_id": pid, "submission_id": sid, "score": score}
                 for sid, score in a["scores"].items())
+            detail_allsubs_rows.extend(
+                {"player_id": pid, "submission_id": sid, "subreddit": s,
+                 "score": score}
+                for sid, (s, score) in a["allsubs_ids"].items())
 
     atomic_write_csv(RAW_DIR / "reddit_counts.csv", counts_rows, COUNTS_FIELDS)
     atomic_write_csv(RAW_DIR / "reddit_detail.csv", detail_rows, DETAIL_FIELDS)
+    atomic_write_csv(RAW_DIR / "reddit_detail_allsubs.csv",
+                     detail_allsubs_rows, DETAIL_ALLSUBS_FIELDS)
     n_ok = sum(1 for r in counts_rows if r["reddit_status"] == "ok")
     n_part = sum(1 for r in counts_rows if r["reddit_status"] == "partial")
     n_null = sum(1 for r in counts_rows if r["reddit_status"] == "null")
     n_unm = sum(1 for r in counts_rows if r["reddit_status"] == "unmeasurable")
     print(f"\nWrote reddit_counts.csv ({len(counts_rows)} rows; {n_ok} ok, "
           f"{n_part} partial, {n_null} null, {n_unm} unmeasurable) + "
-          f"reddit_detail.csv ({len(detail_rows)} rows)")
+          f"reddit_detail.csv ({len(detail_rows)} rows) + "
+          f"reddit_detail_allsubs.csv ({len(detail_allsubs_rows)} rows)")
 
 
 if __name__ == "__main__":
