@@ -899,6 +899,35 @@ MARKET_COMPONENTS_A30 = ["metro_population", "team_sub_subscribers",
                          "attendance_pct_capacity"]
 MARKET_COMPONENTS_LOCKEDV1 = ["metro_population", "arena_attendance"]
 
+# A46 lens components. `sub_submissions_window` replaces `team_sub_subscribers`
+# — a flow in place of a stock. The two barely agree (Spearman 0.299 across 32
+# teams), so this quantifies how much OAQ_portable depends on that choice.
+#
+# ENDOGENOUS BY CONSTRUCTION: in-window submission volume is co-determined with
+# the attention OAQ measures (a winning team's subreddit posts more, and its
+# players draw more mentions). This is a REPORTING LENS ONLY and must never be
+# promoted to a market_z primary — doing so would partially control for the
+# outcome.
+MARKET_COMPONENTS_A46_ACTIVITY = ["metro_population", "sub_submissions_window",
+                                  "attendance_pct_capacity"]
+
+# Distinguishes "caller passed None to suppress the A46 lenses" from "caller
+# said nothing, so load from disk".
+_UNSET = object()
+
+
+def load_market_activity(path: Path | None = None) -> pd.DataFrame | None:
+    """Read `market_activity.csv`, or None when it has not been built yet.
+
+    Absence is not an error: the A46 lenses are optional reporting extras and
+    every primary code path must work without them.
+    """
+    if path is None:
+        path = PILOT_DIR / "market_activity.csv"
+    if not Path(path).exists():
+        return None
+    return pd.read_csv(path)
+
 
 def _market_z_from(mp: pd.DataFrame, candidates: list[str]):
     """(32-team market_size z-vector, components used) with §7 graceful
@@ -926,14 +955,24 @@ def _align_teams(df: pd.DataFrame, mp: pd.DataFrame, z32: np.ndarray):
     return df["team_code"].astype(str).map(team_to_z).to_numpy(dtype=float)
 
 
-def compute_market_z(df: pd.DataFrame, mp: pd.DataFrame | None = None):
+def compute_market_z(df: pd.DataFrame, mp: pd.DataFrame | None = None,
+                     activity: pd.DataFrame | None = _UNSET):
     """Returns (market_z aligned to df rows, components used, lenses dict).
 
-    Primary = A30 components. lenses = {"market_z_lockedv1": aligned array
-    (§7-original metro + raw attendance), "market_z_metro_only": aligned
-    array (E9 sensitivity)} — reporting-only, never fed to gate verdicts."""
+    Primary = A30 components, unchanged. lenses = {"market_z_lockedv1"
+    (§7-original metro + raw attendance), "market_z_metro_only" (E9
+    sensitivity), and when `market_activity.csv` is available,
+    "market_z_activity" and "market_z_social_blend" (A46)} — reporting-only,
+    never fed to gate verdicts.
+
+    `activity` defaults to loading `market_activity.csv` from disk; pass an
+    explicit DataFrame to override, or None to suppress the A46 lenses.
+    """
     if mp is None:
         mp = pd.read_csv(PILOT_DIR / "market_proxy.csv")
+    if activity is _UNSET:
+        activity = load_market_activity()
+
     z_primary, used = _market_z_from(mp, MARKET_COMPONENTS_A30)
     aligned = _align_teams(df, mp, z_primary)
 
@@ -943,6 +982,38 @@ def compute_market_z(df: pd.DataFrame, mp: pd.DataFrame | None = None):
         lenses["market_z_lockedv1"] = _align_teams(df, mp, z_v1)
     z_metro, _ = _market_z_from(mp, ["metro_population"])
     lenses["market_z_metro_only"] = _align_teams(df, mp, z_metro)
+
+    if activity is not None:
+        # Merge activity onto a COPY so the caller's market_proxy frame — and
+        # the A30 primary computed from it above — are untouched.
+        mp_act = mp.merge(
+            activity[["team_code", "sub_submissions_window"]],
+            on="team_code",
+            how="left",
+        )
+        z_act, used_act = _market_z_from(mp_act, MARKET_COMPONENTS_A46_ACTIVITY)
+        if set(used_act) == set(MARKET_COMPONENTS_A46_ACTIVITY):
+            lenses["market_z_activity"] = _align_teams(df, mp_act, z_act)
+            # Blend: average the two social z-scores, keep the other two
+            # components as-is. Shows what a hedged specification would do.
+            social = zscore_array(
+                zscore_array(
+                    pd.to_numeric(mp_act["team_sub_subscribers"]).to_numpy(float)
+                )
+                + zscore_array(
+                    pd.to_numeric(
+                        mp_act["sub_submissions_window"]
+                    ).to_numpy(float)
+                )
+            )
+            mp_blend = mp_act.copy()
+            mp_blend["social_blend"] = social
+            z_blend, _ = _market_z_from(
+                mp_blend,
+                ["metro_population", "social_blend", "attendance_pct_capacity"],
+            )
+            lenses["market_z_social_blend"] = _align_teams(df, mp_blend, z_blend)
+
     return aligned, used, lenses
 
 
