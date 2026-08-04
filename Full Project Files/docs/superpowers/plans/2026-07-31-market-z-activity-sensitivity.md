@@ -1,5 +1,16 @@
 # `market_z` Subscriber-vs-Activity Sensitivity Implementation Plan
 
+> **STATUS: EXECUTED IN FULL 2026-08-03** (commits `399b817` Tasks 1–2,
+> `5ef1c03` Tasks 3–4). All verification passed: 32 rows, UTA the only `low`,
+> Spearman **0.299 exactly**; primary invariance tests green; suite 333 → 351.
+> Deviations from the text below: `to_markdown` → `to_string` in the report
+> (tabulate not installed, $0 stack); test-count expectations were stale
+> (written pre-A45/A47/A48). Finding, recorded in SESSION #3B: **MON delta
+> +1.628, league-largest positive** — supports interpretation (a), while the
+> A45 affiliation split leaned (b); both stand, specification dependence goes
+> to limits-of-claim per the pre-registered decision rule. The pre-window
+> activity follow-up (exogenous primary candidate) remains NOT in scope.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Measure how much `OAQ_portable` depends on using subreddit **subscribers** (a stock) rather than subreddit **submission activity** (a flow) as the social component of `market_z` — and answer open item #3B with evidence instead of argument.
