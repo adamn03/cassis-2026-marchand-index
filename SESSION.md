@@ -380,6 +380,14 @@ is dead code today. `fetch_wikipedia` (en) is the **reference implementation**.
   median own_share **0.738, rank 7/32** (league median 0.639) — elevated but
   not extreme, leans interpretation (b): Habs players genuinely over-index;
   not a clean market-strip failure. UTA 0.121 is the rename data hole, ignore.
+- **#3B** — A46 sensitivity evidence (2026-08-03): MON delta = **+1.628, the
+  largest positive in the league** (market_z 0.359 under A30 subscribers ->
+  1.987 under activity; TOR the mirror at -1.615). Subscribers understate
+  Montreal's market, so the strip under-corrects — supports interpretation
+  (a). Player-level Spearman(A30, activity) = 0.839. NET: A45 and A46 point
+  opposite ways; treat as BOTH partially true, document the specification
+  dependence as a limit of claim (A46 decision rule: never switch specs).
+  Report: `diagnostics/market_sensitivity_report.md`.
 - **#3B (original)** — MON floods top-100. Spearman(subscribers, in-window submissions) =
   **0.299** across 32 teams. MON 101,589 subs / **14,510 submissions** (1st) vs
   TOR 359,680 / 9,603. UTA is a data hole (rename split the sub) and its bad

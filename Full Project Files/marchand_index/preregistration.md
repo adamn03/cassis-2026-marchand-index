@@ -1452,6 +1452,64 @@ touched. Tests: `tests/test_affiliation_a45.py` (29),
 
 ---
 
+**A46 (plan locked 2026-07-31; recorded 2026-08-03, BEFORE the sensitivity
+report was run) — `market_z` social-component sensitivity (subscribers vs.
+activity).**
+
+**Motivation.** `market_z`'s social component under A30 is
+`team_sub_subscribers`, a stock. Subreddit submission volume over the
+measurement window is a flow, and the two are nearly independent — Spearman
+**0.299** across the 32 teams (pre-measured 2026-07-31; reproduced exactly by
+`build_market_activity.py` on 2026-08-03). r/BostonBruins carries more
+subscribers than r/Habs (119,306 vs 101,589) but roughly a fifth of the
+submissions. Whether `OAQ_portable` depends on that choice is an empirical
+question, and open item #3B turns on the answer.
+
+**What is added.** Two lenses in `compute_market_z`, alongside the existing
+`market_z_lockedv1` and `market_z_metro_only`: `market_z_activity` (A30 with
+`sub_submissions_window` in place of `team_sub_subscribers`) and
+`market_z_social_blend` (A30 with the mean of the two social z-scores).
+
+**What does not change.** `MARKET_COMPONENTS_A30` remains
+`["metro_population", "team_sub_subscribers", "attendance_pct_capacity"]`.
+`LAMBDA_BIGMARKET`, the one-sided `max(0, market_z)` correction, the CES
+weights, and the peer-matching procedure are all untouched. Tests assert the
+primary is bit-identical with and without the activity table present.
+
+**Why activity cannot become primary.** In-window submission volume is
+**endogenous** to the quantity being measured: a team having a strong season
+draws more posts to its subreddit, and its players draw more mentions inside
+those posts. Promoting it to a `market_z` component would partially control
+for the outcome. It is therefore permanently a reporting lens, regardless of
+what the sensitivity report shows. (A pre-window activity measure,
+2024-04-18 to 2025-04-17, would be exogenous and could in principle serve as
+a primary; that is NOT part of A46 and would need new collection and its own
+amendment.)
+
+**Data quality.** UTA records 81 in-window submissions against 2,171 for the
+next-lowest team — the franchise rename split the subreddit mid-window.
+Teams below `ACTIVITY_QUALITY_MIN = 500` submissions are flagged
+`activity_quality = "low"` and excluded from any conclusion drawn from this
+lens. UTA is the only such team.
+
+**Decision rule, fixed in advance.** The sensitivity report is descriptive.
+No gate verdict, headline number, or published ranking is computed from any
+A46 lens. If the lenses show a large effect, the response is to **document
+the dependence as a limit of claim**, not to switch specifications.
+
+**Limits of claim.** Subscriber counts are frozen at 2025-02-14/15 while
+activity spans the window (different vintages). Submission counts reflect
+what was collected, not necessarily everything posted, and collection was
+not stratified. The corpus covers submissions only, not comments.
+
+**Anti-tuning compliance (§13):** lens registration only; no threshold
+fitted (`ACTIVITY_QUALITY_MIN` separates one known data hole from the real
+distribution and was fixed in the 2026-07-31 plan). No composite, OAQ,
+validation, or hypothesis quantity computed. Tests:
+`tests/test_market_activity_a46.py` (18); suite 333 → 351.
+
+---
+
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
 
 **V-A11-Trends (2026-06-26) — live spot-check confirming `raw/trends.csv` was fetched on the A11 fixed window, not a run-anchored one.** `fetch_trends.py:52` uses `timeframe="2025-04-18 2026-04-17"`, but the stored `trends.csv` carries `fetch_date=2026-06-20` and the fixed-window code only landed 2026-06-20 13:21 (commit `0c3ccbe`); whether the file predated the fix that day was not decidable from git/data alone. A single live `pytrends` call resolves it (the test is window-vintage, so one salient distinctive-name player suffices). **Player: Connor McDavid** (stored `trends_12mo = 24.7358`; he had a 2026 playoff run, so the two windows diverge maximally). Result: a fresh **fixed-window** [2025-04-18, 2026-04-17] fetch gives mean **26.13** (n=53) — **5.6 % from stored, within Trends sampling noise → MATCH**, i.e. the stored file used the fixed window. The same player's **run-anchored** (`today 12-m`) series shows the expected post-window playoff spike the fixed window correctly excludes — weeks 2026-04-19 = 32, **2026-04-26 = 47 (peak)**, 2026-05-03 = 33, all after the 2026-04-17 window end. Conclusion: the `trends` component (§4/A12 weight 0.16) is on the A11 window and **excludes the 2026-playoff confound**; the SESSION residual is closed by live evidence. No file or weight changes; verification only. (One live call; perishable, so not re-run across the set.)
