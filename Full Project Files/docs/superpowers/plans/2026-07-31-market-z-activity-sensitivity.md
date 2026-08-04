@@ -83,7 +83,7 @@ Counts in-window submissions per team subreddit from the local corpus. Two edge 
   - `build_activity_table(counts: dict[str, int], market_proxy: pd.DataFrame) -> pd.DataFrame`
   - `main() -> None` — writes `market_activity.csv`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/test_market_activity_a46.py`:
 
@@ -203,12 +203,12 @@ def test_build_activity_table_raises_on_missing_team():
         bma.build_activity_table(counts, _market_proxy())
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_market_activity_a46.py -v`
 Expected: FAIL — `ModuleNotFoundError: No module named 'build_market_activity'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `build_market_activity.py`:
 
@@ -346,12 +346,12 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_market_activity_a46.py -v`
 Expected: PASS, 8 tests
 
-- [ ] **Step 5: Run the builder on real data**
+- [x] **Step 5: Run the builder on real data**
 
 Run: `python build_market_activity.py`
 
@@ -359,7 +359,7 @@ Expected: 32 rows, `low-quality teams: ['UTA']`, and `spearman(subscribers, subm
 
 If the Spearman value differs materially from 0.299, stop and check the window bounds and the Utah alias fold before continuing — the rest of this plan is built on that number.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add build_market_activity.py market_activity.csv tests/test_market_activity_a46.py
@@ -385,7 +385,7 @@ Two lenses rather than one, because they answer different questions. `market_z_a
   - `load_market_activity(path: Path | None = None) -> pd.DataFrame | None` — returns `None` when the file is absent
   - `compute_market_z(df, mp=None)` gains `"market_z_activity"` and `"market_z_social_blend"` keys in its returned `lenses` dict when `market_activity.csv` is present
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/test_market_activity_a46.py`:
 
@@ -482,12 +482,12 @@ def test_lenses_absent_when_activity_missing():
     assert "market_z_social_blend" not in lenses
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_market_activity_a46.py -v`
 Expected: FAIL — `AttributeError: module 'compute_oaq' has no attribute 'MARKET_COMPONENTS_A46_ACTIVITY'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `compute_oaq.py`, immediately after the `MARKET_COMPONENTS_LOCKEDV1` definition, add:
 
@@ -596,18 +596,18 @@ _UNSET = object()
 
 Confirm `from pathlib import Path` is already imported at the top of `compute_oaq.py`; add it if not.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_market_activity_a46.py -v`
 Expected: PASS, 15 tests
 
-- [ ] **Step 5: Confirm no existing test regressed**
+- [x] **Step 5: Confirm no existing test regressed**
 
 Run: `pytest -q`
 
 Expected: PASS. `test_market_proxy_a30.py` and `test_lambda_portability_a38.py` both exercise `compute_market_z` and are the ones most likely to catch an accidental primary change. If either fails, the primary was perturbed — revert and re-approach.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add compute_oaq.py tests/test_market_activity_a46.py
@@ -633,7 +633,7 @@ Three outputs, each targeting a specific question. Per-team `market_z` deltas sh
   - `top_n_composition(df: pd.DataFrame, score_col: str, n: int = 100) -> pd.DataFrame`
   - `main() -> None` — prints the report, writes `diagnostics/market_sensitivity_report.md`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/test_market_activity_a46.py`:
 
@@ -670,12 +670,12 @@ def test_top_n_composition_ignores_nan_scores():
     assert list(out["team_code"]) == ["BOS"]
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_market_activity_a46.py -v`
 Expected: FAIL — `ImportError: cannot import name 'market_sensitivity' from 'diagnostics'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `diagnostics/market_sensitivity.py`:
 
@@ -808,12 +808,12 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_market_activity_a46.py -v`
 Expected: PASS, 18 tests
 
-- [ ] **Step 5: Run the report and record the finding**
+- [x] **Step 5: Run the report and record the finding**
 
 Run: `python -m diagnostics.market_sensitivity`
 
@@ -824,7 +824,7 @@ Read `delta` for MON. Interpretation:
 
 Record the number and the interpretation in SESSION.md under open item #3B. **Do not change the A30 primary either way** — this is a finding, not a fix.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add diagnostics/market_sensitivity.py diagnostics/market_sensitivity_report.md tests/test_market_activity_a46.py
@@ -844,7 +844,7 @@ Locks the lens as reporting-only before anyone sees whether it flatters or damag
 - Consumes: constants from Tasks 1–2
 - Produces: nothing consumed by code
 
-- [ ] **Step 1: Append the amendment**
+- [x] **Step 1: Append the amendment**
 
 Append to `preregistration.md`:
 
@@ -904,7 +904,7 @@ dependence as a limit of claim**, not to switch specifications.
 - The corpus covers submissions only, not comments.
 ```
 
-- [ ] **Step 2: Verify the constants match the code**
+- [x] **Step 2: Verify the constants match the code**
 
 Run:
 
@@ -918,14 +918,14 @@ Expected: `MARKET_COMPONENTS_A30` still lists `team_sub_subscribers`,
 `ACTIVITY_QUALITY_MIN = 500`, and the window bounds are `2025-04-18` /
 `2026-04-17` — all matching the amendment. Fix whichever side is wrong.
 
-- [ ] **Step 3: Run the full suite**
+- [x] **Step 3: Run the full suite**
 
 Run: `pytest -q`
 
 Expected: PASS. This plan adds 18 tests to whatever the current count is (240
 before A45; 271 if the Phase A plan was executed first).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add preregistration.md

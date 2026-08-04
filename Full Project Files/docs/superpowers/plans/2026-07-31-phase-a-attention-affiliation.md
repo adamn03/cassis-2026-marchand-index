@@ -283,7 +283,7 @@ Builds the two lookups every later task needs: which subreddit belongs to which 
   - `build_venue_map(market_proxy: pd.DataFrame) -> dict[str, str]` — lowercased subreddit name to team code
   - `venue_team(subreddit: str, venue_map: dict[str, str]) -> str | None` — team code, or `None` for neutral/unknown
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/test_affiliation_a45.py`:
 
@@ -336,12 +336,12 @@ def test_venue_team_returns_none_for_unknown_sub():
     assert aff.venue_team("soccer", vm) is None
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: FAIL — `ModuleNotFoundError: No module named 'affiliation'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `affiliation.py`:
 
@@ -394,12 +394,12 @@ def venue_team(subreddit: str, venue_map: dict[str, str]) -> str | None:
     return venue_map.get(key)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: PASS, 5 tests
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add affiliation.py tests/test_affiliation_a45.py
@@ -425,7 +425,7 @@ Two data quirks: `mover_dates.csv` names teams by **nickname** (`Bruins`, `Golde
   - `build_move_timeline(movers: pd.DataFrame) -> dict[int, list[tuple[pd.Timestamp, str]]]` — `player_id` to a chronological list of `(event_date, old_team_code)`
   - `team_at(player_id: int, when: pd.Timestamp, end_team: str, timeline: dict) -> str` — team code the player was on at `when`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/test_affiliation_a45.py`:
 
@@ -493,12 +493,12 @@ def test_team_at_on_exact_move_date_uses_new_team():
     assert got == "MON"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: FAIL — `AttributeError: module 'affiliation' has no attribute 'NICKNAME_TO_CODE'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Append to `affiliation.py`:
 
@@ -587,12 +587,12 @@ def team_at(
     return team
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: PASS, 13 tests
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add affiliation.py tests/test_affiliation_a45.py
@@ -615,7 +615,7 @@ Joins the pieces: for each `(player_id, submission_id)` row in `reddit_detail.cs
   - `WINDOW_START: pd.Timestamp`, `WINDOW_END: pd.Timestamp`
   - `label_mentions(detail, submissions, players, venue_map, timeline) -> pd.DataFrame` with columns `player_id, subreddit, bucket, score`. `bucket` is one of `"own"`, `"other"`, `"neutral"`. Rows outside the window, or whose submission is missing from the index, are dropped.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/test_affiliation_a45.py`:
 
@@ -702,12 +702,12 @@ def test_label_mentions_drops_unknown_submissions():
     assert len(out) == 0
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: FAIL — `AttributeError: module 'affiliation' has no attribute 'label_mentions'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Append to `affiliation.py`:
 
@@ -761,12 +761,12 @@ def label_mentions(
     return df[["player_id", "subreddit", "bucket", "score"]].reset_index(drop=True)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: PASS, 19 tests
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add affiliation.py tests/test_affiliation_a45.py
@@ -791,7 +791,7 @@ Score-weighted variants are computed alongside as a robustness check: a 2-upvote
   - `LOW_N_MIN: int` (= 30)
   - `aggregate_players(labelled: pd.DataFrame, sub_volume: dict[str, int], players: pd.DataFrame) -> pd.DataFrame` — one row per player in `players`, columns: `player_id, full_name, team_code, own_mentions, other_mentions, neutral_mentions, attributed_mentions, own_intensity, other_intensity, neutral_intensity, own_share, own_share_scored, rival_reach, top_rival, low_n`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/test_affiliation_a45.py`:
 
@@ -888,12 +888,12 @@ def test_player_with_no_mentions_gets_a_row():
     assert bool(p3["low_n"]) is True
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: FAIL — `AttributeError: module 'affiliation' has no attribute 'aggregate_players'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Append to `affiliation.py`:
 
@@ -989,12 +989,12 @@ def aggregate_players(
 
 Move the `import numpy as np` line up to sit beside `import pandas as pd` at the top of the file.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: PASS, 27 tests
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add affiliation.py tests/test_affiliation_a45.py
@@ -1017,7 +1017,7 @@ Reads the real inputs, runs the pipeline, writes `attention_affiliation.csv`. Th
   - `build_submission_index(corpus_dir: Path) -> tuple[pd.DataFrame, dict[str, int]]` — the `submission_id / subreddit / created_at` frame plus `sub_volume`
   - `main() -> None` — writes `attention_affiliation.csv`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/test_affiliation_a45.py`:
 
@@ -1056,12 +1056,12 @@ def test_build_submission_index_skips_malformed_lines(tmp_path: Path):
     assert volume["leafs"] == 1
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: FAIL — `ModuleNotFoundError: No module named 'compute_affiliation'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `compute_affiliation.py`:
 
@@ -1162,12 +1162,12 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: PASS, 29 tests
 
-- [ ] **Step 5: Run the driver on real data**
+- [x] **Step 5: Run the driver on real data**
 
 Run: `python compute_affiliation.py`
 
@@ -1175,7 +1175,7 @@ Expected: prints ~63,898 submissions across 38 subreddits, roughly 160k in-windo
 
 If the neutral share is far from ~37%, stop — the venue map is likely missing a subreddit. Check for corpus subreddits absent from both `venue_map` and `NEUTRAL_SUBS`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add compute_affiliation.py tests/test_affiliation_a45.py attention_affiliation.csv
@@ -1198,7 +1198,7 @@ Phase A exists to answer two open questions, so the answers get their own script
   - `team_own_share(affil: pd.DataFrame) -> pd.DataFrame` — per-team median `own_share` and player count, excluding `low_n` rows
   - `main() -> None` — prints the team table and the `rival_reach` leaderboard
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/test_affiliation_a45.py`:
 
@@ -1233,12 +1233,12 @@ def test_team_own_share_sorted_descending():
     assert list(out["team_code"]) == ["MON", "BOS"]
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: FAIL — `ImportError: cannot import name 'affiliation_report' from 'diagnostics'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `diagnostics/affiliation_report.py`:
 
@@ -1306,12 +1306,12 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_affiliation_a45.py -v`
 Expected: PASS, 31 tests
 
-- [ ] **Step 5: Run the report and record the finding**
+- [x] **Step 5: Run the report and record the finding**
 
 Run: `python -m diagnostics.affiliation_report`
 
@@ -1319,7 +1319,7 @@ Read the team table. If MON's median `own_share` sits near the top, that is evid
 
 Record the result in SESSION.md under open item #3B. Do not change `compute_oaq.py` either way; this is a finding, not a fix.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add diagnostics/affiliation_report.py tests/test_affiliation_a45.py
@@ -1339,7 +1339,7 @@ The measure will appear on the poster, so its definition and thresholds get lock
 - Consumes: the constants defined in Tasks 1–4
 - Produces: nothing consumed by code
 
-- [ ] **Step 1: Append the amendment**
+- [x] **Step 1: Append the amendment**
 
 Append to `preregistration.md`:
 
@@ -1402,7 +1402,7 @@ threshold is fixed here and will not be adjusted after inspecting results.
   addresses the arithmetic, not any sampling bias in what was collected.
 ```
 
-- [ ] **Step 2: Verify the constants match the code**
+- [x] **Step 2: Verify the constants match the code**
 
 Run:
 
@@ -1412,13 +1412,13 @@ grep -n "LOW_N_MIN\|NEUTRAL_SUBS\|WINDOW_START\|WINDOW_END" affiliation.py
 
 Expected: `LOW_N_MIN = 30`, `NEUTRAL_SUBS` containing exactly `hockey`, `nhl`, `fantasyhockey`, and the window bounds `2025-04-18` / `2026-04-17` — all matching the amendment text. Fix whichever side is wrong.
 
-- [ ] **Step 3: Run the full suite**
+- [x] **Step 3: Run the full suite**
 
 Run: `pytest -q`
 
 Expected: PASS. The suite was at 240 tests before this work; expect 271.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add preregistration.md
