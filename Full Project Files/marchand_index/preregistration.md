@@ -1510,6 +1510,144 @@ validation, or hypothesis quantity computed. Tests:
 
 ---
 
+**A49 (decided 2026-08-06, locked 2026-08-06 BEFORE the re-run) — Peer
+matching is position-locked to three classes; the Marchand Index headline
+returns to the §8-original raw-cap denominator with entry-level contracts
+reported in a separate panel.**
+
+Two independent rule changes, locked together because both were decided in
+the same owner review and both alter the headline. Neither is a threshold;
+neither was selected by comparing outcomes across candidate settings.
+
+---
+
+**A49.1 — Peer matching: position-locked to C / W / D.**
+
+§6 fixes a "hard position filter" of forwards-vs-forwards and D-vs-D. A49.1
+tightens the forward half: peers are now drawn only from the player's own
+**position class**, where the classes are
+
+| Class | `position` values | Pool |
+|---|---|---|
+| `C` | `C` | 249 |
+| `W` | `L`, `R` | 247 |
+| `D` | `D` | 275 |
+
+Left and right wings remain a single class — the owner's rule is "all wingers
+with each other," and splitting L from R would halve each pool for no stated
+reason.
+
+**What does not change.** The skill vector, the standardization, the
+Mahalanobis distance, the per-`group` sample covariance used to form it,
+`K_PEERS = 10`, the `effective_K` sentinel, and the A28 thin-peer
+sensitivity mode are all untouched. The candidate *filter* narrows; the
+*distance* is computed exactly as before. Because `group` `d1` was already
+all-D, defencemen's peer sets are bit-identical to the pre-A49 primary —
+this amendment moves forwards only.
+
+**Pool adequacy, checked before locking.** Smallest class is W at 247, so
+every player retains a full K=10 and no row falls back to a reduced
+`effective_K`. Verified: 0 rows with `effective_K < 10`.
+
+**Why.** A centre and a winger with the same `(age, PPG, TOI/G, CF%, xGF%,
+OZS%)` are not interchangeable comparators for *attention*: centres take
+draws, are named in defensive-zone and matchup discussion, and are the
+default subject of line-based coverage. Mixing them lets a high-attention
+winger inflate a centre's `peer_engagement_mean` (and the reverse) through a
+role difference the skill vector does not encode. This is a construct-validity
+fix, not a fit improvement.
+
+**Effect, measured on the pre-lock data and recorded here for honesty.**
+Spearman vs. the pre-A49 primary: `OAQ_portable` 0.9209, headline MI 0.9164
+across all 771. The ordering is substantially preserved; the amendment is not
+a re-ranking device. Direction of the largest moves: elite wingers rise
+(Marchand `OAQ_portable` 4.307 → 5.055; Ovechkin 6.843 → 7.082) and Crosby
+displaces McDavid at `OAQ_portable` #1 (7.228 → 7.719 vs 7.306 → 6.893).
+**These numbers were computed before the amendment was written and are
+disclosed precisely because they are favourable to the project's namesake
+case — the rule is justified by role validity above, and would stand had the
+effect gone the other way.** No alternative class definition was scored
+against outcomes.
+
+---
+
+**A49.2 — Marchand Index headline = `OAQ_portable / cap_hit_M`; entry-level
+contracts reported separately.**
+
+The headline Marchand Index returns to the **§8-original** definition:
+
+`marchand_index_headline(P) = OAQ_portable(P) / cap_hit_M(P)`
+
+computed on the **non-entry-level pool only**. Entry-level-contract players
+(`is_rookie_deal == 1`, flagged per A24: CapWages `contract_type` containing
+"entry-level", price+age proxy as per-row fallback) are **excluded from the
+headline leaderboard** and reported in a **separate companion panel** that
+uses the same raw `cap_hit_M` denominator. The two tables are never merged,
+and no combined ranking is published as a headline.
+
+**What this supersedes.** A8 promoted `marchand_index_hybrid` (rookie-deal →
+`expected_cap`; everyone else → `cap_hit_M`) to headline. A49.2 **demotes
+`marchand_index_hybrid` to an audit lens.** It continues to be computed,
+bootstrapped, and published in `oaq_pilot.csv` and in the lens comparison in
+`results.md`, so a reviewer can see exactly how much the denominator choice
+moved the ranking. `marchand_index` (the A4 full-`expected_cap`
+intrinsic-efficiency lens) is likewise retained as an audit lens. Nothing is
+deleted.
+
+**What does not change.** `OAQ_observed`, `OAQ_portable`, the CES weights,
+`LAMBDA_BIGMARKET`, the market proxy, `expected_cap` itself (still computed,
+still used by the demoted lenses), the A24 rookie flag and its fallback, the
+`cap_quality = low` exclusion from every MI ranking, the A34 display rule,
+and the bootstrap procedure.
+
+**Why raw cap.** `expected_cap` is a per-group OLS prediction from `(PPG,
+TOI/G)` — a *modelled* denominator. Dividing an attention surplus by a
+modelled price makes the headline a ratio of two estimated quantities, and
+puts a regression the audience cannot see between the data and the number
+they are asked to remember. `cap_hit_M` is an observed, verifiable,
+externally auditable price. For a room of professional statisticians, the
+observed denominator is the defensible headline and the modelled one is the
+sensitivity.
+
+**Why ELC players are separated rather than adjusted.** An entry-level cap
+hit is not a negotiated market price — it is a collectively-bargained
+ceiling, and dividing by it produces a mechanically large ratio that says
+more about the CBA than about the player. A8 addressed this by *imputing* a
+price; A49.2 addresses it by *not comparing the two populations at all*. The
+separation is the honest form: within the ELC panel the denominator is
+uniform-ish and the ranking is meaningful; across the boundary it is not, so
+no across-boundary claim is made.
+
+**Consequent change to the PC pattern verdict (§11).** PC asks whether ≥3 of
+the top-10 by `engagement_raw` are displaced out of the top-10 by the
+headline MI. Under A49.2 the headline pool excludes ELC players, so the
+comparison is re-specified to run **both** lists on the **same non-ELC
+display pool** — top-10 by `engagement_raw` among non-ELC vs top-10 by
+headline MI among non-ELC. Computing the engagement list pool-wide against
+an ELC-free MI list would manufacture displacement from a pool mismatch and
+inflate the verdict. The floor of 3 is unchanged. The ELC panel gets no PC
+verdict of its own.
+
+**Limits of claim (to be carried onto the poster).** The headline is
+attention surplus per dollar of a player's *actual current* cap hit. It is
+therefore sensitive to contract timing: a player in the final year of a deal
+signed against an older cap ceiling scores higher than the same player one
+year later, and nothing in the index corrects for that. The ELC panel is
+reported for interest and is **not** claimed to be comparable to the
+headline table. `marchand_index_hybrid` remains available as the lens that
+answers "what if rookies were priced at projected market pay instead."
+
+**Anti-tuning compliance (§13).** No threshold introduced or moved. Both
+rules were fixed before the post-amendment production re-run. A49.1's
+measured effect is disclosed above precisely because it favours the
+namesake case; A49.2's effect on the leaderboard is reported in `results.md`
+as a lens comparison, not used to choose between denominators. The
+denominator choice rests on the observed-vs-modelled argument stated above,
+which is independent of the resulting ranking. Tests:
+`tests/test_position_lock_a49.py` (24); suite 351 → 375.
+
+---
+
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
 
 **V-A11-Trends (2026-06-26) — live spot-check confirming `raw/trends.csv` was fetched on the A11 fixed window, not a run-anchored one.** `fetch_trends.py:52` uses `timeframe="2025-04-18 2026-04-17"`, but the stored `trends.csv` carries `fetch_date=2026-06-20` and the fixed-window code only landed 2026-06-20 13:21 (commit `0c3ccbe`); whether the file predated the fix that day was not decidable from git/data alone. A single live `pytrends` call resolves it (the test is window-vintage, so one salient distinctive-name player suffices). **Player: Connor McDavid** (stored `trends_12mo = 24.7358`; he had a 2026 playoff run, so the two windows diverge maximally). Result: a fresh **fixed-window** [2025-04-18, 2026-04-17] fetch gives mean **26.13** (n=53) — **5.6 % from stored, within Trends sampling noise → MATCH**, i.e. the stored file used the fixed window. The same player's **run-anchored** (`today 12-m`) series shows the expected post-window playoff spike the fixed window correctly excludes — weeks 2026-04-19 = 32, **2026-04-26 = 47 (peak)**, 2026-05-03 = 33, all after the 2026-04-17 window end. Conclusion: the `trends` component (§4/A12 weight 0.16) is on the A11 window and **excludes the 2026-playoff confound**; the SESSION residual is closed by live evidence. No file or weight changes; verification only. (One live call; perishable, so not re-run across the set.)

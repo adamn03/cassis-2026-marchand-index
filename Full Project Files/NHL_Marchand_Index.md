@@ -17,7 +17,8 @@
 > | Composite = 0.7×CES + 0.3×BDS, IG follower weight | **BDS never enters the composite; Instagram removed.** Flow weights: wiki_en 0.29, wiki_intl 0.11, reddit_mentions 0.27, reddit_upvotes 0.17, trends 0.16 | §4, A12 |
 > | Rolling / career time windows | **Fixed window [2025-04-18 → 2026-04-17]** for all flow components | A11, A14 |
 > | Peer vector (age, PPG, TOI/G) | **+ MoneyPuck 5v5 cf_pct, xgf_pct, ozs_pct** (6 features, Mahalanobis, K=10) | A13 |
-> | `marchand_index = OAQ_portable / cap_hit_M` | **Denominator = `expected_cap`** (market-rate OLS, position-wise; raw-cap kept as audit lens) | A4, A8 |
+> | Peers matched within `group` (F vs F, D vs D) | **Position-locked: C / W (L+R) / D** — candidates restricted to the player's own class; distance, covariance, features, K unchanged | A49.1 |
+> | `marchand_index = OAQ_portable / cap_hit_M` | A4/A8 moved the denominator to `expected_cap` / hybrid; **A49.2 returned the headline to raw `cap_hit_M`** on the non-ELC pool, with entry-level contracts in a separate companion panel. `marchand_index_hybrid` and `marchand_index` are retained as audit lenses. | A4, A8, A49.2 |
 > | Full market-baseline subtraction | **One-sided damped subtraction, λ = 0.5** | A5 |
 > | Trends = raw name string | **Topic-MID entity queries, fixed Brad-Marchand-anchor two-term payload, ratio scale** | A16 |
 > | Reddit last-name search | **+ within-pool surname-collision evidence filter** (`ambiguous_mentions`) | A15 |
@@ -405,10 +406,18 @@ The methodological pushback worth addressing head-on: Toronto / Montreal / Bosto
 
 `marchand_index = OAQ_portable / cap_hit_M`
 
-> **SUPERSEDED (A4/A8):** the production denominator is `expected_cap`
-> (position-wise OLS market-rate cap, floored at league minimum) — raw
-> cap-hit rewards the CBA rookie-scale artifact, not attention efficiency.
-> `marchand_index_rawcap` is retained as an audit lens.
+> **A4/A8 superseded this, then A49.2 restored it.** A4/A8 moved the
+> production denominator to `expected_cap` (position-wise OLS market-rate
+> cap, floored at league minimum) on the grounds that raw cap-hit rewards
+> the CBA rookie-scale artifact. **A49.2 (2026-08-06) returned the headline
+> to raw `cap_hit_M`** and addressed the rookie-scale artifact by
+> *separating* the populations instead of imputing a price: the headline
+> leaderboard is the non-ELC pool, and entry-level contracts get their own
+> companion panel on the same raw denominator. Rationale: `expected_cap` is
+> a modelled quantity, so a headline built on it is a ratio of two estimates
+> with an invisible regression between the data and the number. Raw cap hit
+> is observed and externally auditable. `marchand_index_hybrid` (A8) and
+> `marchand_index` (A4) are retained as audit lenses.
 
 Reported with **bootstrap 95% confidence interval** per player. Bootstrap procedure: resample player's mention pool with replacement 1000 times, recompute peer-group mean from resampled peer mentions, recompute OAQ_portable, take 2.5th and 97.5th percentiles.
 

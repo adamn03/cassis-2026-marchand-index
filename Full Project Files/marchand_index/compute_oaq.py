@@ -29,7 +29,8 @@ Outputs:
 Method summary (locked):
   engagement_raw = weighted sum of z-scored components, per-player sentinel
     renormalization on NULL components.
-  Peers: K=10, hard position split via `group`, Mahalanobis distance using the
+  Peers: K=10, hard position split via `group` AND position class
+    (A49.1: C / W = L+R / D), Mahalanobis distance using the
     inverse WITHIN-GROUP covariance of the standardized skill vector
     (age, ppg, toi_per_game, cf_pct, xgf_pct, ozs_pct), group-mean
     imputation for NULL skill (A13: 5v5 on-ice features).
@@ -39,11 +40,14 @@ Method summary (locked):
     NON-ROOKIE market contracts, Duan-smeared back-transform, floored at
     $0.775M. Age excluded so the rookie scale is not re-imported. Rookie flag
     keys on the CapWages contract type (price+age proxy = per-row fallback).
+  marchand_index_rawcap = OAQ_portable / cap_hit_M  (HEADLINE, A49.2 =
+    §8-original; published on the NON-ELC pool, ELC rows in a separate
+    companion panel on the same denominator)
   marchand_index_hybrid = OAQ_portable / (expected_cap if rookie-deal else
-    cap_hit_M)                                    (HEADLINE, A8)
+    cap_hit_M)                                    (audit lens; was the A8
+    headline, demoted by A49.2)
   marchand_index = OAQ_portable / expected_cap   (intrinsic-efficiency lens;
     was A4 headline, demoted by A8)
-  marchand_index_rawcap = OAQ_portable / cap_hit_M  (audit / §8-original)
   Bootstrap: 1000 draws; wiki daily vectors (en + per-intl-edition) resampled
     in 7-day CIRCULAR blocks (A26, Politis–Romano); reddit submission pool
     resampled iid; trends/IG/cap/market fixed; peer SETS fixed; recompute
@@ -157,6 +161,24 @@ V2_FLOOR, V2_TARGET = 0.45, 0.55
 # A35 clause 2: poster-binding escape-clause plug, verbatim.
 A35_LOG_LENS_BAN = ("No log-lens number appears in the headline, abstract, "
                     "or leaderboard panels under any outcome.")
+
+# A49.2: the published headline Marchand Index is the §8-original raw-cap
+# quantity, computed on the NON-ELC pool. `marchand_index_hybrid` (A8) and
+# `marchand_index` (A4) are retained as audit lenses. Entry-level-contract
+# players are never merged into the headline ranking — they get a separate
+# companion panel on the same raw denominator.
+HEADLINE_MI_COL = "marchand_index_rawcap"
+
+
+def split_elc(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """A49.2: (non-ELC headline pool, ELC companion pool).
+
+    Split keys on the A24 `is_rookie_deal` flag. Both frames keep the raw
+    `cap_hit_M` denominator; they are reported side by side and never ranked
+    against each other.
+    """
+    is_elc = df["is_rookie_deal"] == 1
+    return df[~is_elc].copy(), df[is_elc].copy()
 
 # A32 rule 1: required disclosure sentence, verbatim (poster + results.md).
 A32_DISCLOSURE = (
@@ -560,11 +582,17 @@ def compute_log_lens(df: pd.DataFrame, peers: list[list[int]],
     with np.errstate(invalid="ignore", divide="ignore"):
         mi_hyb = np.where((denom > 0) & np.isfinite(denom),
                           oaq_port / denom, np.nan)
+        # A49.2: the headline is the raw-cap quantity, so the log lens must
+        # cover it too — otherwise the A17 robustness check tests only a
+        # demoted lens.
+        mi_raw = np.where((cap_raw > 0) & np.isfinite(cap_raw),
+                          oaq_port / cap_raw, np.nan)
     return {
         "engagement_raw_log1p": er,
         "OAQ_observed_log1p": oaq_obs,
         "OAQ_portable_log1p": oaq_port,
         "marchand_index_hybrid_log1p": mi_hyb,
+        "marchand_index_rawcap_log1p": mi_raw,
     }
 
 
@@ -602,12 +630,46 @@ def _standardize_skill(df: pd.DataFrame) -> np.ndarray:
     return (filled - mu) / sd
 
 
+def position_class(df: pd.DataFrame) -> np.ndarray:
+    """A49.1 peer-eligibility class: C | W | D | G.
+
+    Wings are ONE class — the amendment's rule is "all wingers with each
+    other"; splitting L from R would halve each pool for no stated reason.
+    Anything not C/L/R/D falls to "G" (goalies are out of the headline pool
+    entirely, so the bucket exists only so the filter is total).
+
+    Frames with no `position` column (synthetic skill fixtures in the test
+    suite, which construct peer geometry directly) get a single shared class,
+    which makes the A49.1 filter a no-op and preserves pre-A49 behaviour for
+    them. The production path always carries `position` from `players.csv`;
+    `test_position_lock_a49.py` asserts that, so the fallback can never
+    silently disable the lock on real data.
+    """
+    if "position" not in df.columns:
+        return np.full(len(df), "ALL", dtype=object)
+    pos = df["position"].astype(str).to_numpy()
+    return np.where(
+        pos == "C", "C",
+        np.where(np.isin(pos, ["L", "R"]), "W",
+                 np.where(pos == "D", "D", "G")),
+    )
+
+
 def compute_peers(df: pd.DataFrame,
                   exclude_thin_peers: bool = False) -> list[list[int]]:
-    """K=10 Mahalanobis nearest peers within position group.
+    """K=10 Mahalanobis nearest peers within position group AND class.
 
     Distance uses pinv of the WITHIN-GROUP sample covariance of the
     standardized skill vector, computed separately per group.
+
+    A49.1: candidates are additionally restricted to the player's own
+    position class (C / W = L+R / D). §6's forwards-vs-forwards filter is
+    tightened because a centre and a winger with the same skill vector are
+    not interchangeable comparators for ATTENTION — role drives coverage in
+    a way `(age, PPG, TOI/G, CF%, xGF%, OZS%)` does not encode. The distance,
+    covariance, feature set, and K are unchanged; only the candidate filter
+    narrows. Group `d1` is already all-D, so defencemen's peer sets are
+    bit-identical to the pre-A49 primary.
 
     A28 sensitivity mode (`exclude_thin_peers=True`): rows with
     `onice_status == "thin"` (A13 group-mean-imputed on-ice features) are
@@ -618,6 +680,7 @@ def compute_peers(df: pd.DataFrame,
     """
     Z = _standardize_skill(df)
     groups = df["group"].to_numpy()
+    pclass = position_class(df)
     n = len(df)
     peers: list[list[int]] = [[] for _ in range(n)]
     if exclude_thin_peers and "onice_status" in df.columns:
@@ -642,7 +705,8 @@ def compute_peers(df: pd.DataFrame,
             d2 = np.einsum("ij,jk,ik->i", diffs, VI, diffs)
             order = np.argsort(d2, kind="stable")
             chosen = [idx[b] for b in order
-                      if idx[b] != a and eligible[idx[b]]][:K_PEERS]
+                      if idx[b] != a and eligible[idx[b]]
+                      and pclass[idx[b]] == pclass[a]][:K_PEERS]
             peers[a] = list(map(int, chosen))
     return peers
 
@@ -849,15 +913,17 @@ def compute_oaq(df: pd.DataFrame, peers: list[list[int]] | None = None,
 
     # Marchand Index — three denominator lenses ship together so the rookie
     # artifact and the small-market artifact can both be inspected honestly.
-    #   marchand_index_hybrid     : A8 HEADLINE — rookie-deal players use
+    #   marchand_index_rawcap     : A49.2 HEADLINE (= §8-original) —
+    #                               OAQ_portable / cap_hit_M. Published on the
+    #                               NON-ELC pool; ELC players get their own
+    #                               companion panel on the same denominator.
+    #                               An observed, auditable price, not a model.
+    #   marchand_index_hybrid     : audit lens (was the A8 headline, demoted by
+    #                               A49.2) — rookie-deal players use
     #                               expected_cap; everyone else uses cap_hit_M.
-    #                               Isolates the ELC fix from veterans, whose
-    #                               actual cap hit is a real negotiated price.
     #   marchand_index            : intrinsic-efficiency lens (was A4 headline,
     #                               demoted by A8) — OAQ_portable / expected_cap
-    #                               (all 160 use per-group OLS prediction).
-    #   marchand_index_rawcap     : §8-original — OAQ_portable / cap_hit_M
-    #                               (current-season bargain lens).
+    #                               (all rows use per-group OLS prediction).
     # A24: rookie flag first (contract-type keyed, proxy fallback) — the
     # expected_cap fit set depends on it.
     rookie_deal, rookie_src = rookie_flags(df)
@@ -1719,28 +1785,33 @@ def evaluate_patterns(df: pd.DataFrame, external: dict) -> dict:
     }
 
     # PC: >=3 of top-10 by engagement_raw are displaced OUT of top-10 by the
-    # headline MI. A8: headline = marchand_index_hybrid (rookie-deal players
-    # use expected_cap; everyone else uses actual cap_hit_M). Recomputed off
-    # the hybrid headline per the A8 re-evaluation obligation.
+    # headline MI. A49.2: headline = marchand_index_rawcap on the NON-ELC
+    # pool. Both lists run on the SAME non-ELC pool — ranking a pool-wide
+    # engagement list against an ELC-free MI list would manufacture
+    # displacement out of a pool mismatch and inflate the verdict.
     # cap_quality=low excluded from the MI ranking.
-    eng = df[["full_name", "engagement_raw"]].dropna(subset=["engagement_raw"])
+    mi_pool = df[df["cap_quality"].astype(str).str.lower() != "low"]
+    mi_pool, _elc = split_elc(mi_pool)
+    eng = mi_pool[["full_name", "engagement_raw"]].dropna(
+        subset=["engagement_raw"])
     top10_eng = (
         eng.sort_values("engagement_raw", ascending=False)
         .head(10)["full_name"]
         .tolist()
     )
-    mi_pool = df[df["cap_quality"].astype(str).str.lower() != "low"]
-    mi_pool = mi_pool.dropna(subset=["marchand_index_hybrid"])
+    mi_pool = mi_pool.dropna(subset=[HEADLINE_MI_COL])
     top10_mi = (
-        mi_pool.sort_values("marchand_index_hybrid", ascending=False)
+        mi_pool.sort_values(HEADLINE_MI_COL, ascending=False)
         .head(10)["full_name"]
         .tolist()
     )
     displaced = [n for n in top10_eng if n not in set(top10_mi)]
     out["PC"] = {
-        "description": ">=3 of top-10 by engagement_raw displaced out of top-10 by marchand_index_hybrid (A8 hybrid headline)",
+        "description": (">=3 of top-10 by engagement_raw displaced out of "
+                        "top-10 by marchand_index_rawcap (A49.2 headline); "
+                        "both lists on the non-ELC pool"),
         "top10_engagement_raw": top10_eng,
-        "top10_marchand_index_hybrid": top10_mi,
+        "top10_marchand_index_rawcap": top10_mi,
         "n_displaced": len(displaced),
         "displaced_names": displaced,
         "floor": 3,
@@ -1985,6 +2056,16 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
                  "covariance of standardized (age, ppg, toi_per_game, "
                  "cf_pct, xgf_pct, ozs_pct) [A13 5v5 on-ice features; "
                  "thin/missing imputed to group mean])")
+    _pc = pd.Series(position_class(df)).value_counts().to_dict()
+    lines.append("- **A49.1 position-locked peers:** candidates restricted to "
+                 "the player's own position class — C / W (L+R) / D. Pool "
+                 "sizes: "
+                 + ", ".join(f"{k} {v}" for k, v in sorted(_pc.items()))
+                 + f". Rows with effective_K < {K_PEERS}: "
+                 f"{int((df['effective_K'] < K_PEERS).sum())}. Distance, "
+                 "covariance, features and K are unchanged; only the "
+                 "candidate filter narrows. Group `d1` is already all-D, so "
+                 "defence peer sets are bit-identical to pre-A49.")
     lines.append(f"- Bootstrap draws: {BOOTSTRAP_DRAWS}, seed {SEED}; wiki "
                  "daily vectors resampled in 7-day CIRCULAR blocks (A26, "
                  "Politis–Romano); Reddit pool resampled iid (unchanged)")
@@ -2008,15 +2089,24 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     lines.append(f"- small_sample (GP < {SMALL_SAMPLE_GP} or NULL; A10, "
                  f"descriptive/non-exclusionary): {n_small} — kept in all "
                  "computations; headline is not quoted on these rows")
-    lines.append("- **A8 headline denominator:** `marchand_index_hybrid` — "
-                 "rookie-deal players use `expected_cap` (A24: per-group OLS "
-                 "of log(cap_hit_M) ~ PPG + TOI/G on non-rookie market "
-                 "contracts, Duan-smeared back-transform, age excluded, "
-                 f"floored at ${LEAGUE_MIN_CAP_M:.3f}M); everyone else uses "
-                 "actual `cap_hit_M`. `marchand_index` (expected_cap for all, "
-                 "the intrinsic-efficiency lens; was the A4 headline) and "
-                 "`marchand_index_rawcap` (§8-original, raw cap denominator) "
-                 "are also computed for the 5-lens leaderboard comparison.")
+    _nonelc, _elc = split_elc(df)
+    lines.append("- **A49.2 headline denominator:** `marchand_index_rawcap` "
+                 "(= §8-original) — `OAQ_portable / cap_hit_M`, the player's "
+                 "observed and externally auditable 2025-26 cap hit, "
+                 f"published on the NON-ELC pool ({len(_nonelc)} rows). "
+                 f"Entry-level-contract players ({len(_elc)} rows) are "
+                 "reported in a separate companion panel on the same raw "
+                 "denominator and are never merged into the headline "
+                 "ranking. `marchand_index_hybrid` (rookie-deal → "
+                 "`expected_cap`, others → raw cap; the A8 headline, demoted "
+                 "by A49.2) and `marchand_index` (expected_cap for all, the "
+                 "intrinsic-efficiency lens; the A4 headline, demoted by A8) "
+                 "are retained as audit lenses in the leaderboard comparison. "
+                 "`expected_cap` (A24: per-group OLS of log(cap_hit_M) ~ PPG "
+                 "+ TOI/G on non-rookie market contracts, Duan-smeared "
+                 "back-transform, age excluded, floored at "
+                 f"${LEAGUE_MIN_CAP_M:.3f}M) is still computed and feeds "
+                 "those lenses only.")
     n_rookie = int(df["is_rookie_deal"].sum())
     n_ct = int((df["rookie_flag_source"] == "contract_type").sum())
     n_px = int((df["rookie_flag_source"] == "price_age_proxy").sum())
@@ -2211,10 +2301,16 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     rookie_pool = mi_pool[mi_pool["is_rookie_deal"] == 1]
     nonrookie_pool = mi_pool[mi_pool["is_rookie_deal"] == 0]
 
-    # Lens 1 — rookie-deal only, raw cap.
-    lines.append("### Lens 1 — Top 10 ROOKIE-DEAL only, raw cap")
-    lines.append("(pool = rookie-deal players, ranked by OAQ_portable / "
-                 f"cap_hit_M) {a34_caption}\n")
+    # Lens 1 — ELC companion panel (A49.2). Same raw denominator as the
+    # headline; reported separately and never merged into it.
+    lines.append("### Lens 1 — ENTRY-LEVEL CONTRACTS, raw cap — "
+                 "**COMPANION PANEL (A49.2)**")
+    lines.append("(pool = entry-level-contract players only, ranked by "
+                 "OAQ_portable / cap_hit_M. An ELC cap hit is a "
+                 "collectively-bargained ceiling, not a negotiated market "
+                 "price, so these rows are reported separately and are NOT "
+                 "comparable to the headline table above the boundary.) "
+                 f"{a34_caption}\n")
     lines.append("| Rank | Player | Age | MI_raw | OAQ_portable | cap_hit_M |")
     lines.append("|---|---|---|---|---|---|")
     r1 = rookie_pool.dropna(subset=["marchand_index_rawcap"]).sort_values(
@@ -2227,11 +2323,14 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
         )
     lines.append("")
 
-    # Lens 2 — non-rookie-deal only, raw cap.
-    lines.append("### Lens 2 — Top 10 NON-ROOKIE-DEAL only, raw cap "
-                 "(\"rookie-deal players removed\")")
+    # Lens 2 — non-ELC, raw cap. A49.2: this is the published HEADLINE.
+    lines.append("### Lens 2 — Top 10 NON-ENTRY-LEVEL, raw cap — "
+                 "**HEADLINE (A49.2)**")
     lines.append("(pool = veterans / extension-era players only, ranked by "
-                 f"OAQ_portable / cap_hit_M) {a34_caption}\n")
+                 "OAQ_portable / cap_hit_M. The denominator is the player's "
+                 "observed, externally auditable 2025-26 cap hit — not a "
+                 "modelled price. This is the published headline "
+                 f"leaderboard.) {a34_caption}\n")
     lines.append("| Rank | Player | Age | MI_raw | OAQ_portable | cap_hit_M |")
     lines.append("|---|---|---|---|---|---|")
     r2 = nonrookie_pool.dropna(subset=["marchand_index_rawcap"]).sort_values(
@@ -2244,11 +2343,16 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
         )
     lines.append("")
 
-    # Lens 3 — all 160, raw cap (§8-original, no rookie adjustment).
-    lines.append("### Lens 3 — Top 10 ALL players, raw cap (no rookie "
-                 "adjustment, §8-original)")
-    lines.append("(pool = all players, ranked by OAQ_portable / cap_hit_M) "
-                 f"{a34_caption}\n")
+    # Lens 3 — all rows, raw cap, ELC and non-ELC merged. A49.2 forbids this
+    # as a headline (the two populations are not comparable); retained as the
+    # audit lens that shows what merging them would do.
+    lines.append("### Lens 3 — Top 10 ALL players, raw cap (ELC and non-ELC "
+                 "merged) — audit lens, NOT a headline")
+    lines.append("(pool = all players, ranked by OAQ_portable / cap_hit_M. "
+                 "A49.2 bars this table from the headline: ELC cap hits are "
+                 "CBA ceilings, so a merged ranking measures the contract "
+                 "system as much as the player. Shown so the effect of the "
+                 f"separation is visible.) {a34_caption}\n")
     lines.append("| Rank | Player | Age | Rookie? | MI_raw | OAQ_portable | "
                  "cap_hit_M |")
     lines.append("|---|---|---|---|---|---|---|")
@@ -2266,12 +2370,15 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
     # Lens 4 — hybrid (rookie-deal → expected_cap; others → raw cap).
     # A8: this is the published HEADLINE lens.
     lines.append("### Lens 4 — Top 10 ALL players, HYBRID denominator "
-                 "(rookie-deal → expected_cap; others → raw cap) — **HEADLINE (A8)**")
+                 "(rookie-deal → expected_cap; others → raw cap) — audit lens "
+                 "(was the A8 headline, demoted by A49.2)")
     lines.append("(rookies are evaluated at projected market pay vs. similar-"
-                 "skill peers; veterans keep their actual cap hit. This is the "
-                 "published headline leaderboard: fan-attention surplus per "
-                 "dollar of a player's *actual* deal, projecting only those "
-                 f"contractually barred from signing one.) {a34_caption}\n")
+                 "skill peers; veterans keep their actual cap hit. A49.2 "
+                 "demoted this to an audit lens because `expected_cap` is a "
+                 "per-group OLS prediction, which puts a regression the "
+                 "audience cannot see between the data and the headline "
+                 "number. Retained so the cost of the denominator swap is "
+                 f"visible.) {a34_caption}\n")
     lines.append("| Rank | Player | Age | Rookie? | MI_hybrid | "
                  "OAQ_portable | denom_used |")
     lines.append("|---|---|---|---|---|---|---|")
@@ -2497,18 +2604,22 @@ def write_results_md(path: Path, df: pd.DataFrame, external: dict,
                          f"(mechanical baseline under log lens: "
                          f"{_fnum(rob.get('rho'))})")
             lines.append("")
-        lines.append("### Top 10 by marchand_index_hybrid — log lens")
+        # A49.2: the log lens tracks the HEADLINE quantity, so this panel is
+        # the raw-cap MI on the non-ELC pool — same pool rule as Lens 2.
+        lines.append("### Top 10 by marchand_index_rawcap — log lens "
+                     "(non-ELC pool, mirrors the A49.2 headline)")
         lines.append(a34_caption + "\n")
-        lines.append("| Rank | Player | MI_hybrid_log1p | OAQ_portable_log1p |")
+        lines.append("| Rank | Player | MI_rawcap_log1p | OAQ_portable_log1p |")
         lines.append("|---|---|---|---|")
         log_pool = disp[disp["cap_quality"].astype(str).str.lower() != "low"]
-        log_top = (log_pool.dropna(subset=["marchand_index_hybrid_log1p"])
-                   .sort_values("marchand_index_hybrid_log1p", ascending=False)
+        log_pool, _ = split_elc(log_pool)
+        log_top = (log_pool.dropna(subset=["marchand_index_rawcap_log1p"])
+                   .sort_values("marchand_index_rawcap_log1p", ascending=False)
                    .head(10))
         for i, (_, r) in enumerate(log_top.iterrows(), 1):
             lines.append(
                 f"| {i} | {r['full_name']} | "
-                f"{_fnum(r['marchand_index_hybrid_log1p'])} | "
+                f"{_fnum(r['marchand_index_rawcap_log1p'])} | "
                 f"{_fnum(r['OAQ_portable_log1p'])} |")
         lines.append("")
 
@@ -2584,7 +2695,7 @@ OUT_COLS = [
     "marchand_index_hybrid",
     "marchand_index_hybrid_lo95", "marchand_index_hybrid_hi95",
     "engagement_raw_log1p", "OAQ_observed_log1p", "OAQ_portable_log1p",
-    "marchand_index_hybrid_log1p",
+    "marchand_index_hybrid_log1p", "marchand_index_rawcap_log1p",
     "cap_hit_M", "cap_quality", "match_quality",
     "jersey_list_member", "jersey_rank", "asg2024_member",
 ]
@@ -2612,7 +2723,8 @@ def main() -> None:
     a28_agreement = {
         col: rank_agreement(df[col].to_numpy(dtype=float),
                             df_a28[col].to_numpy(dtype=float))
-        for col in ("OAQ_observed", "OAQ_portable", "marchand_index_hybrid")
+        for col in ("OAQ_observed", "OAQ_portable", HEADLINE_MI_COL,
+                    "marchand_index_hybrid")
     }
     n_thin = int((df["onice_status"].astype(str) == "thin").sum())
 
@@ -2641,6 +2753,10 @@ def main() -> None:
         "OAQ_portable": rank_agreement(
             df["OAQ_portable"].to_numpy(dtype=float),
             log_lens["OAQ_portable_log1p"]),
+        # A49.2 headline first, demoted A8 lens retained beside it.
+        "marchand_index_rawcap": rank_agreement(
+            df["marchand_index_rawcap"].to_numpy(dtype=float),
+            log_lens["marchand_index_rawcap_log1p"]),
         "marchand_index_hybrid": rank_agreement(
             df["marchand_index_hybrid"].to_numpy(dtype=float),
             log_lens["marchand_index_hybrid_log1p"]),
