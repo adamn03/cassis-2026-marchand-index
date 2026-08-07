@@ -38,6 +38,25 @@ Ambiguous submissions are counted in `ambiguous_mentions` (for every group
 member whose counting subs include that subreddit) and excluded from
 mentions/upvotes and the bootstrap detail pool.
 
+First-name collision surnames (A48, option C'): a surname unique in the pool
+that is also some pool player's FIRST name (13 of them: beck blake cole colton
+connor frank james joshua paul quinn reilly shea thomas) is never handed to its
+owner unchecked. Per submission the token is classified: S1 (every occurrence
+immediately followed by the surname of a player whose first name it is) ->
+proven first-name usage, owner ineligible, disclosed in
+`guard_filtered_mentions`; S2 (>=1 standalone occurrence and the owner's A15
+checker fires) -> owner eligible; S3 (standalone, no evidence) -> eligible only
+in the owner's own team sub, and only if the surname is NOT in the English
+top-1000 (P1-strict — own-sub context cannot resolve an ordinary-word
+confuser); otherwise disclosed in `ambiguous_mentions`. S1 takes precedence
+over S2. For these surnames A48 overrides A42 rule 2 and the A43 P2 guard.
+
+Status ladder (A48 Defect 5): `null` = no corpus file for any counting sub;
+`partial`/`ok` = counted; `unmeasurable` = corpus was read but 0 mentions
+survived while ambiguous/guard-filtered candidates exist — we failed to
+measure, we did not measure zero. Downstream treats it like `null`
+(NULL -> renormalize), but disclosure columns stay populated.
+
 Sub selection (A22): r/hockey + the team subreddit of EVERY team the player
 was rostered on inside the window, derived from NHL-API landing seasonTotals
 (seasons 20242025 + 20252026, gameTypeId 2, leagueAbbrev NHL; cached HTTP).
@@ -48,13 +67,14 @@ Descriptive columns (A23 rule 5, never composite): `reddit_mentions_allsubs`
 (attributed matches over the full 36-sub corpus incl. r/nhl + r/fantasyhockey)
 and `reddit_mentions_fantasy` (r/fantasyhockey only).
 
-Writes: marchand_index/raw/reddit_counts.csv
-  player_id, full_name, reddit_subs_searched, reddit_mentions_12mo,
-  reddit_upvotes_12mo, unique_authors, reddit_status, ambiguous_mentions,
-  surname_shared, reddit_identity_ambiguous, reddit_mentions_allsubs,
-  reddit_mentions_fantasy, fetch_date
+Writes: marchand_index/raw/reddit_counts.csv (COUNTS_FIELDS below; status is
+one of ok | partial | null | unmeasurable)
   + marchand_index/raw/reddit_detail.csv (player_id, submission_id, score)
     for the §10 bootstrap
+  + marchand_index/raw/reddit_detail_allsubs.csv (player_id, submission_id,
+    subreddit, score) — every attributed winner over the full 36-sub corpus,
+    venue kept, for the A45 affiliation split (descriptive only, never
+    composite)
 """
 from __future__ import annotations
 
@@ -84,9 +104,11 @@ COUNTS_FIELDS = [
     "reddit_upvotes_12mo", "unique_authors", "reddit_status",
     "ambiguous_mentions", "surname_shared", "reddit_identity_ambiguous",
     "reddit_common_word_guard", "guard_filtered_mentions",
+    "reddit_firstname_collision",
     "reddit_mentions_allsubs", "reddit_mentions_fantasy", "fetch_date",
 ]
 DETAIL_FIELDS = ["player_id", "submission_id", "score"]
+DETAIL_ALLSUBS_FIELDS = ["player_id", "submission_id", "subreddit", "score"]
 
 # DailyFaceoff team_code -> team subreddit (r/hockey is always counted too).
 TEAM_SUB = {
@@ -337,6 +359,30 @@ def guard_set_a43(df: dict[str, float], en1000: frozenset[str],
 
 
 # --------------------------------------------------------------------------- #
+# A48 — first-name collision surnames (option C')                              #
+# --------------------------------------------------------------------------- #
+def collision_surnames(players: list[dict]) -> dict[str, frozenset[str]]:
+    """Folded surnames that are unique in the pool AND also some pool player's
+    FIRST name -> surnames of the players carrying that token as a first name.
+
+    These are the tokens `attribute()` would hand to their owner unchecked
+    (single-member group); the 3-state rule in scan_corpus decides instead.
+    """
+    by_surname: dict[str, list[str]] = {}
+    fn_to_surnames: dict[str, set[str]] = {}
+    for p in players:
+        parts = p["full_name"].split()
+        if not parts:
+            continue
+        sn, fn = fold(parts[-1]), fold(parts[0])
+        by_surname.setdefault(sn, []).append(fn)
+        fn_to_surnames.setdefault(fn, set()).add(sn)
+    return {sn: frozenset(fn_to_surnames[sn])
+            for sn, firsts in by_surname.items()
+            if len(firsts) == 1 and sn in fn_to_surnames}
+
+
+# --------------------------------------------------------------------------- #
 # A22 — window-roster team derivation                                          #
 # --------------------------------------------------------------------------- #
 def load_team_maps() -> tuple[dict[str, str], dict[str, str]]:
@@ -400,19 +446,30 @@ def counting_subs(codes: set[str]) -> list[str]:
 def build_groups(players: list[dict], wteams: dict[str, set[str]],
                  nickname: dict[str, str],
                  surname_map: dict[str, list[str]],
-                 guarded: set[str] | None = None) -> dict[str, list[dict]]:
+                 guarded: set[str] | None = None,
+                 collisions: dict[str, frozenset[str]] | None = None,
+                 en1000: frozenset[str] | None = None) -> dict[str, list[dict]]:
     """Folded surname -> attribution group (one member per pool player).
-    `guarded` = A42 common-word surnames: members get a forced checker."""
+    `guarded` = A42 common-word surnames: members get a forced checker.
+    `collisions` = A48 first-name collision surnames (collision_surnames());
+    their owners also get a forced checker plus the fields the 3-state rule in
+    scan_corpus reads: `collision`, `fn_surnames`, `p1` (English top-1000)."""
     guarded = guarded or set()
+    collisions = collisions or {}
+    en1000 = en1000 or frozenset()
     groups: dict[str, list[dict]] = {}
     for p in players:
         parts = p["full_name"].split()
         sn, fn = fold(parts[-1]), fold(parts[0])
-        checker, shared = make_evidence_check(p["full_name"], surname_map,
-                                              force=(sn in guarded))
+        checker, shared = make_evidence_check(
+            p["full_name"], surname_map,
+            force=(sn in guarded or sn in collisions))
         groups.setdefault(sn, []).append({
             "pid": p["player_id"], "fn": fn, "shared": shared,
             "guarded": sn in guarded,
+            "collision": sn in collisions,
+            "fn_surnames": collisions.get(sn),
+            "p1": sn in en1000,
             "teams": wteams[p["player_id"]],
             "nicks": {nickname[c] for c in wteams[p["player_id"]] if c in nickname},
             "checker": checker,
@@ -478,14 +535,16 @@ def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
     """Stream every corpus file once, distributing matches to players.
 
     Returns (acc by pid, missing_subs). acc fields: scores (id->score, counting
-    subs, deduped), authors, ambiguous, allsubs_ids, fantasy_ids.
+    subs, deduped), authors, ambiguous, guard_filtered,
+    allsubs_ids ({id: (subreddit, score)} over the full 36-sub corpus),
+    fantasy_ids.
     """
     acc: dict[str, dict] = {}
     for group in groups.values():
         for m in group:
             acc[m["pid"]] = {"scores": {}, "authors": set(), "ambiguous": 0,
                              "guard_filtered": 0,
-                             "allsubs_ids": set(), "fantasy_ids": set()}
+                             "allsubs_ids": {}, "fantasy_ids": set()}
     count_pids: dict[str, set[str]] = {}   # sub -> pids counting it
     for pid, subs in counting.items():
         for s in subs:
@@ -509,21 +568,48 @@ def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
                 n_posts += 1
                 title = post.get("title") or ""
                 selftext = post.get("selftext") or ""
-                tokens = match_tokens(title, selftext)
+                # A48: the bigram test needs token ORDER; the set is derived
+                # from the same split (identical work to match_tokens).
+                toks = match_fold(f"{title} {selftext}").split()
+                tokens = set(toks)
                 hit_surnames = tokens & surnames
                 if not hit_surnames:
                     continue
                 for sn in hit_surnames:
                     group = groups[sn]
-                    # A42 rule 2: a guarded member without first-name evidence
-                    # is excluded from contention for this submission; team
-                    # context never suffices for guarded surnames.
-                    eligible = [m for m in group
-                                if not m["guarded"]
-                                or (m["checker"] is not None
-                                    and m["checker"](title, selftext))]
+                    eligible = []
                     for m in group:
-                        if m not in eligible and sub in counting[m["pid"]]:
+                        fn_sns = m.get("fn_surnames")
+                        if fn_sns:
+                            # A48 3-state rule (option C') for first-name
+                            # collision surnames; overrides A42 rule 2 / A43 P2
+                            # for these tokens. S1 precedes S2.
+                            nxt = [toks[i + 1] if i + 1 < len(toks) else None
+                                   for i, t in enumerate(toks) if t == sn]
+                            if all(n in fn_sns for n in nxt):
+                                # S1: every occurrence is "<sn> <surname of a
+                                # player whose first name is sn>" — proven
+                                # first-name usage, not the owner.
+                                if sub in counting[m["pid"]]:
+                                    acc[m["pid"]]["guard_filtered"] += 1
+                            elif (m["checker"] is not None
+                                    and m["checker"](title, selftext)):
+                                eligible.append(m)          # S2
+                            elif (not m.get("p1") and steam is not None
+                                    and steam in m["teams"]):
+                                eligible.append(m)          # S3 own team sub
+                            elif sub in counting[m["pid"]]:
+                                # S3 unresolved: counted for nobody, disclosed.
+                                acc[m["pid"]]["ambiguous"] += 1
+                            continue
+                        # A42 rule 2: a guarded member without first-name
+                        # evidence is excluded from contention; team context
+                        # never suffices for guarded surnames.
+                        if (not m["guarded"]
+                                or (m["checker"] is not None
+                                    and m["checker"](title, selftext))):
+                            eligible.append(m)
+                        elif sub in counting[m["pid"]]:
                             acc[m["pid"]]["guard_filtered"] += 1
                     if not eligible:
                         continue
@@ -537,7 +623,10 @@ def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
                                 acc[m["pid"]]["ambiguous"] += 1
                         continue
                     a = acc[winner]
-                    a["allsubs_ids"].add(post["id"])
+                    # A45: venue + score kept so the affiliation split can use
+                    # the full 36-sub corpus (raw/reddit_detail_allsubs.csv).
+                    a["allsubs_ids"][post["id"]] = (sub,
+                                                    int(post.get("score") or 0))
                     if sub == "fantasyhockey":
                         a["fantasy_ids"].add(post["id"])
                     if sub in counting[winner]:
@@ -546,6 +635,26 @@ def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
                             a["authors"].add(post["author"])
         print(f"r/{sub}: scanned {n_posts} posts")
     return acc, missing
+
+
+def resolve_status(n_present: int, n_subs: int, mentions: int,
+                   ambiguous: int, guard_filtered: int) -> str:
+    """A48 Defect 5 status ladder.
+
+    null         no corpus file for any counting sub (nothing was read)
+    partial/ok   corpus read (some / all counting subs present)
+    unmeasurable corpus read but 0 mentions survived while ambiguous or
+                 guard-filtered candidates exist: the surname appeared and
+                 every occurrence was discarded. We failed to measure — that
+                 must not share a status with a measured zero. A player with
+                 0 mentions and 0 discarded candidates is a genuine zero and
+                 stays ok/partial.
+    """
+    if n_present == 0:
+        return "null"
+    if mentions == 0 and (ambiguous > 0 or guard_filtered > 0):
+        return "unmeasurable"
+    return "partial" if n_present < n_subs else "ok"
 
 
 def main() -> None:
@@ -581,7 +690,16 @@ def main() -> None:
         print(f"  {sn:<14} DF={df[sn]:.4f}  {reason}")
     guarded = set(guarded_map)
 
-    groups = build_groups(players, wteams, nickname, surname_map, guarded)
+    # A48: first-name collision surnames get the 3-state C' rule instead of
+    # the unconditional single-member win (and instead of A42/A43-P2).
+    collisions = collision_surnames(players)
+    print(f"A48 collision surnames ({len(collisions)}): "
+          + " ".join(sorted(collisions)))
+    p1_strict = sorted(sn for sn in collisions if sn in en1000)
+    print(f"A48 P1-strict (no own-sub allowance): {' '.join(p1_strict)}")
+
+    groups = build_groups(players, wteams, nickname, surname_map, guarded,
+                          collisions=collisions, en1000=en1000)
     n_shared = sum(1 for g in groups.values() if len(g) >= 2 for _ in g)
     print(f"A15/A21 identity: {n_shared}/{len(players)} players share a surname; "
           f"{sum(1 for g in groups.values() for m in g if m['identity_ambiguous'])} "
@@ -595,20 +713,21 @@ def main() -> None:
         print(f"WARNING: corpus missing for {missing} — affected players get "
               "partial/null status.", file=sys.stderr)
 
-    counts_rows, detail_rows = [], []
+    counts_rows, detail_rows, detail_allsubs_rows = [], [], []
     by_pid = {p["player_id"]: p for p in players}
     for pid in order:
         p = by_pid[pid]
         a = acc[pid]
         subs = counting[pid]
         present = [s for s in subs if s not in missing]
-        if not present:
-            status, mentions, upvotes = "null", "", ""
-        elif len(present) < len(subs):
-            status = "partial"
-            mentions, upvotes = len(a["scores"]), sum(a["scores"].values())
+        status = resolve_status(len(present), len(subs), len(a["scores"]),
+                                a["ambiguous"], a["guard_filtered"])
+        if status == "null":
+            mentions, upvotes = "", ""
         else:
-            status = "ok"
+            # `unmeasurable` keeps its (zero) counts and every disclosure
+            # column below — the evidence for why the row is NULL downstream
+            # must stay visible in the CSV.
             mentions, upvotes = len(a["scores"]), sum(a["scores"].values())
         sn = fold(p["full_name"].split()[-1])
         me = next(m for m in groups[sn] if m["pid"] == pid)
@@ -625,6 +744,7 @@ def main() -> None:
             "reddit_identity_ambiguous": str(me["identity_ambiguous"]).lower(),
             "reddit_common_word_guard": str(me["guarded"]).lower(),
             "guard_filtered_mentions": a["guard_filtered"] if status != "null" else "",
+            "reddit_firstname_collision": str(me.get("collision", False)).lower(),
             "reddit_mentions_allsubs": len(a["allsubs_ids"]) if status != "null" else "",
             "reddit_mentions_fantasy": len(a["fantasy_ids"]) if status != "null" else "",
             "fetch_date": fetch_date,
@@ -633,15 +753,23 @@ def main() -> None:
             detail_rows.extend(
                 {"player_id": pid, "submission_id": sid, "score": score}
                 for sid, score in a["scores"].items())
+            detail_allsubs_rows.extend(
+                {"player_id": pid, "submission_id": sid, "subreddit": s,
+                 "score": score}
+                for sid, (s, score) in a["allsubs_ids"].items())
 
     atomic_write_csv(RAW_DIR / "reddit_counts.csv", counts_rows, COUNTS_FIELDS)
     atomic_write_csv(RAW_DIR / "reddit_detail.csv", detail_rows, DETAIL_FIELDS)
+    atomic_write_csv(RAW_DIR / "reddit_detail_allsubs.csv",
+                     detail_allsubs_rows, DETAIL_ALLSUBS_FIELDS)
     n_ok = sum(1 for r in counts_rows if r["reddit_status"] == "ok")
     n_part = sum(1 for r in counts_rows if r["reddit_status"] == "partial")
     n_null = sum(1 for r in counts_rows if r["reddit_status"] == "null")
+    n_unm = sum(1 for r in counts_rows if r["reddit_status"] == "unmeasurable")
     print(f"\nWrote reddit_counts.csv ({len(counts_rows)} rows; {n_ok} ok, "
-          f"{n_part} partial, {n_null} null) + reddit_detail.csv "
-          f"({len(detail_rows)} rows)")
+          f"{n_part} partial, {n_null} null, {n_unm} unmeasurable) + "
+          f"reddit_detail.csv ({len(detail_rows)} rows) + "
+          f"reddit_detail_allsubs.csv ({len(detail_allsubs_rows)} rows)")
 
 
 if __name__ == "__main__":

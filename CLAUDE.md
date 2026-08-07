@@ -94,6 +94,39 @@ When we change direction on a project (an idea, plan, or approach is abandoned o
 
 Never silently delete a superseded idea, and never let one sit unlabeled as if it were still active.
 
+## File hygiene — append to what exists, don't proliferate
+
+**Default: put new information into the existing file that already owns that topic.** This project already has many files; that is fine, but do not keep adding more when the info has a natural home. Before creating any file, name the existing one it could go in and say why that doesn't work.
+
+Where things go:
+
+| New info | Goes in |
+|---|---|
+| A fix/decision for work an existing plan depends on | That plan, as a blocking task — not a new plan file |
+| A pre-registration rule or amendment | `marchand_index/preregistration.md` (impl) or `docs/preregistration.md` (spec) — append, never a new file per amendment |
+| Session state, blockers, next task | `SESSION.md` (overwrite) |
+| A measured result or evidence table | The doc that consumes it, inline |
+| A superseded approach | Status note in place (see section above) |
+
+**A new file is justified when** it is a runnable artifact (script, test module, diagnostic) or a genuinely new deliverable. Documentation is almost never one of these.
+
+When appending, also **fix what the addition invalidates** in that file — stale row counts, test counts, expected outputs. A file that half-reflects reality is worse than one that doesn't mention the change at all.
+
+## Spec-to-code reconciliation — the md is not done when the code is done
+
+When a `.md` file describes code to be written (a plan, a spec, a README, an amendment) and then that code gets written, **go back and reconcile the md against what was actually built.** Writing the code is not the end of the task; the doc is part of the deliverable. Do this before reporting the work complete.
+
+Reconcile in this order, and report what changed:
+
+1. **Numbers** — row counts, test counts, file sizes, expected outputs, timings. These go stale fastest and are the easiest to catch.
+2. **Names and locations** — line numbers, function names, file paths, column names, CLI commands. If the doc says `fetch_reddit.py:317` and the code moved, fix it or drop the line number.
+3. **Decisions that changed during implementation** — the doc's approach vs. what the code actually does. If they differ, say which one is now authoritative and why.
+4. **Steps that turned out unnecessary, or new steps discovered** — mark them done/skipped/added rather than leaving the checklist looking untouched.
+
+**Critical exception — pre-registration files are NOT reconciled to the code.** `preregistration.md` (both copies) is a locked scientific record; the whole point is that it was written first. If the code diverges from a pre-registered rule, that is either (a) a bug in the code, fix the code, or (b) a genuine design change, which needs a **new numbered amendment** documenting the change and why. **Never silently edit a pre-registered rule to match what the code ended up doing** — that destroys the pre-registration's value and is the single easiest way to lose credibility with a CASSIS reviewer. Correcting a typo or a broken cross-reference is fine; changing a rule, threshold, or hypothesis is not.
+
+If reconciling would be substantial work, say so and ask — do not skip it silently and do not let the doc quietly rot.
+
 ## SESSION.md format (token-efficient)
 
 Read SESSION.md at the start of every session. Overwrite it when the owner says "update session" / "wrap up." Format — keep this tight:

@@ -1087,6 +1087,429 @@ or hypothesis quantity has been computed; A16's ratio definition, window
 
 ---
 
+**A47 (2026-08-01) — Trends raw-string fallback RETIRED; position tie-break for
+shared full names; refusal reasons split for the A25 taxonomy. Logged BEFORE
+any composite, OAQ, or validation computation (boundary unchanged).**
+
+**Defect (measured from the stored file, recorded):** A16 clause 2, as amended
+by A44, kept a raw-name fallback whenever no suggestion qualified — and A44
+left `trends_method=string` as a "disclosed sensitivity cut" rather than a
+refusal. A bare name string measures whoever else owns that name. 23 of 771
+stored rows are on that path, and the resulting values are not a tail:
+
+| rank /771 | `trends_12mo` | player | what the string measures |
+|---|---|---|---|
+| **1** | **9.6647** | Will Smith | the actor — 4.9x McDavid, 9.7x the anchor |
+| 15 | 0.4298 | Garrett Wilson | the NFL wide receiver |
+| 20 | 0.3766 | Alex Ovechkin | undercount — should sit top-3 |
+| 28 | 0.3390 | Trevor Moore | ambiguous |
+| 34 | 0.3105 | Ben Jones | the NFL center |
+| 47 | 0.2251 | Taylor Ward | the MLB outfielder |
+| 170 | 0.0703 | Brayden Point | undercount |
+
+The error runs **both directions**: a common name imports a stranger's search
+volume, while a hockey-only name loses the volume a topic MID aggregates
+(Ovechkin, Point, Parayko, Perfetti, Beniers, Weegar are all string rows and
+all rank implausibly low). The trigger is usually not "Google has no entity"
+but throttling — `RetryError(... 'too many 429 error responses')` dominates
+every stored run log, and `resolve_topic_mid` caught that exception and
+returned the same empty string a genuine no-match returns.
+
+**Second defect, same clause:** "first qualifying suggestion wins" cannot
+separate two pooled players who share a full name. The Canucks' **Elias
+Pettersson (C, `nhl_player_id` 8480012)** and **Elias Pettersson (D, 8483678)**
+both carry MID `/g/11ddxds8fn` and an identical `trends_12mo = 0.222069`
+(ranks 47-48/771). The D is credited with the C's search volume. `A41` deduped
+the pool to 771 but left this pair as two distinct persons, correctly.
+
+**Third defect, found by the A47 re-run itself (recorded):** A44 rule 2 tested
+Google's entity type for a franchise name by raw-casefold substring against the
+`raw/teams.csv` slugs. The slug `st-louis-blues` folds to `"st louis blues"`,
+but Google writes **`"St. Louis Blues defenseman"`** — the period breaks the
+substring. Verified live 2026-08-01: Colton Parayko, Dylan Holloway and Pius
+Suter each return a correctly-typed St. Louis entity as their FIRST suggestion,
+and all three were refused `no_hockey_topic` — the one refusal reason A25
+imputes as raw 0. The punctuation miss would therefore have scored three real
+NHLers as zero search interest. Both sides of the comparison are now folded to
+accent-free, punctuation-free, single-spaced lowercase (`_strip_punct`); the
+same folding is applied to the clause-1 position test.
+
+**Rule (mechanical):**
+
+0. **Type folding.** Before any test, a Google entity type and every franchise
+   name are NFKD-normalized, stripped of combining marks, and reduced to
+   alphanumerics and single spaces. "hockey" substring test unchanged.
+1. **Selection.** Among pytrends suggestions, take those whose folded type
+   qualifies under the A44 rule 2 test (as folded by clause 0).
+   - exactly one qualifies -> its MID, `trends_method=topic`;
+   - more than one qualifies -> **position tie-break**: keep the suggestions
+     whose folded type contains a word for the player's `players.csv`
+     position (`C` -> "center"/"centre"; `L` -> "left wing"; `R` -> "right
+     wing"; `D` -> "defense"/"defence", which also cover
+     "defenseman"/"defenceman" and the "-er" wing forms). Exactly one
+     survivor -> its MID, `trends_method=topic_position`.
+2. **Refusal replaces the string fallback.** No code path may query a raw
+   name again. A refusal writes `trends_12mo` NULL, `query_mid` empty, and
+   **stores no query string**, under exactly one reason:
+   - `no_hockey_topic` — no suggestion qualified;
+   - `ambiguous_topic` — the tie survived the position test;
+   - `resolve_failed` — the `suggestions()` call raised or was blocked.
+3. **A25 taxonomy amended for Trends (this is the load-bearing clause).** A25
+   classified a NULL `trends_12mo` as `no_entity_exists` — **raw-0
+   imputation** — from a blank `query_mid`. Every refusal above blanks the
+   MID, so that inference would have scored a throttled Ovechkin as zero
+   search interest. **A47 retires the Trends `no_entity_exists` branch
+   entirely: all three refusal reasons are `fetch_failed` and renormalize
+   (A25 rule 2), for any CSV vintage, with or without a `trends_method`
+   column.**
+
+   Including `no_hockey_topic`. A missing Google Trends **entity** reflects
+   knowledge-graph coverage and namesake crowding, not absence of public
+   interest — Will Smith (SJ, 4th overall 2023) has no hockey MID because the
+   actor owns the name, and Google returns the actor, the Chris Rock incident,
+   a Dodgers catcher, a book and a TV series before any hockey entity. Raw-0
+   would assert nobody searches for him; renormalization says only that Trends
+   did not measure him, which is what we observed. This is **exactly
+   equivalent to imputing his weight-averaged z-score over the components that
+   did resolve** (weights sum to 0.84, so `0.84m + 0.16m = m`) — no separate
+   imputation step is needed or permitted.
+
+   **Scoped to Trends.** `wiki_12mo` and `wiki_intl_12mo` keep A25's raw-0
+   rule: a missing *article* really does mean no encyclopedic salience,
+   whereas Trends entity coverage is sparse and namesake-driven.
+4. **Secondary anchor.** A35 clause 1's secondary anchor (Sidney Crosby) is
+   resolved under the same rule; if it refuses, the anchor-row re-measurement
+   **aborts** rather than chaining the scale onto a raw string.
+5. **Repair (surgical, disclosed).** Re-fetch exactly the rows that cannot be
+   trusted: the 23 `trends_method=string` rows, plus **any set of rows sharing
+   one `query_mid`** (a shared MID is prima facie an unbroken tie) — the two
+   Pettersson rows. **25 of 771 re-fetched; the other 746 are untouched**,
+   their MIDs and ratios bit-identical. The resume filter enforces this: a
+   stored row is reused only if its value is non-null, its method is a
+   resolution method, and its MID is unshared.
+
+**Repair outcome (executed 2026-08-01; 25 rows, none of the other 746 moved):**
+
+| player | before | after | method |
+|---|---|---|---|
+| Will Smith | **9.664671** | **NULL** | no_hockey_topic |
+| Garrett Wilson | 0.429799 | NULL | no_hockey_topic |
+| **Alex Ovechkin** | 0.376552 | **1.963329** | topic |
+| Trevor Moore | 0.339031 | NULL | no_hockey_topic |
+| Ben Jones | 0.310541 | NULL | no_hockey_topic |
+| Taylor Ward | 0.225071 | NULL | no_hockey_topic |
+| **Elias Pettersson (C)** | 0.222069 | **0.220028** | topic_position |
+| **Elias Pettersson (D)** | 0.222069 | **0.002821** | topic_position |
+| Liam O'Brien | 0.093793 | NULL | no_hockey_topic |
+| Brayden Point | 0.070345 | 0.080395 | topic |
+| Jeremy Davies | 0.060690 | NULL | no_hockey_topic |
+| Dylan Holloway | 0.045455 | 0.052186 | topic |
+| Colton Parayko | 0.035862 | 0.067701 | topic |
+| Pius Suter | 0.020690 | 0.026798 | topic |
+| Cole Perfetti | 0.020690 | 0.046544 | topic |
+| Matty Beniers | 0.019310 | 0.035261 | topic |
+| MacKenzie Weegar | 0.011034 | 0.032440 | topic |
+| Aliaksei Protas | 0.008276 | 0.064880 | topic |
+| Bo Groulx | 0.005510 | NULL | no_hockey_topic |
+| Erik Cernak | 0.004138 | 0.014104 | topic |
+| Adam Engstrom | 0.002849 | NULL | no_hockey_topic |
+| Jared Wright | 0.000000 | NULL | no_hockey_topic |
+| Max Shabanov | 0.000000 | NULL | no_hockey_topic |
+| Dmitri Simashev | 0.000000 | NULL | no_hockey_topic |
+| Hendrix Lapierre | 0.000000 | 0.001410 | topic |
+
+Final file: 771 rows — 756 `topic`, 2 `topic_position`, 1
+`topic_secondary_anchor`, **12 `no_hockey_topic`**, 0 `ambiguous_topic`, 0
+`resolve_failed`. Every string row is gone. The Pettersson D was carrying the
+C's volume at **78x** his own. The 13 rows that re-resolved to a topic all
+moved **up**, confirming the string query was also losing the volume a topic
+MID aggregates; Ovechkin gains 5.2x and the top of the distribution becomes
+face-valid (Crosby, McDavid, Ovechkin, J. Hughes, Celebrini, Bedard, Marchand,
+Matthews) where it was previously led by a film actor.
+
+**Verification of the untouched 746.** The clause-0 folding only ever adds
+qualifying suggestions, so rows resolved under the stricter pre-A47 test could
+in principle have selected a different entity. Spot-checked live 2026-08-01
+against the three STL rows most exposed to the period defect — Jordan Kyrou,
+Robert Thomas, Pavel Buchnevich (the latter two typed "St. Louis Blues …",
+which qualifies only after clause 0). All three re-resolve to the **same
+stored MID**. Entity identity is stable across the rule change; the 746 are
+not re-fetched.
+
+**Residual, disclosed:** the 12 `no_hockey_topic` players carry no Trends
+measurement and are scored on their remaining four components (0.84 of the
+composite, renormalized). Live inspection confirms the refusals are genuine
+absences rather than lookup failures — Google returns 5 suggestions for "Will
+Smith" with no hockey entity at all, and "Trevor Moore" returns only the
+comedian.
+
+**Rejected alternative — the `"<name> hockey"` scale (tested, recorded).**
+Before settling on renormalization we tested filling the 12 from a parallel
+run querying `"<player name> hockey"` for every player against the same pinned
+anchor, then rank-transferring onto the primary scale. A 7-player probe
+(2026-08-01, 4 refused + 3 with known primary values) rejected it:
+
+| player | primary | `"<name> hockey"` |
+|---|---|---|
+| Will Smith | — | **0.188999** |
+| **Connor McDavid** | **1.972934** | **0.083216** |
+| Trevor Moore / Garrett Wilson / Ben Jones | — | 0.000000 |
+| Cole Perfetti | 0.046544 | 0.000000 |
+| Erik Cernak | 0.014104 | 0.000000 |
+
+The scale does not measure salience; it measures **how often a name requires
+disambiguation**. Will Smith outranks McDavid on it 2.3x — precisely because
+of the actor, i.e. the contamination A47 exists to remove, re-entering through
+the query string. Five of seven probes return exactly 0, including three of
+the four players the fill was meant to rescue, so the rank map is degenerate
+where it is needed. Not adopted; no data from this probe enters any file. The
+probe cost 7 live queries and is recorded here so the option is not re-opened.
+
+**Limit of claim.** The position tie-break assumes Google types the competing
+entities with distinct positions. Where it does not, A47 refuses rather than
+guesses, and the player renormalizes — a lost measurement, never a borrowed
+one. `no_hockey_topic` is still an inference that low Google salience implies
+near-zero search interest; that was already A25's standing assumption and is
+unchanged here.
+
+**Anti-tuning compliance (§13):** entity-resolution and missingness-
+classification repair only; no threshold was fitted, and the position map is
+mechanical from `players.csv`. The refusal direction is pre-committed as the
+conservative one (drop a measurement, never substitute a proxy). No composite,
+OAQ, validation, or hypothesis quantity has been computed. A16's ratio
+definition, the A11 window, the §4/A12 weights, and all floors are unchanged.
+Tests: `tests/test_fetch_trends_a47.py` (25),
+`tests/test_trends_null_taxonomy_a47.py` (8); suite 269 -> 302.
+`tests/test_null_taxonomy_a25.py::test_trends_no_mid_is_no_entity` is renamed
+and inverted to record the supersession; A25's wiki clauses are untouched.
+
+---
+
+**A48 (decided 2026-08-02, locked 2026-08-03) — First-name collision guard,
+option C' (Defect 1) + `unmeasurable` reddit status (Defect 5).** Recorded
+after a read-only diagnostic probe measured the candidate fixes on the live
+corpus, and BEFORE the production re-run whose output it governs; no
+composite, OAQ, validation, or hypothesis quantity has been computed.
+
+**Defect (recorded).** 13 pool surnames are unique in the pool AND are another
+pool player's FIRST name (`beck blake cole colton connor frank james joshua
+paul quinn reilly shea thomas`). For a unique surname `attribute()` awards
+every matching submission to its owner with no evidence check ("single-member
+groups always win", A2), so every "Quinn Hughes" credited Jack Quinn and every
+"Cole Caufield" credited Ian Cole. Root cause is a threshold artifact: A43
+prong P2a implements the right idea but is gated on DF ≥ 0.01, and `quinn`
+(0.0093), `cole` (0.0087), `thomas` (0.0052) sit under the gate. Only
+`connor`/`james`/`paul` were guarded.
+
+**Rule (mechanical).** Per submission containing collision surname `sn`
+(owner = the single pool player carrying it as a surname), classify into
+exactly one state over the ordered folded token stream:
+
+1. **S1** — every occurrence of `sn` is immediately followed by the surname of
+   a pool player whose first name is `sn` (tight bigram) → proven first-name
+   usage; owner ineligible; disclosed in `guard_filtered_mentions`.
+2. **S2** — ≥1 standalone occurrence AND the owner's A15 checker fires →
+   owner eligible. **S1 takes precedence over S2** (verified: 14 r/hockey
+   posts fire the checker via e.g. "Lauren Kyle (Connor McDavid's wife)" while
+   every `connor` is bigram-bound; they are S1).
+3. **S3** — ≥1 standalone occurrence, no first-name evidence → eligible ONLY
+   in the owner's own team subreddit; otherwise disclosed in
+   `ambiguous_mentions` and counted for nobody.
+
+**Scoping (the `'` in C'):** (a) a collision surname in the pinned English
+top-1000 (`james`, `paul` — P1) gets NO own-sub allowance: own-sub context can
+resolve a rival-player confuser, not an ordinary-word confuser, which appears
+in every sub equally (bare "stanley" in r/winnipegjets is "Stanley Cup", not
+Logan Stanley). (b) The own-sub allowance applies ONLY to collision surnames,
+never to P1/P2b guards generally — the other 6 guarded players are untouched
+and the 13 are the complete blast radius.
+
+**Supersessions (explicit, not buried).** For collision surnames A48
+**overrides A42 rule 2** ("team context never suffices for guarded surnames")
+and **overrides the A43 P2 guard**: `connor` was P2a-guarded and C' is
+strictly MORE permissive for it. Defensible because per-post positional bigram
+evidence is stronger than the token-level aggregate P2a uses; it is
+nonetheless a real rule change and is recorded as one. Non-collision guarded
+surnames keep A42/A43 semantics unchanged.
+
+**Evidence (probe, 250,004 submissions, recorded before the re-run).** Options
+measured: A = blanket guard (−63% of these players' real signal — rejected),
+B = bigram only (−521), C = bigram + own-sub (−1,869), C' = C with P1-strict
+(−1,970, 1,449 → ambiguous). C' selected. The tight-vs-loose bigram choice is
+not knife-edge: ≤26 posts per name, 1 for `cole`; tight adopted. C' is also a
+recall fix: the A42 guard had been deleting real Kyle Connor mentions
+(280 → 364 under C').
+
+**Verification (post-re-run).** Pipeline `reddit_mentions_12mo` equals the
+probe's C' column **exactly for all 13**; the 771-row diff shows movement
+confined to the 13 collision owners plus the two Defect-5 status flips below;
+detail rows 163,937 → 161,947 (−1,990 = probe −1,970 + the probe's
+root-caused self-check drift, connor −14 / paul −6). New disclosure column
+`reddit_firstname_collision` marks the 13 rows.
+
+**Defect 5 — `unmeasurable` (third status, same amendment).** A zero is
+measured only if we looked and found nothing. If the surname appeared but
+every occurrence was discarded, we failed to measure — that must not share a
+status with a measured zero. New `reddit_status` value `unmeasurable`, set
+mechanically when status would otherwise be ok/partial AND
+`reddit_mentions_12mo == 0` AND (`ambiguous_mentions > 0` OR
+`guard_filtered_mentions > 0`). Distinct from both `ok` (a player with 0
+mentions and 0 discarded candidates is a genuine zero and stays ok) and
+`null` (source unavailable); `unmeasurable` = source read, player inseparable
+within it. Downstream `compute_oaq` NULLs both reddit columns and
+renormalizes — the A47 Trends precedent (NULL → renormalize, never impute 0).
+The **Wikipedia raw-0 exception stands** (a missing article does mean no
+encyclopedic salience). Unlike `null`, an `unmeasurable` row keeps every
+disclosure column populated. Measured blast radius on the regenerated file:
+exactly the two VAN Elias Petterssons (433 ambiguous each, A21 rule 3
+non-discriminable pair); Marcus Pettersson (94 mentions, 433 ambiguous)
+correctly stays `ok` — ambiguity alone never triggers.
+
+**Limits of claim (carried to the poster).** (a) The own-sub allowance
+(~605 mentions) rests on a base-rate judgment, not labelled data: the owner
+declined a ~20–30 min hand-label validation of S3-in-own-sub on 2026-08-02
+("surname and/or team name mention is enough to make it accurate enough most
+of the time") — a deliberate, disclosed trade; re-offer if the schedule
+loosens. (b) Defect 6, recorded not fixed: the A15 checker fires on the first
+name appearing anywhere in the post, so S2 carries a small residual
+over-count (quantified only for `connor`: 14 r/hockey posts). C' is less
+wrong, not right.
+
+**Anti-tuning compliance (§13):** identity-resolution repair only. The option
+choice used the probe's attribution counts (how many mentions each rule keeps
+or discards), never any composite, ranking, or hypothesis quantity. Thresholds
+introduced: none — the rule is evidence-conditional, not fitted. A11 window,
+§4/A12 weights, and all floors unchanged. Tests:
+`tests/test_fetch_reddit_a48.py` (25); suite 302 → 327.
+
+---
+
+**A45 (definition fixed 2026-07-31; recorded 2026-08-03) — Reddit attention
+affiliation split (Phase A).** Recorded out of numeric order: the number was
+reserved when the Phase A plan was written (2026-07-31), which fixed every
+definition and threshold below; A47 and A48 were locked in the interim. This
+amendment is appended BEFORE the corrected (all-subs) output is computed or
+inspected.
+
+**Provenance disclosure (not hidden).** A first `attention_affiliation.csv`
+was computed 2026-07-31 from `raw/reddit_detail.csv`, which is scoped to each
+player's A22 counting subs. Its own/neutral buckets were valid but the rival
+bucket measured trade history by construction (551/771 players at
+`rival_reach` 0, max 3, `other` share 3.1%). That file was never published
+(untracked on purpose, `PUBLISH_DELIVERABLE = False`) and its diagnosis IS
+Defect 2. The corrected input is `raw/reddit_detail_allsubs.csv`: every
+attributed winner across all 36 corpus subreddits with venue kept, generated
+AFTER the A48 collision guard so the first-name collision class never entered
+rival venues (ordering pre-committed in SESSION 2026-08-02). No definition,
+threshold, or bucket rule changed between the two runs — only the input scope
+Defect 2 repaired.
+
+**What it measures.** For each pool player, the share of their Reddit
+attention originating from their own fanbase versus rival fanbases.
+Descriptive companion output only: it does not enter `compute_oaq.py`, changes
+no CES weight, and does not alter `OAQ_portable`. No sentiment, no LLM, no
+causal claim.
+
+**Buckets.** Each `(player_id, submission_id)` mention pair is assigned
+exactly one bucket by the subreddit it appeared in: `own` — the sub belongs to
+a team the player was on at that submission's timestamp; `other` — any other
+team's sub; `neutral` — r/hockey, r/nhl, r/fantasyhockey. Team-at-time is
+reconstructed from `players.csv` (end-of-window team) walked backwards through
+`mover_dates.csv` rows with `status == "dated"`; `excluded_rename_artifact`
+rows are dropped; both Utah subs map to UTA.
+
+**Normalizer — submissions, not subscribers.** Every count is divided by the
+collected submission count of its subreddit. Subscriber count is explicitly
+rejected: r/BostonBruins has more subscribers than r/Habs (119,306 vs 101,589)
+but ~1/5 the submissions, so a subscriber-normalized figure would encode
+posting culture as player attention.
+`own_share = own_intensity / (own_intensity + other_intensity)`, where each
+intensity sums `mentions_in_sub / submissions_in_sub` over subs. Neutral
+mentions are reported but excluded from `own_share`'s denominator.
+`own_share_scored` (score+1 weighting) is a robustness check; the count-based
+figure is primary.
+
+**Publish gate.** `low_n = attributed_mentions < 30` (`LOW_N_MIN`, fixed in
+the 2026-07-31 plan). `low_n` rows are excluded from every published ranking
+and diagnostic table; the threshold will not be adjusted after inspection.
+A48 `unmeasurable` players contribute no detail rows, so they appear with
+`attributed_mentions = 0`, `low_n` true — consistent with their NULL
+treatment in OAQ.
+
+**Limits of claim.** Subreddit is a proxy for fanbase allegiance, not proof
+(a rival fan can post anywhere). Neutral-venue pairs cannot be attributed;
+shares are computed on the attributed remainder and reported as such. The
+corpus covers submissions only, not comments. Collection volume differs
+across subreddits; normalization fixes the arithmetic, not any sampling bias
+in what was collected. Any use of `own_share` to interpret `OAQ_portable`
+(open item #3B) is an observed association, not a correction.
+
+**Anti-tuning compliance (§13):** definitions and the `low_n` threshold
+predate the corrected output; the only post-hoc change is input scope
+(Defect 2 repair). No composite, OAQ, validation, or hypothesis quantity is
+touched. Tests: `tests/test_affiliation_a45.py` (29),
+`tests/test_reddit_allsubs_a45.py` (4); suite 327 → 331.
+
+---
+
+**A46 (plan locked 2026-07-31; recorded 2026-08-03, BEFORE the sensitivity
+report was run) — `market_z` social-component sensitivity (subscribers vs.
+activity).**
+
+**Motivation.** `market_z`'s social component under A30 is
+`team_sub_subscribers`, a stock. Subreddit submission volume over the
+measurement window is a flow, and the two are nearly independent — Spearman
+**0.299** across the 32 teams (pre-measured 2026-07-31; reproduced exactly by
+`build_market_activity.py` on 2026-08-03). r/BostonBruins carries more
+subscribers than r/Habs (119,306 vs 101,589) but roughly a fifth of the
+submissions. Whether `OAQ_portable` depends on that choice is an empirical
+question, and open item #3B turns on the answer.
+
+**What is added.** Two lenses in `compute_market_z`, alongside the existing
+`market_z_lockedv1` and `market_z_metro_only`: `market_z_activity` (A30 with
+`sub_submissions_window` in place of `team_sub_subscribers`) and
+`market_z_social_blend` (A30 with the mean of the two social z-scores).
+
+**What does not change.** `MARKET_COMPONENTS_A30` remains
+`["metro_population", "team_sub_subscribers", "attendance_pct_capacity"]`.
+`LAMBDA_BIGMARKET`, the one-sided `max(0, market_z)` correction, the CES
+weights, and the peer-matching procedure are all untouched. Tests assert the
+primary is bit-identical with and without the activity table present.
+
+**Why activity cannot become primary.** In-window submission volume is
+**endogenous** to the quantity being measured: a team having a strong season
+draws more posts to its subreddit, and its players draw more mentions inside
+those posts. Promoting it to a `market_z` component would partially control
+for the outcome. It is therefore permanently a reporting lens, regardless of
+what the sensitivity report shows. (A pre-window activity measure,
+2024-04-18 to 2025-04-17, would be exogenous and could in principle serve as
+a primary; that is NOT part of A46 and would need new collection and its own
+amendment.)
+
+**Data quality.** UTA records 81 in-window submissions against 2,171 for the
+next-lowest team — the franchise rename split the subreddit mid-window.
+Teams below `ACTIVITY_QUALITY_MIN = 500` submissions are flagged
+`activity_quality = "low"` and excluded from any conclusion drawn from this
+lens. UTA is the only such team.
+
+**Decision rule, fixed in advance.** The sensitivity report is descriptive.
+No gate verdict, headline number, or published ranking is computed from any
+A46 lens. If the lenses show a large effect, the response is to **document
+the dependence as a limit of claim**, not to switch specifications.
+
+**Limits of claim.** Subscriber counts are frozen at 2025-02-14/15 while
+activity spans the window (different vintages). Submission counts reflect
+what was collected, not necessarily everything posted, and collection was
+not stratified. The corpus covers submissions only, not comments.
+
+**Anti-tuning compliance (§13):** lens registration only; no threshold
+fitted (`ACTIVITY_QUALITY_MIN` separates one known data hole from the real
+distribution and was fixed in the 2026-07-31 plan). No composite, OAQ,
+validation, or hypothesis quantity computed. Tests:
+`tests/test_market_activity_a46.py` (18); suite 333 → 351.
+
+---
+
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
 
 **V-A11-Trends (2026-06-26) — live spot-check confirming `raw/trends.csv` was fetched on the A11 fixed window, not a run-anchored one.** `fetch_trends.py:52` uses `timeframe="2025-04-18 2026-04-17"`, but the stored `trends.csv` carries `fetch_date=2026-06-20` and the fixed-window code only landed 2026-06-20 13:21 (commit `0c3ccbe`); whether the file predated the fix that day was not decidable from git/data alone. A single live `pytrends` call resolves it (the test is window-vintage, so one salient distinctive-name player suffices). **Player: Connor McDavid** (stored `trends_12mo = 24.7358`; he had a 2026 playoff run, so the two windows diverge maximally). Result: a fresh **fixed-window** [2025-04-18, 2026-04-17] fetch gives mean **26.13** (n=53) — **5.6 % from stored, within Trends sampling noise → MATCH**, i.e. the stored file used the fixed window. The same player's **run-anchored** (`today 12-m`) series shows the expected post-window playoff spike the fixed window correctly excludes — weeks 2026-04-19 = 32, **2026-04-26 = 47 (peak)**, 2026-05-03 = 33, all after the 2026-04-17 window end. Conclusion: the `trends` component (§4/A12 weight 0.16) is on the A11 window and **excludes the 2026-playoff confound**; the SESSION residual is closed by live evidence. No file or weight changes; verification only. (One live call; perishable, so not re-run across the set.)

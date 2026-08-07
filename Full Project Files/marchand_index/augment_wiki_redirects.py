@@ -44,6 +44,28 @@ SLEEP_MW = 0.15
 # requests-cache 1.3.2 SQLite backend is thread-safe (shared session OK).
 FETCH_WORKERS = 6
 
+# Global pacing for LIVE MediaWiki API calls. Per-worker sleeps do not bound
+# the AGGREGATE rate: with cache-served responses consuming no time, 6 workers
+# can burst live calls fast enough to draw 429s, and each 429 costs a
+# 5/15/30/60s backoff ladder (observed 2026-08-03, enumerate_redirects storm).
+# One shared token clock caps live MediaWiki traffic at ~1/SLEEP_MW req/s
+# total while cached hits pass through untouched.
+_MW_RATE_LOCK = threading.Lock()
+_mw_next_ok = 0.0
+# 2 req/s aggregate: 6.7 req/s still drew 429s from the anonymous action API
+# (ru.wp, observed 2026-08-03 after the pacer first landed at SLEEP_MW).
+MW_PACE_INTERVAL = 0.5
+
+
+def _mw_pace() -> None:
+    global _mw_next_ok
+    with _MW_RATE_LOCK:
+        now = time.monotonic()
+        wait = _mw_next_ok - now
+        _mw_next_ok = max(now, _mw_next_ok) + MW_PACE_INTERVAL
+    if wait > 0:
+        time.sleep(wait)
+
 
 # --------------------------------------------------------------------------- #
 # pure functions (unit-tested)                                                 #
@@ -108,10 +130,16 @@ def enumerate_redirects(s, api_url: str, titles: list[str]) -> dict[str, list[st
                   "redirects": 0}
         while True:
             j = None
-            for backoff in (0.0, 2.0, 5.0, 15.0, 30.0):
+            for backoff in (0.0, 2.0, 5.0, 15.0, 30.0, 60.0):
                 if backoff:
                     time.sleep(backoff)
                 try:
+                    # api.php replies carry `Vary: Cookie` and set cookies, so
+                    # a cookie-bearing request can never match the cached
+                    # variant — clearing the jar keeps requests cache-hittable
+                    # (observed 2026-08-03: every api.php call re-fetched live
+                    # on every run, ~2.7s/player, runs could never finish).
+                    s.cookies.clear()
                     r = s.get(api_url, params=params,
                               headers={"User-Agent": CONTACT_UA}, timeout=30)
                     r.raise_for_status()
@@ -124,7 +152,8 @@ def enumerate_redirects(s, api_url: str, titles: list[str]) -> dict[str, list[st
                     "redirect enumeration failed after full retry ladder")
             for title, rds in parse_redirects(j).items():
                 out.setdefault(title, []).extend(rds)
-            time.sleep(SLEEP_MW)
+            if not getattr(r, "from_cache", False):
+                _mw_pace()
             cont = j.get("continue")
             if not cont:
                 break
@@ -142,13 +171,30 @@ def fetch_daily_pairs(s, pv_domain: str, title: str,
     404 is retried with backoff like 429/5xx before being accepted as null."""
     slug = quote(title.replace(" ", "_"), safe="")
     url = f"{PV}/{pv_domain}/all-access/all-agents/{slug}/daily/{start}/{end}"
+    n404 = 0
     for backoff in (0.0, 2.0, 5.0, 15.0):
         if backoff:
             time.sleep(backoff)
         try:
             r = s.get(url, headers={"User-Agent": CONTACT_UA}, timeout=30)
+            if r.status_code == 404:
+                # Two 404s a couple of seconds apart is a confirmed absence;
+                # only 429/5xx earn the full ladder. The 22s-per-absent-title
+                # ladder made a full-pool run impossible to finish (hundreds
+                # of rarely-viewed redirect titles genuinely have no data),
+                # and canonicals are separately protected by the RETRY
+                # second pass + UNRECOVERED stored-keep in _intl_one_player.
+                n404 += 1
+                if n404 >= 2:
+                    break            # confirmed absent -> split fallback
+                continue
             if r.status_code != 200:
-                continue             # 404/429/5xx — retry the ladder
+                continue             # 429/5xx — retry the ladder
+            if not getattr(r, "from_cache", False):
+                # Politeness sleep lives HERE (per live request) rather than
+                # at the call sites, so cache-served replays cost nothing and
+                # a warm full-pool re-run can finish inside a task window.
+                time.sleep(SLEEP_PV)
             return [(it["timestamp"], int(it["views"]))
                     for it in r.json().get("items", [])]
         except Exception:
@@ -180,7 +226,6 @@ def _sum_title_and_redirects(s, pv_domain: str, canonical: str,
     """Returns (merged_pairs, canonical_total, redirect_total)."""
     series = []
     canon_pairs = fetch_daily_pairs(s, pv_domain, canonical)
-    time.sleep(SLEEP_PV)
     canonical_total = 0
     if canon_pairs is not None:
         series.append(canon_pairs)
@@ -188,7 +233,6 @@ def _sum_title_and_redirects(s, pv_domain: str, canonical: str,
     redirect_total = 0
     for rt in redirects:
         pairs = fetch_daily_pairs(s, pv_domain, rt)
-        time.sleep(SLEEP_PV)
         if pairs is not None:
             series.append(pairs)
             redirect_total += sum(v for _, v in pairs)
@@ -331,8 +375,13 @@ def _sitelinks_serial(s, qid: str) -> dict:
             if backoff:
                 time.sleep(backoff)
             try:
+                t0 = time.monotonic()
                 j = fetch_sitelinks(s, qid)
-                time.sleep(SLEEP_MW)
+                # fetch_sitelinks returns parsed JSON, not the response, so
+                # cache-served calls are detected by elapsed time instead of
+                # from_cache; sub-50ms means no network round-trip happened.
+                if time.monotonic() - t0 >= 0.05:
+                    time.sleep(SLEEP_MW)
                 return j
             except Exception as e:
                 last = e
@@ -437,7 +486,13 @@ def augment_intl(s, limit: int | None = None) -> dict:
         r.setdefault("n_redirect_titles", "")
         r.setdefault("redirect_views_12mo", "")
         r.setdefault("redirect_share", "")
-        eds = [e for e in str(r.get("editions_fetched", "")).split("|") if e]
+        # editions_available, not editions_fetched: an article renamed after
+        # the window makes the fetcher 404 its NEW canonical title (zero
+        # in-window days) and drop the edition, but the OLD title is now a
+        # redirect of the canonical — so the redirect summation below is
+        # exactly what recovers the edition's in-window views. Observed
+        # 2026-08-03: 39 players lost an edition to post-window renames.
+        eds = [e for e in str(r.get("editions_available", "")).split("|") if e]
         qid = str(r.get("wikidata_qid", "")).strip()
         if eds and qid:
             eligible.append((r, eds, qid))
@@ -482,22 +537,30 @@ def main() -> None:
     limit = None
     if "--limit" in sys.argv:
         limit = int(sys.argv[sys.argv.index("--limit") + 1])
+    # Phase flags: each pass alone fits a 10-minute task window (retry
+    # ladders for genuinely-absent titles are re-paid every run because 404s
+    # are uncacheable); the combined run does not. Default runs both.
+    run_en = "--intl-only" not in sys.argv
+    run_intl = "--en-only" not in sys.argv
     s = session(expire_hours=24)
 
-    en = augment_en(s, limit)
-    intl = augment_intl(s, limit)
-
     prefix = "_a36_dryrun_" if limit else ""
-    atomic_write_csv(RAW_DIR / f"{prefix}wiki_pageviews.csv",
-                     en["rows"], EN_FIELDS)
-    atomic_write_csv(RAW_DIR / f"{prefix}wiki_daily.csv",
-                     en["daily_rows"], DAILY_FIELDS)
-    atomic_write_csv(RAW_DIR / f"{prefix}wiki_intl_pageviews.csv",
-                     intl["rows"], INTL_FIELDS)
-    atomic_write_csv(RAW_DIR / f"{prefix}wiki_intl_daily.csv",
-                     intl["daily_rows"], INTL_DAILY_FIELDS)
-    _summary("en", en)
-    _summary("intl", intl)
+    if run_en:
+        en = augment_en(s, limit)
+        atomic_write_csv(RAW_DIR / f"{prefix}wiki_pageviews.csv",
+                         en["rows"], EN_FIELDS)
+        atomic_write_csv(RAW_DIR / f"{prefix}wiki_daily.csv",
+                         en["daily_rows"], DAILY_FIELDS)
+    if run_intl:
+        intl = augment_intl(s, limit)
+        atomic_write_csv(RAW_DIR / f"{prefix}wiki_intl_pageviews.csv",
+                         intl["rows"], INTL_FIELDS)
+        atomic_write_csv(RAW_DIR / f"{prefix}wiki_intl_daily.csv",
+                         intl["daily_rows"], INTL_DAILY_FIELDS)
+    if run_en:
+        _summary("en", en)
+    if run_intl:
+        _summary("intl", intl)
     if limit:
         print(f"\nDRY-RUN: wrote raw/{prefix}*.csv (real files untouched)")
 

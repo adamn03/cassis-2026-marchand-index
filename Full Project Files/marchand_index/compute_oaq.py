@@ -185,6 +185,18 @@ def _to_num(df: pd.DataFrame, cols: list[str]) -> None:
         df[c] = pd.to_numeric(df[c], errors="coerce")
 
 
+def reddit_null_mask(status: pd.Series) -> pd.Series:
+    """True where both reddit columns must be NULL (-> renormalize, A47 path).
+
+    Covers a missing row / blank, explicit "null" (source unavailable), and
+    A48 "unmeasurable" (the corpus was read but the player could not be
+    separated within it — every candidate mention was discarded as ambiguous
+    or guard-filtered). Failing to measure is not measuring zero.
+    """
+    s = status.astype("string").str.strip().str.lower()
+    return s.isna() | s.isin(("null", "", "unmeasurable"))
+
+
 def load_inputs() -> pd.DataFrame:
     """Join all inputs on player_id into one wide DataFrame (one row per pooled player).
 
@@ -274,10 +286,10 @@ def load_inputs() -> pd.DataFrame:
     if "reddit_status" not in df.columns:
         df["reddit_status"] = np.nan
 
-    # Reddit NULL rule: status 'null' (or missing row) -> NULL both reddit cols.
+    # Reddit NULL rule: status 'null' / missing row / A48 'unmeasurable'
+    # -> NULL both reddit cols (renormalization is the default downstream).
     _to_num(df, ["reddit_mentions_12mo", "reddit_upvotes_12mo"])
-    status = df["reddit_status"].astype("string").str.strip().str.lower()
-    null_mask = status.isna() | (status == "null") | (status == "")
+    null_mask = reddit_null_mask(df["reddit_status"])
     df.loc[null_mask, ["reddit_mentions_12mo", "reddit_upvotes_12mo"]] = np.nan
 
     _to_num(
@@ -449,12 +461,24 @@ def classify_null_reasons(df: pd.DataFrame) -> dict[str, list[str]]:
     Mechanical classification from the fetchers' verdict columns:
       wiki_12mo NULL + wiki_match == "none"      -> no_entity_exists
       wiki_intl_12mo NULL + intl_match == "none" -> no_entity_exists
-      trends_12mo NULL + no topic MID            -> no_entity_exists
+      EVERY NULL trends_12mo (A47)               -> fetch_failed
       everything else NULL (HTTP failure, block, missing row/column,
       unclassifiable vintage)                    -> fetch_failed
     Returns component -> list of "" | no_entity_exists | fetch_failed.
     Defensive: verdict columns absent (synthetic fixtures, old CSV vintages)
     default to fetch_failed, which preserves pre-A25 renorm behavior.
+
+    A47: no NULL Trends value is `no_entity_exists` any more. A25 inferred it
+    from a blank `query_mid`, which after A47 covers every refusal — so a 429
+    ("resolve_failed") or a namesake tie ("ambiguous_topic") would have been
+    scored as zero search interest. Even the genuine "no_hockey_topic" case is
+    not evidence of zero: a missing Google Trends ENTITY reflects
+    knowledge-graph coverage and namesake crowding, not public interest. Will
+    Smith (SJ, 4th overall 2023) has no hockey MID because the actor owns the
+    name. All three refusals therefore renormalize (rule 2), which is exactly
+    equivalent to imputing his weight-averaged z-score across the components
+    that DID resolve. Wikipedia keeps the raw-0 rule: a missing ARTICLE really
+    does mean no encyclopedic salience.
     """
     n = len(df)
 
@@ -465,7 +489,6 @@ def classify_null_reasons(df: pd.DataFrame) -> dict[str, list[str]]:
 
     wiki_match = col_str("wiki_match")
     intl_match = col_str("intl_match")
-    query_mid = col_str("query_mid")
 
     out: dict[str, list[str]] = {}
     for c in COMPONENTS:
@@ -478,8 +501,6 @@ def classify_null_reasons(df: pd.DataFrame) -> dict[str, list[str]]:
             elif c == "wiki_12mo" and wiki_match[i].lower() == "none":
                 reasons.append(NULL_NO_ENTITY)
             elif c == "wiki_intl_12mo" and intl_match[i].lower() == "none":
-                reasons.append(NULL_NO_ENTITY)
-            elif c == "trends_12mo" and query_mid[i] == "" and "query_mid" in df.columns:
                 reasons.append(NULL_NO_ENTITY)
             else:
                 reasons.append(NULL_FETCH_FAILED)
@@ -878,6 +899,35 @@ MARKET_COMPONENTS_A30 = ["metro_population", "team_sub_subscribers",
                          "attendance_pct_capacity"]
 MARKET_COMPONENTS_LOCKEDV1 = ["metro_population", "arena_attendance"]
 
+# A46 lens components. `sub_submissions_window` replaces `team_sub_subscribers`
+# — a flow in place of a stock. The two barely agree (Spearman 0.299 across 32
+# teams), so this quantifies how much OAQ_portable depends on that choice.
+#
+# ENDOGENOUS BY CONSTRUCTION: in-window submission volume is co-determined with
+# the attention OAQ measures (a winning team's subreddit posts more, and its
+# players draw more mentions). This is a REPORTING LENS ONLY and must never be
+# promoted to a market_z primary — doing so would partially control for the
+# outcome.
+MARKET_COMPONENTS_A46_ACTIVITY = ["metro_population", "sub_submissions_window",
+                                  "attendance_pct_capacity"]
+
+# Distinguishes "caller passed None to suppress the A46 lenses" from "caller
+# said nothing, so load from disk".
+_UNSET = object()
+
+
+def load_market_activity(path: Path | None = None) -> pd.DataFrame | None:
+    """Read `market_activity.csv`, or None when it has not been built yet.
+
+    Absence is not an error: the A46 lenses are optional reporting extras and
+    every primary code path must work without them.
+    """
+    if path is None:
+        path = PILOT_DIR / "market_activity.csv"
+    if not Path(path).exists():
+        return None
+    return pd.read_csv(path)
+
 
 def _market_z_from(mp: pd.DataFrame, candidates: list[str]):
     """(32-team market_size z-vector, components used) with §7 graceful
@@ -905,14 +955,24 @@ def _align_teams(df: pd.DataFrame, mp: pd.DataFrame, z32: np.ndarray):
     return df["team_code"].astype(str).map(team_to_z).to_numpy(dtype=float)
 
 
-def compute_market_z(df: pd.DataFrame, mp: pd.DataFrame | None = None):
+def compute_market_z(df: pd.DataFrame, mp: pd.DataFrame | None = None,
+                     activity: pd.DataFrame | None = _UNSET):
     """Returns (market_z aligned to df rows, components used, lenses dict).
 
-    Primary = A30 components. lenses = {"market_z_lockedv1": aligned array
-    (§7-original metro + raw attendance), "market_z_metro_only": aligned
-    array (E9 sensitivity)} — reporting-only, never fed to gate verdicts."""
+    Primary = A30 components, unchanged. lenses = {"market_z_lockedv1"
+    (§7-original metro + raw attendance), "market_z_metro_only" (E9
+    sensitivity), and when `market_activity.csv` is available,
+    "market_z_activity" and "market_z_social_blend" (A46)} — reporting-only,
+    never fed to gate verdicts.
+
+    `activity` defaults to loading `market_activity.csv` from disk; pass an
+    explicit DataFrame to override, or None to suppress the A46 lenses.
+    """
     if mp is None:
         mp = pd.read_csv(PILOT_DIR / "market_proxy.csv")
+    if activity is _UNSET:
+        activity = load_market_activity()
+
     z_primary, used = _market_z_from(mp, MARKET_COMPONENTS_A30)
     aligned = _align_teams(df, mp, z_primary)
 
@@ -922,6 +982,38 @@ def compute_market_z(df: pd.DataFrame, mp: pd.DataFrame | None = None):
         lenses["market_z_lockedv1"] = _align_teams(df, mp, z_v1)
     z_metro, _ = _market_z_from(mp, ["metro_population"])
     lenses["market_z_metro_only"] = _align_teams(df, mp, z_metro)
+
+    if activity is not None:
+        # Merge activity onto a COPY so the caller's market_proxy frame — and
+        # the A30 primary computed from it above — are untouched.
+        mp_act = mp.merge(
+            activity[["team_code", "sub_submissions_window"]],
+            on="team_code",
+            how="left",
+        )
+        z_act, used_act = _market_z_from(mp_act, MARKET_COMPONENTS_A46_ACTIVITY)
+        if set(used_act) == set(MARKET_COMPONENTS_A46_ACTIVITY):
+            lenses["market_z_activity"] = _align_teams(df, mp_act, z_act)
+            # Blend: average the two social z-scores, keep the other two
+            # components as-is. Shows what a hedged specification would do.
+            social = zscore_array(
+                zscore_array(
+                    pd.to_numeric(mp_act["team_sub_subscribers"]).to_numpy(float)
+                )
+                + zscore_array(
+                    pd.to_numeric(
+                        mp_act["sub_submissions_window"]
+                    ).to_numpy(float)
+                )
+            )
+            mp_blend = mp_act.copy()
+            mp_blend["social_blend"] = social
+            z_blend, _ = _market_z_from(
+                mp_blend,
+                ["metro_population", "social_blend", "attendance_pct_capacity"],
+            )
+            lenses["market_z_social_blend"] = _align_teams(df, mp_blend, z_blend)
+
     return aligned, used, lenses
 
 

@@ -298,11 +298,11 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 297,Alex Laferriere,Alex Laferriere,/g/11p_7fdl19,topic,0.031339,0.4151,13.2453,53,2026-07-03
 298,Scott Laughton,Scott Laughton,/m/0k0spv5,topic,0.059829,0.7925,13.2453,53,2026-07-03
 299,Jeff Malott,Jeff Malott,/g/11nngll8fl,topic,0.002849,0.0377,13.2453,53,2026-07-03
-300,Trevor Moore,Trevor Moore,,string,0.339031,4.4906,13.2453,53,2026-07-03
+300,Trevor Moore,,,no_hockey_topic,,,,0,2026-08-01
 301,Artemi Panarin,Artemi Panarin,/m/0hhw1dl,topic,0.334758,4.4340,13.2453,53,2026-07-03
 302,Alex Turcotte,Alex Turcotte,/g/11hyxhq04h,topic,0.001425,0.0189,13.2453,53,2026-07-03
-303,Taylor Ward,Taylor Ward,,string,0.225071,2.9811,13.2453,53,2026-07-03
-304,Jared Wright,Jared Wright,,string,0.000000,0.0000,13.2453,53,2026-07-03
+303,Taylor Ward,,,no_hockey_topic,,,,0,2026-08-01
+304,Jared Wright,,,no_hockey_topic,,,,0,2026-08-01
 305,Mikey Anderson,Mikey Anderson,/g/11h1330q22,topic,0.000000,0.0000,13.2453,53,2026-07-03
 306,Cody Ceci,Cody Ceci,/m/0h3qpdq,topic,0.018519,0.2453,13.2453,53,2026-07-03
 307,Brandt Clarke,Brandt Clarke,/g/11gxps1srz,topic,0.007123,0.0943,13.2453,53,2026-07-03
@@ -320,7 +320,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 319,Hunter Haight,Hunter Haight,/g/11ghvh2fc1,topic,0.002849,0.0377,13.2453,53,2026-07-03
 320,Ryan Hartman,Ryan Hartman,/m/0vxfldj,topic,0.021368,0.2830,13.2453,53,2026-07-03
 321,Marcus Johansson,Marcus Johansson,/m/05b4922,topic,0.024217,0.3208,13.2453,53,2026-07-03
-322,Ben Jones,Ben Jones,,string,0.310541,4.1132,13.2453,53,2026-07-03
+322,Ben Jones,,,no_hockey_topic,,,,0,2026-08-01
 323,Kirill Kaprizov,Kirill Kaprizov,/m/013dbvzy,topic,0.360399,4.7736,13.2453,53,2026-07-03
 324,Michael McCarron,Michael McCarron,/m/0w1f5x9,topic,0.017094,0.2264,13.2453,53,2026-07-03
 325,Nico Sturm,Nico Sturm,/g/11fkqz54nh,topic,0.021368,0.2830,13.2453,53,2026-07-03
@@ -359,7 +359,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 358,Florian Xhekaj,Florian Xhekaj,/g/11ptsgykqk,topic,0.038462,0.5094,13.2453,53,2026-07-11
 359,Alexandre Carrier,Alexandre Carrier,/g/11c30vrkb7,topic,0.039886,0.5283,13.2453,53,2026-07-11
 360,Noah Dobson,Noah Dobson,/g/11gh4768bn,topic,0.199430,2.6415,13.2453,53,2026-07-11
-361,Adam Engstrom,Adam Engstrom,,string,0.002849,0.0377,13.2453,53,2026-07-11
+361,Adam Engstrom,,,no_hockey_topic,,,,0,2026-08-01
 362,Kaiden Guhle,Kaiden Guhle,/g/11m31_9ltt,topic,0.052707,0.6981,13.2453,53,2026-07-11
 363,Lane Hutson,Lane Hutson,/g/11f66w124_,topic,0.356125,4.7170,13.2453,53,2026-07-11
 364,Mike Matheson,Mike Matheson,/m/0k0k9yd,topic,0.074074,0.9811,13.2453,53,2026-07-11
@@ -417,7 +417,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 417,Ondrej Palat,Ondrej Palat,/m/0h7l_79,topic,0.035613,0.4717,13.2453,53,2026-07-11
 418,Kyle Palmieri,Kyle Palmieri,/m/06w34ms,topic,0.011396,0.1509,13.2453,53,2026-07-11
 419,Brayden Schenn,Brayden Schenn,/m/047ny8s,topic,0.062678,0.8302,13.2453,53,2026-07-11
-420,Max Shabanov,Max Shabanov,,string,0.000000,0.0000,13.2453,53,2026-07-11
+420,Max Shabanov,,,no_hockey_topic,,,,0,2026-08-01
 421,Adam Boqvist,Adam Boqvist,/g/11gbldnnsl,topic,0.001425,0.0189,13.2453,53,2026-07-11
 422,Tony DeAngelo,Tony DeAngelo,/m/0_x7v6t,topic,0.022792,0.3019,13.2453,53,2026-07-11
 423,Scott Mayfield,Scott Mayfield,/m/0glrcbv,topic,0.001425,0.0189,13.2453,53,2026-07-11
@@ -494,7 +494,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 494,Porter Martone,Porter Martone,/g/11jfgnb76f,topic,0.117479,1.5472,13.1698,53,2026-07-11
 495,Matvei Michkov,Matvei Michkov,/g/11j53mx4xg,topic,0.127507,1.6792,13.1698,53,2026-07-11
 496,Owen Tippett,Owen Tippett,/g/11c0xpw3hl,topic,0.035817,0.4717,13.1698,53,2026-07-11
-497,Garrett Wilson,Garrett Wilson,,string,0.429799,5.6604,13.1698,53,2026-07-11
+497,Garrett Wilson,,,no_hockey_topic,,,,0,2026-08-01
 498,Trevor Zegras,Trevor Zegras,/g/11hyzc1mlv,topic,0.239255,3.1509,13.1698,53,2026-07-11
 499,Emil Andrae,Emil Andrae,/g/11f0zyf5t3,topic,0.000000,0.0000,13.1698,53,2026-07-11
 501,Oliver Bonk,Oliver Bonk,/g/11fhslqq6b,topic,0.004298,0.0566,13.1698,53,2026-07-11
@@ -545,7 +545,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 546,Ryan Reaves,Ryan Reaves,/m/0dljpzf,topic,0.095989,1.2642,13.1698,53,2026-07-11
 547,Pavol Regenda,Pavol Regenda,/g/11g0n61dyv,topic,0.038621,0.5283,13.6792,53,2026-07-12
 548,Kiefer Sherwood,Kiefer Sherwood,/g/11gnrlz8pr,topic,0.093793,1.2830,13.6792,53,2026-07-12
-549,Will Smith,Will Smith,,string,9.664671,60.9057,6.3019,53,2026-07-12
+549,Will Smith,,,no_hockey_topic,,,,0,2026-08-01
 550,Tyler Toffoli,Tyler Toffoli,/m/0gk__8l,topic,0.057931,0.7925,13.6792,53,2026-07-12
 551,Alexander Wennberg,Alexander Wennberg,/m/0h_c5t2,topic,0.035862,0.4906,13.6792,53,2026-07-12
 552,Vincent Desharnais,Vincent Desharnais,/g/11gbgpgp4x,topic,0.006897,0.0943,13.6792,53,2026-07-12
@@ -555,7 +555,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 556,Nick Leddy,Nick Leddy,/m/06w59lz,topic,0.008276,0.1132,13.6792,53,2026-07-12
 557,Shakir Mukhamadullin,Shakir Mukhamadullin,/g/11fn4jz8tv,topic,0.009655,0.1321,13.6792,53,2026-07-12
 558,Dmitry Orlov,Dmitry Orlov,/m/05zrkhg,topic,0.028966,0.3962,13.6792,53,2026-07-12
-559,Matty Beniers,Matty Beniers,,string,0.019310,0.2642,13.6792,53,2026-07-12
+559,Matty Beniers,Matty Beniers,/g/11f3_kprdm,topic,0.035261,0.4717,13.3774,53,2026-08-01
 560,Berkly Catton,Berkly Catton,/g/11g0ngpr28,topic,0.019310,0.2642,13.6792,53,2026-07-12
 561,Jordan Eberle,Jordan Eberle,/m/03c_f8n,topic,0.034483,0.4717,13.6792,53,2026-07-12
 562,Frederick Gaudreau,Frederick Gaudreau,/g/11c1xp6h6z,topic,0.005517,0.0755,13.6792,53,2026-07-12
@@ -581,12 +581,12 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 582,Jonathan Drouin,Jonathan Drouin,/m/0ndxk8k,topic,0.063448,0.8679,13.6792,53,2026-07-12
 583,Dalibor Dvorsky,Dalibor Dvorsky,/g/11rhf9s_8n,topic,0.052414,0.7170,13.6792,53,2026-07-12
 584,Jack Finley,Jack Finley,/g/11n079psfp,topic,0.008276,0.1132,13.6792,53,2026-07-12
-585,Dylan Holloway,Dylan Holloway,,string,0.045455,0.6226,13.6981,53,2026-07-22
+585,Dylan Holloway,Dylan Holloway,/g/11mmj7g3zf,topic,0.052186,0.6981,13.3774,53,2026-08-01
 586,Jordan Kyrou,Jordan Kyrou,/g/11f3r4r776,topic,0.096552,1.3208,13.6792,53,2026-07-12
 587,Jake Neighbours,Jake Neighbours,/g/11ql1k295j,topic,0.005517,0.0755,13.6792,53,2026-07-12
 588,Jimmy Snuggerud,Jimmy Snuggerud,/g/11frdwrdvf,topic,0.046897,0.6415,13.6792,53,2026-07-12
 589,Oskar Sundqvist,Oskar Sundqvist,/m/0nb7yy0,topic,0.012414,0.1698,13.6792,53,2026-07-12
-590,Pius Suter,Pius Suter,,string,0.020690,0.2830,13.6792,53,2026-07-12
+590,Pius Suter,Pius Suter,/g/1q66qln0n,topic,0.026798,0.3585,13.3774,53,2026-08-01
 591,Robert Thomas,Robert Thomas,/g/11g8vvd7zk,topic,0.132414,1.8113,13.6792,53,2026-07-12
 592,Alexey Toropchenko,Alexey Toropchenko,/g/11fylywl5j,topic,0.002759,0.0377,13.6792,53,2026-07-12
 593,Nathan Walker,Nathan Walker,/m/0gk_xqc,topic,0.009655,0.1321,13.6792,53,2026-07-12
@@ -595,7 +595,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 596,Justin Holl,Justin Holl,/m/0cm9q8t,topic,0.002759,0.0377,13.6792,53,2026-07-12
 597,Matthew Kessel,Matthew Kessel,/g/11q8grg01y,topic,0.000000,0.0000,13.6792,53,2026-07-12
 598,Logan Mailloux,Logan Mailloux,/g/11f4v527sr,topic,0.062069,0.8491,13.6792,53,2026-07-12
-599,Colton Parayko,Colton Parayko,,string,0.035862,0.4906,13.6792,53,2026-07-12
+599,Colton Parayko,Colton Parayko,/m/0100l21j,topic,0.067701,0.9057,13.3774,53,2026-08-01
 600,Tyler Tucker,Tyler Tucker,/g/11fb0jmyf7,topic,0.004138,0.0566,13.6792,53,2026-07-12
 601,Oliver Bjorkstrand,Oliver Bjorkstrand,/m/0w508rf,topic,0.006897,0.0943,13.6792,53,2026-07-12
 602,Anthony Cirelli,Anthony Cirelli,/g/11ggbczvgf,topic,0.045517,0.6226,13.6792,53,2026-07-12
@@ -610,10 +610,10 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 611,Nikita Kucherov,Nikita Kucherov,/m/0gmdwg2,topic,0.249655,3.4151,13.6792,53,2026-07-12
 612,Nick Paul,Nick Paul,/m/0111stbz,topic,0.009655,0.1321,13.6792,53,2026-07-12
 613,Corey Perry,Corey Perry,/m/072bxj,topic,0.326897,4.4717,13.6792,53,2026-07-12
-614,Brayden Point,Brayden Point,,string,0.070345,0.9623,13.6792,53,2026-07-12
+614,Brayden Point,Brayden Point,/m/010wcwhr,topic,0.080395,1.0755,13.3774,53,2026-08-01
 615,Scott Sabourin,Scott Sabourin,/m/0wbjvt6,topic,0.008276,0.1132,13.6792,53,2026-07-12
 616,Declan Carlile,Declan Carlile,/g/11f0y2tlb8,topic,0.000000,0.0000,13.6792,53,2026-07-12
-617,Erik Cernak,Erik Cernak,,string,0.004138,0.0566,13.6792,53,2026-07-12
+617,Erik Cernak,Erik Cernak,/g/1yqccm67d,topic,0.014104,0.1887,13.3774,53,2026-08-01
 618,Max Crozier,Max Crozier,/g/11fht9xv2h,topic,0.000000,0.0000,13.6792,53,2026-07-12
 619,Charle-Edouard D'Astous,Charle-Edouard D'Astous,/g/11fn7phxb9,topic,0.012414,0.1698,13.6792,53,2026-07-12
 620,Victor Hedman,Victor Hedman,/m/03h36qr,topic,0.102069,1.3962,13.6792,53,2026-07-12
@@ -622,7 +622,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 623,J.J. Moser,J.J. Moser,/g/11h1dbq3sp,topic,0.015172,0.2075,13.6792,53,2026-07-12
 624,Darren Raddysh,Darren Raddysh,/g/11f_jv6nm_,topic,0.028966,0.3962,13.6792,53,2026-07-12
 625,Max Domi,Max Domi,/m/0w1d775,topic,0.176552,2.4151,13.6792,53,2026-07-12
-626,Bo Groulx,Bo Groulx,,string,0.005510,0.0755,13.6981,53,2026-07-22
+626,Bo Groulx,,,no_hockey_topic,,,,0,2026-08-01
 627,Luke Haymes,Luke Haymes,/g/11sdv2kc8k,topic,0.001379,0.0189,13.6792,53,2026-07-12
 628,Calle Jarnkrok,Calle Jarnkrok,/m/0bwfvdg,topic,0.012414,0.1698,13.6792,53,2026-07-12
 629,Dakota Joshua,Dakota Joshua,/g/11cn6jvgc4,topic,0.046897,0.6415,13.6792,53,2026-07-12
@@ -652,7 +652,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 654,Alexander Kerfoot,Alexander Kerfoot,/g/11f147j_5x,topic,0.000000,0.0000,13.6792,53,2026-07-12
 655,Jack McBain,Jack McBain,/g/11ghwsqqdl,topic,0.002759,0.0377,13.6792,53,2026-07-12
 656,Ben McCartney,Ben McCartney,/g/11f67b_qr_,topic,0.000000,0.0000,13.6792,53,2026-07-12
-657,Liam O'Brien,Liam O'Brien,,string,0.093793,1.2830,13.6792,53,2026-07-12
+657,Liam O'Brien,,,no_hockey_topic,,,,0,2026-08-01
 658,JJ Peterka,JJ Peterka,/g/11j4r7jcpy,topic,0.093793,1.2830,13.6792,53,2026-07-12
 659,Kevin Rooney,Kevin Rooney,/g/11c6tfksw5,topic,0.000000,0.0000,13.6792,53,2026-07-12
 660,Nick Schmaltz,Nick Schmaltz,/m/010w1klz,topic,0.031724,0.4340,13.6792,53,2026-07-12
@@ -667,9 +667,9 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 669,Scott Perunovich,Scott Perunovich,/g/11h5_vwd78,topic,0.000000,0.0000,13.6792,53,2026-07-12
 670,Nate Schmidt,Nate Schmidt,/m/0s9mw8j,topic,0.027586,0.3774,13.6792,53,2026-07-12
 671,Mikhail Sergachev,Mikhail Sergachev,/g/11bwn4cz2w,topic,0.038621,0.5283,13.6792,53,2026-07-12
-672,Dmitri Simashev,Dmitri Simashev,,string,0.000000,0.0000,13.6792,53,2026-07-12
+672,Dmitri Simashev,,,no_hockey_topic,,,,0,2026-08-01
 673,Maksymilian Szuber,Maksymilian Szuber,/g/11jsh4hdr9,topic,0.000000,0.0000,13.6792,53,2026-07-12
-674,MacKenzie Weegar,MacKenzie Weegar,,string,0.011034,0.1509,13.6792,53,2026-07-12
+674,MacKenzie Weegar,MacKenzie Weegar,/g/11g6yzz0qv,topic,0.032440,0.4340,13.3774,53,2026-08-01
 675,Nils Aman,Nils Aman,/g/11mn80fzr9,topic,0.000000,0.0000,13.6792,53,2026-07-12
 676,Teddy Blueger,Teddy Blueger,/g/113qbjtlm,topic,0.011034,0.1509,13.6792,53,2026-07-12
 677,Brock Boeser,Brock Boeser,/m/013d7fgw,topic,0.120000,1.6415,13.6792,53,2026-07-12
@@ -681,7 +681,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 683,Linus Karlsson,Linus Karlsson,/g/11f6y3nd5f,topic,0.006897,0.0943,13.6792,53,2026-07-12
 684,Drew O'Connor,Drew O'Connor,/g/11fs_xhplb,topic,0.000000,0.0000,13.6792,53,2026-07-12
 685,Liam Ohgren,Liam Ohgren,/g/11s4_7q2q2,topic,0.034483,0.4717,13.6792,53,2026-07-12
-686,Elias Pettersson,Elias Pettersson,/g/11ddxds8fn,topic,0.222069,3.0377,13.6792,53,2026-07-12
+686,Elias Pettersson,Elias Pettersson,/g/11ddxds8fn,topic_position,0.220028,2.9434,13.3774,53,2026-08-01
 687,Aatu Räty,Aatu Räty,/g/11hzcy74zg,topic,0.008276,0.1132,13.6792,53,2026-07-12
 688,Marco Rossi,Marco Rossi,/g/11gdk_409c,topic,0.131034,1.7925,13.6792,53,2026-07-12
 689,Max Sasson,Max Sasson,/g/11f_jsq08f,topic,0.005517,0.0755,13.6792,53,2026-07-12
@@ -690,7 +690,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 692,Filip Hronek,Filip Hronek,/g/11bwdy5xd7,topic,0.024828,0.3396,13.6792,53,2026-07-12
 693,Pierre-Olivier Joseph,Pierre-Olivier Joseph,/g/11d_7h8kcz,topic,0.004138,0.0566,13.6792,53,2026-07-12
 694,Victor Mancini,Victor Mancini,/g/11gb5gyygm,topic,0.005517,0.0755,13.6792,53,2026-07-12
-695,Elias Pettersson,Elias Pettersson,/g/11ddxds8fn,topic,0.222069,3.0377,13.6792,53,2026-07-12
+695,Elias Pettersson,Elias Pettersson,/g/11tfvknj8_,topic_position,0.002821,0.0377,13.3774,53,2026-08-01
 696,Marcus Pettersson,Marcus Pettersson,/m/0ztj7c3,topic,0.002759,0.0377,13.6792,53,2026-07-12
 697,Tom Willander,Tom Willander,/g/11h1_g0312,topic,0.016552,0.2264,13.6792,53,2026-07-12
 698,Ivan Barbashev,Ivan Barbashev,/m/0105tsnl,topic,0.012414,0.1698,13.6792,53,2026-07-12
@@ -715,7 +715,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 717,Kai Uchacz,Kai Uchacz,/g/11f67gysh0,topic,0.001379,0.0189,13.6792,53,2026-07-12
 718,Rasmus Andersson,Rasmus Andersson,/m/0w0cyjn,topic,0.106207,1.4528,13.6792,53,2026-07-12
 719,Dylan Coghlan,Dylan Coghlan,/g/11c1rg34lf,topic,0.000000,0.0000,13.6792,53,2026-07-12
-720,Jeremy Davies,Jeremy Davies,,string,0.060690,0.8302,13.6792,53,2026-07-12
+720,Jeremy Davies,,,no_hockey_topic,,,,0,2026-08-01
 721,Noah Hanifin,Noah Hanifin,/m/0114q50r,topic,0.033103,0.4528,13.6792,53,2026-07-12
 722,Ben Hutton,Ben Hutton,/m/0108cb2s,topic,0.000000,0.0000,13.6792,53,2026-07-12
 723,Kaedan Korczak,Kaedan Korczak,/g/11hdylvkx3,topic,0.001379,0.0189,13.6792,53,2026-07-12
@@ -728,12 +728,12 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 730,Brandon Duhaime,Brandon Duhaime,/g/11gbfwcc3_,topic,0.011034,0.1509,13.6792,53,2026-07-12
 731,Ethen Frank,Ethen Frank,/g/11fyxp5w25,topic,0.002759,0.0377,13.6792,53,2026-07-12
 732,David Kampf,David Kampf,/m/0vsghnd,topic,0.044138,0.6038,13.6792,53,2026-07-12
-733,Hendrix Lapierre,Hendrix Lapierre,,string,0.000000,0.0000,13.6792,53,2026-07-12
+733,Hendrix Lapierre,Hendrix Lapierre,/g/11f67j4_t6,topic,0.001410,0.0189,13.3774,53,2026-08-01
 734,Ryan Leonard,Ryan Leonard,/g/11svwnjb8q,topic,0.074483,1.0189,13.6792,53,2026-07-12
 735,Connor McMichael,Connor McMichael,/g/11h4b7hj02,topic,0.011034,0.1509,13.6792,53,2026-07-12
 736,Ivan Miroshnichenko,Ivan Miroshnichenko,/g/11frdws21v,topic,0.001379,0.0189,13.6792,53,2026-07-12
-737,Alex Ovechkin,Alex Ovechkin,,string,0.376552,5.1509,13.6792,53,2026-07-12
-738,Aliaksei Protas,Aliaksei Protas,,string,0.008276,0.1132,13.6792,53,2026-07-12
+737,Alex Ovechkin,Alex Ovechkin,/m/038ngr,topic,1.963329,26.2642,13.3774,53,2026-08-01
+738,Aliaksei Protas,Aliaksei Protas,/g/11fmqkh2nx,topic,0.064880,0.8679,13.3774,53,2026-08-01
 739,Ilya Protas,Ilya Protas,/g/11w24n49lr,topic,0.012414,0.1698,13.6792,53,2026-07-12
 740,Justin Sourdif,Justin Sourdif,/g/11h0yvzd5_,topic,0.026207,0.3585,13.6792,53,2026-07-12
 741,Dylan Strome,Dylan Strome,/m/0115qxsq,topic,0.075862,1.0377,13.6792,53,2026-07-12
@@ -756,7 +756,7 @@ player_id,full_name,query,query_mid,trends_method,trends_12mo,player_mean_scaled
 758,Vladislav Namestnikov,Vladislav Namestnikov,/m/0glpvqg,topic,0.006897,0.0943,13.6792,53,2026-07-12
 759,Nino Niederreiter,Nino Niederreiter,/m/09v0_5j,topic,0.048276,0.6604,13.6792,53,2026-07-12
 760,Gustav Nyquist,Gustav Nyquist,/m/0bh8ht1,topic,0.004138,0.0566,13.6792,53,2026-07-12
-761,Cole Perfetti,Cole Perfetti,,string,0.020690,0.2830,13.6792,53,2026-07-12
+761,Cole Perfetti,Cole Perfetti,/g/11f66z53k4,topic,0.046544,0.6226,13.3774,53,2026-08-01
 762,Isak Rosen,Isak Rosen,/g/11q8wgyyvs,topic,0.008276,0.1132,13.6792,53,2026-07-12
 763,Mark Scheifele,Mark Scheifele,/m/0gmfskc,topic,0.263448,3.6038,13.6792,53,2026-07-12
 764,Jonathan Toews,Jonathan Toews,/m/0dwj9v,topic,0.344828,4.7170,13.6792,53,2026-07-12

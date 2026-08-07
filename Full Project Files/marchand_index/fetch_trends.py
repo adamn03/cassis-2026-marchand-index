@@ -11,10 +11,24 @@ A16 (2026-07-03) — two measurement fixes over the original single-term fetch:
    Anchor fixed in advance (A16): the topic entity for "Brad Marchand"
    (mid-magnitude, hockey-native — preserves resolution at both tail ends).
 2. **Entity resolution.** The query is the Google Trends topic MID from
-   pytrends `suggestions()` (first suggestion whose type contains "hockey"),
-   not the raw name string — "Will Smith" must measure the Sharks forward,
-   not the actor. No hockey topic -> raw-string fallback, flagged
-   `trends_method=string` for a disclosed sensitivity cut.
+   pytrends `suggestions()`, not the raw name string — "Will Smith" must
+   measure the Sharks forward, not the actor.
+
+A47 (2026-08-01) — the string fallback is RETIRED and a position tie-break is
+added. The A16 fallback published a raw-name query whenever no suggestion
+qualified OR the call was throttled, and 429s dominate this fetcher's logs. It
+put "Will Smith" at rank 1/771 on 9.66x the anchor (the actor) and left
+Ovechkin, Brayden Point and Parayko undercounted on string queries. Taking the
+FIRST qualifying suggestion also gave the Canucks' two Elias Petterssons one
+shared MID and an identical `trends_12mo`.
+
+  - >1 qualifying suggestion -> disambiguate on the player's position
+    (`trends_method=topic_position`); an unbroken tie refuses.
+  - a refusal writes a NULL `trends_12mo` and stores NO query string
+    (`no_hockey_topic` | `ambiguous_topic` | `resolve_failed`).
+  - only `no_hockey_topic` is an A25 `no_entity_exists` (raw-0 imputation);
+    the other two are `fetch_failed` and renormalize — a 429 is not evidence
+    of zero search interest.
 
 Window (pre-reg A11): FIXED [2025-04-18, 2026-04-17], NOT run-time anchored.
 
@@ -31,6 +45,7 @@ from __future__ import annotations
 import datetime as dt
 import sys
 import time
+import unicodedata
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -63,6 +78,7 @@ ANCHOR_MID = "/m/027h_8t"
 # (degenerate). His row alone is re-measured against this pre-declared
 # secondary anchor and chained back onto the common scale.
 SECONDARY_ANCHOR_NAME = "Sidney Crosby"
+SECONDARY_ANCHOR_POSITION = "C"
 SLEEP = 3.0
 FIELDS = [
     "player_id", "full_name", "query", "query_mid", "trends_method",
@@ -78,23 +94,117 @@ def _franchise_names() -> list[str]:
             for t in load_csv(RAW_DIR / "teams.csv")]
 
 
+def _strip_punct(s: str) -> str:
+    """Fold to accent-free, punctuation-free, single-spaced lowercase.
+
+    A47: the A44 franchise test compared a raw casefold of Google's type
+    against slugs from teams.csv, so "St. Louis Blues defenseman" failed to
+    match "st louis blues" on the period alone — Parayko, Holloway and Suter
+    were all refused as `no_hockey_topic`, which A25 imputes as raw 0.
+    """
+    s = unicodedata.normalize("NFKD", str(s))
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    s = "".join(c if c.isalnum() else " " for c in s.casefold())
+    return " ".join(s.split())
+
+
 def _type_qualifies(type_str: str, franchises: list[str]) -> bool:
     """A44 rule 2: 'hockey' in type, or any NHL franchise name in type
-    (Google renamed player entity types to '<Team> <position>')."""
-    t = type_str.casefold()
-    return "hockey" in t or any(f in t for f in franchises)
+    (Google renamed player entity types to '<Team> <position>'). Both sides
+    are punctuation- and accent-folded (A47)."""
+    t = _strip_punct(type_str)
+    return "hockey" in t or any(_strip_punct(f) in t for f in franchises if f)
 
 
-def resolve_topic_mid(pytrends: TrendReq, name: str) -> str:
-    """First pytrends suggestion whose type qualifies (A44) -> MID, else ''."""
-    franchises = _franchise_names()
+# A47: players.csv position code -> substrings Google uses in the entity type
+# ("<Team> <position>"). Two-word wing forms also cover "left winger" /
+# "right winger"; "defense"/"defence" also cover "defenseman"/"defenceman".
+POSITION_WORDS = {
+    "C": ("center", "centre"),
+    "L": ("left wing",),
+    "R": ("right wing",),
+    "D": ("defense", "defence"),
+}
+# Methods that represent a real, entity-resolved measurement.
+RESOLUTION_METHODS = ("topic", "topic_position", "topic_secondary_anchor")
+# A47: refusals. The pre-A47 "string" method is retired — a raw-name query
+# measured whoever else owns the name (Will Smith = the actor, 9.66x anchor).
+REFUSAL_REASONS = ("no_hockey_topic", "ambiguous_topic", "resolve_failed")
+
+
+def select_topic_mid(suggestions: list[dict], franchises: list[str],
+                     position: str) -> tuple[str, str]:
+    """A47: pick one Google topic MID from pytrends suggestions.
+
+    Returns (mid, reason). A refusal returns ("", <REFUSAL_REASONS member>) —
+    never a raw name string.
+
+      0 qualifying suggestions      -> ("", "no_hockey_topic")
+      1 qualifying suggestion       -> (mid, "topic")
+      >1, exactly one matches the
+        player's position           -> (mid, "topic_position")
+      >1, tie unbroken              -> ("", "ambiguous_topic")
+
+    The position tie-break exists because two pooled players can share a full
+    name (the Canucks' Elias Pettersson C and D), and taking the first
+    qualifying suggestion gave both the center's MID and therefore an
+    identical trends_12mo.
+    """
+    qualifying = [s for s in suggestions
+                  if _type_qualifies(str(s.get("type", "")), franchises)]
+    if not qualifying:
+        return "", "no_hockey_topic"
+    if len(qualifying) == 1:
+        return qualifying[0].get("mid", "") or "", "topic"
+    words = POSITION_WORDS.get(str(position).strip().upper(), ())
+    matches = [s for s in qualifying
+               if any(w in _strip_punct(s.get("type", "")) for w in words)]
+    if len(matches) == 1:
+        return matches[0].get("mid", "") or "", "topic_position"
+    return "", "ambiguous_topic"
+
+
+def resolve_topic_mid(pytrends: TrendReq, name: str,
+                      position: str) -> tuple[str, str]:
+    """A47: resolve `name` to a topic MID. Returns (mid, reason).
+
+    A failed/throttled suggestions() call reports "resolve_failed", NOT
+    "no_hockey_topic": 429s dominate this fetcher's logs, and A25 gives the two
+    opposite null treatments (weight renormalization vs. raw-0 imputation).
+    """
     try:
-        for s in pytrends.suggestions(name):
-            if _type_qualifies(str(s.get("type", "")), franchises):
-                return s.get("mid", "") or ""
+        suggestions = pytrends.suggestions(name)
     except Exception as e:
         print(f"  suggestions({name!r}) failed: {e!r}", file=sys.stderr)
-    return ""
+        return "", "resolve_failed"
+    return select_topic_mid(suggestions, _franchise_names(), position)
+
+
+def build_row(pid: str, name: str, mid: str, reason: str,
+              p_mean: float | None, a_mean: float | None, n_weeks: int,
+              fetch_date: str) -> dict:
+    """One trends.csv row. A47: an unresolved entity yields a NULL value and
+    stores no searchable query string, so no downstream step can mistake a
+    namesake's search volume for the player's."""
+    if reason in REFUSAL_REASONS:
+        ratio = None
+        query = ""
+        mid = ""
+    else:
+        ratio = ratio_from_means(p_mean, a_mean)
+        query = name
+    return {
+        "player_id": pid,
+        "full_name": name,
+        "query": query,
+        "query_mid": mid,
+        "trends_method": reason,
+        "trends_12mo": "" if ratio is None else f"{ratio:.6f}",
+        "player_mean_scaled": "" if p_mean is None else f"{p_mean:.4f}",
+        "anchor_mean_scaled": "" if a_mean is None else f"{a_mean:.4f}",
+        "n_weeks": n_weeks,
+        "fetch_date": fetch_date,
+    }
 
 
 def ratio_from_means(player_mean: float | None,
@@ -202,15 +312,32 @@ def zero_quant_count(rows: list[dict]) -> int:
     return n
 
 
+def resume_rows_from(rows: list[dict]) -> dict[str, dict]:
+    """player_id -> row, kept only if it is a non-null, entity-resolved
+    measurement. A47: pre-A47 `trends_method=string` rows carry a non-null
+    value, so without the method test the re-run would skip exactly the
+    contaminated players it exists to replace."""
+    shared_mids = {m for m in
+                   (str(r.get("query_mid", "")).strip() for r in rows) if m
+                   and sum(1 for q in rows
+                           if str(q.get("query_mid", "")).strip() == m) > 1}
+    out = {}
+    for r in rows:
+        if str(r.get("trends_12mo", "")).strip() == "":
+            continue
+        if str(r.get("trends_method", "")).strip() not in RESOLUTION_METHODS:
+            continue
+        if str(r.get("query_mid", "")).strip() in shared_mids:
+            # Two players on one MID: one entity's volume credited to both.
+            continue
+        out[r["player_id"]] = r
+    return out
+
+
 def load_resume_rows() -> dict[str, dict]:
-    """player_id -> existing row, kept only if trends_12mo is non-null."""
     if not OUT_PATH.exists():
         return {}
-    out = {}
-    for r in load_csv(OUT_PATH):
-        if str(r.get("trends_12mo", "")).strip() != "":
-            out[r["player_id"]] = r
-    return out
+    return resume_rows_from(load_csv(OUT_PATH))
 
 
 def a35_marchand_row_mode() -> None:
@@ -218,10 +345,17 @@ def a35_marchand_row_mode() -> None:
     player's row only (A35 clause 1); rewrites trends.csv in place."""
     pytrends = TrendReq(hl="en-US", tz=0, retries=2, backoff_factor=1.5,
                         timeout=(10, 30))
-    sec_mid = resolve_topic_mid(pytrends, SECONDARY_ANCHOR_NAME)
-    sec_kw = sec_mid or SECONDARY_ANCHOR_NAME
-    print(f"A35 secondary anchor: {SECONDARY_ANCHOR_NAME!r} -> "
-          f"{'topic ' + sec_mid if sec_mid else 'STRING FALLBACK'}")
+    sec_mid, sec_reason = resolve_topic_mid(pytrends, SECONDARY_ANCHOR_NAME,
+                                            SECONDARY_ANCHOR_POSITION)
+    if not sec_mid:
+        # A47: a raw-string secondary anchor would put the whole chained scale
+        # on whoever else owns the name. Abort instead.
+        print(f"REFUSED: secondary anchor {SECONDARY_ANCHOR_NAME!r} did not "
+              f"resolve ({sec_reason}); anchor row left unchanged.",
+              file=sys.stderr)
+        return
+    sec_kw = sec_mid
+    print(f"A35 secondary anchor: {SECONDARY_ANCHOR_NAME!r} -> topic {sec_mid}")
     time.sleep(SLEEP)
     rows_by_pid = {r["player_id"]: r for r in load_csv(OUT_PATH)}
 
@@ -264,30 +398,24 @@ def main() -> None:
         if pid in rows_by_pid:
             continue
         name = p["full_name"]
-        mid = resolve_topic_mid(pytrends, name)
+        mid, reason = resolve_topic_mid(pytrends, name, p.get("position", ""))
         time.sleep(SLEEP)
-        player_kw = mid or name
-        method = "topic" if mid else "string"
-        try:
-            p_mean, a_mean, n_weeks = fetch_pair(pytrends, anchor_kw, player_kw)
-            ratio = ratio_from_means(p_mean, a_mean)
-        except Exception as e:
-            print(f"{name}: FAILED {e!r}", file=sys.stderr)
-            p_mean, a_mean, n_weeks, ratio = None, None, 0, None
-        print(f"{name:<24} method={method} ratio={ratio} "
+        p_mean = a_mean = None
+        n_weeks = 0
+        if mid:
+            # A47: only an entity-resolved player is ever measured. A refusal
+            # is written as a NULL row and never queried as a raw name.
+            try:
+                p_mean, a_mean, n_weeks = fetch_pair(pytrends, anchor_kw, mid)
+            except Exception as e:
+                print(f"{name}: FAILED {e!r}", file=sys.stderr)
+                p_mean, a_mean, n_weeks = None, None, 0
+        row = build_row(pid, name, mid, reason, p_mean, a_mean, n_weeks,
+                        fetch_date)
+        print(f"{name:<24} method={row['trends_method']} "
+              f"ratio={row['trends_12mo'] or None} "
               f"(player={p_mean}, anchor={a_mean}, n={n_weeks})")
-        rows_by_pid[pid] = {
-            "player_id": pid,
-            "full_name": name,
-            "query": player_kw if not mid else name,
-            "query_mid": mid,
-            "trends_method": method,
-            "trends_12mo": "" if ratio is None else f"{ratio:.6f}",
-            "player_mean_scaled": "" if p_mean is None else f"{p_mean:.4f}",
-            "anchor_mean_scaled": "" if a_mean is None else f"{a_mean:.4f}",
-            "n_weeks": n_weeks,
-            "fetch_date": fetch_date,
-        }
+        rows_by_pid[pid] = row
         # Snapshot after every player so a kill / 429 never loses progress.
         rows = [rows_by_pid[q] for q in order if q in rows_by_pid]
         atomic_write_csv(OUT_PATH, rows, FIELDS)
@@ -296,9 +424,14 @@ def main() -> None:
     rows = [rows_by_pid[q] for q in order if q in rows_by_pid]
     atomic_write_csv(OUT_PATH, rows, FIELDS)
     n_ok = sum(1 for r in rows if str(r["trends_12mo"]).strip() != "")
-    n_topic = sum(1 for r in rows if r.get("trends_method") == "topic")
+    n_topic = sum(1 for r in rows
+                  if r.get("trends_method") in RESOLUTION_METHODS)
     print(f"\nWrote {OUT_PATH} ({len(rows)} rows, {n_ok} non-null, "
           f"{n_topic} topic-resolved)")
+    for reason in REFUSAL_REASONS:
+        n = sum(1 for r in rows if r.get("trends_method") == reason)
+        if n:
+            print(f"A47 refusal {reason}: {n}")
     print(f"A35 zero-quantization count (trends_12mo == 0): "
           f"{zero_quant_count(rows)}")
 
