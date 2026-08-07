@@ -1648,6 +1648,97 @@ which is independent of the resulting ranking. Tests:
 
 ---
 
+**A50 (defect found + fixed 2026-08-06) — Hyphen/apostrophe names are
+multi-token keys and are matched as adjacent token SEQUENCES. Corrects a
+silent false-zero defect in the A23 rule-3 matcher.**
+
+**The defect.** A23 rule 3 folds corpus text with `match_fold`, which maps
+every non-alphanumeric character to a space: "Nugent-Hopkins" in a post
+becomes the two tokens `nugent hopkins`. The player-side key, however, was
+built with `fold`, which only strips accents and case and therefore
+*retains* the separator: `nugent-hopkins`. The matcher then tested
+`token_set & surname_set`. A key containing a hyphen or apostrophe can never
+equal any token produced by `match_fold`, so those players matched nothing —
+and were written out with `reddit_status = "ok"` and
+`reddit_mentions_12mo = 0`.
+
+This is worse than exclusion. A `0` under status `ok` is consumed by §4 as a
+**measured zero** and enters the composite at the full A12 Reddit weight
+(0.27 mentions + 0.17 upvotes) instead of being NULL'd and renormalized.
+Ten players carried a fabricated zero, including Ryan O'Reilly, Ryan
+Nugent-Hopkins and Oliver Ekman-Larsson — none of whom are plausibly
+zero-mention NHL players. Every `ok` row reporting zero mentions in the
+pre-fix file was a separator name, except one genuine case (below).
+
+**The fix.** Name keys are built with `name_key = match_fold`, putting both
+sides of the comparison on the same fold. A key containing a space is
+MULTI-TOKEN and is matched with `contains_sequence` — the tokens must appear
+adjacent and in order. Single-token keys are byte-for-byte what `fold`
+produced before A50 and take the unchanged set-intersection fast path. The
+same correction applies to FIRST names, which had the identical defect
+("Jean-Gabriel", "K'Andre", "J.T." could never satisfy the A15 first-name
+evidence check), and to the A42 document-frequency pre-pass.
+
+**Scope of change, measured.** 14 of 771 rows changed; **757 are
+bit-identical on every column** (mentions, upvotes, unique authors,
+ambiguous, guard-filtered, status).
+
+| Row | Before → after (mentions) | Cause |
+|---|---|---|
+| Ryan O'Reilly | 0 → 431 | surname key |
+| Ryan Nugent-Hopkins | 0 → 179 | surname key |
+| Oliver Ekman-Larsson | 0 → 162 | surname key |
+| Charle-Edouard D'Astous | 0 → 118 | surname key |
+| Drew O'Connor | 0 → 107 | surname key |
+| Jacob Bernard-Docker | 0 → 77 | surname key |
+| Liam O'Brien | 0 → 65 | surname key |
+| Logan O'Connor | 0 → 40 | surname key |
+| Nicolas Aube-Kubel | 0 → 25 | surname key |
+| J.T. Miller | 186 → 316 | first-name key (A15 re-attribution) |
+| K'Andre Miller | 181 → 198 | first-name key (A15 re-attribution) |
+| Colin Miller | 124 → 121 | first-name key (A15 re-attribution) |
+| Pierre-Olivier Joseph | 33 → 41 | first-name key (A15 re-attribution) |
+| Mathieu Joseph | 51 → 50 | first-name key (A15 re-attribution) |
+
+The last five are second-order: `J.T.`, `K'Andre` and `Pierre-Olivier` are
+first names that also failed to match, so the three Millers and two Josephs
+were being disambiguated with the A15 evidence check partially blind.
+Correcting it re-attributes submissions **between** members of those surname
+groups; the group totals move, not just one row.
+
+**One genuine zero remains.** Maksymilian Szuber (UTA) is `ok` with 0
+mentions, 0 ambiguous, 0 guard-filtered — a fringe player with no separator
+in his name. A true zero is a legitimate measurement and is NOT converted to
+`unmeasurable`; the A48 Defect-5 ladder applies only when the corpus was
+read and candidates existed but none survived. The test pins this survivor
+**by name**, so any NEW name appearing as an `ok` zero fails the suite.
+
+**Why this is a defect fix and not a design change.** §3.3-3.4 and A23 rule 3
+pre-register matching on the player's **surname as a whole token** in the
+folded text. A hyphenated surname *is* that surname; the implementation
+simply failed to construct a key that could ever match, because the two
+sides used different folds. No pre-registered rule, threshold, or hypothesis
+is altered here — the rule is now implemented as written. Per §13 this is
+recorded as an amendment anyway because it changes shipped numbers.
+
+**Anti-tuning compliance (§13).** No threshold introduced or moved. The fix
+was specified from the mechanism (two folds disagreeing), not selected by
+comparing outcomes; the affected rows were identified before the fix was
+written, by asking which `ok` rows reported zero. Direction of the change
+was not a criterion — it was accepted before the re-run that any row could
+move either way, and five rows did move down or sideways. Downstream:
+`reddit_detail.csv` 161,947 → 163,302 rows; `reddit_detail_allsubs.csv`
+224,510 → 226,535. `oaq_pilot.csv`, `results.md`, `results.json`
+regenerated. Tests: `tests/test_reddit_multitoken_a50.py` (32); suite
+375 → 407.
+
+**Limits of claim.** The matcher still requires the separator to be rendered
+as *some* non-alphanumeric character. A post writing "NugentHopkins" as one
+word, or "Nuge" as a nickname, is still not counted — nickname recall was
+never claimed and is unchanged by A50.
+
+---
+
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
 
 **V-A11-Trends (2026-06-26) — live spot-check confirming `raw/trends.csv` was fetched on the A11 fixed window, not a run-anchored one.** `fetch_trends.py:52` uses `timeframe="2025-04-18 2026-04-17"`, but the stored `trends.csv` carries `fetch_date=2026-06-20` and the fixed-window code only landed 2026-06-20 13:21 (commit `0c3ccbe`); whether the file predated the fix that day was not decidable from git/data alone. A single live `pytrends` call resolves it (the test is window-vintage, so one salient distinctive-name player suffices). **Player: Connor McDavid** (stored `trends_12mo = 24.7358`; he had a 2026 playoff run, so the two windows diverge maximally). Result: a fresh **fixed-window** [2025-04-18, 2026-04-17] fetch gives mean **26.13** (n=53) — **5.6 % from stored, within Trends sampling noise → MATCH**, i.e. the stored file used the fixed window. The same player's **run-anchored** (`today 12-m`) series shows the expected post-window playoff spike the fixed window correctly excludes — weeks 2026-04-19 = 32, **2026-04-26 = 47 (peak)**, 2026-05-03 = 33, all after the 2026-04-17 window end. Conclusion: the `trends` component (§4/A12 weight 0.16) is on the A11 window and **excludes the 2026-playoff confound**; the SESSION residual is closed by live evidence. No file or weight changes; verification only. (One live call; perishable, so not re-run across the set.)

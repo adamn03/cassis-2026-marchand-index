@@ -143,6 +143,41 @@ def fold(s: str) -> str:
     return "".join(c for c in nfkd if not unicodedata.combining(c)).casefold()
 
 
+def name_key(s: str) -> str:
+    """A50: name key on the SAME fold as the corpus text.
+
+    `fold` only strips accents and case, so it leaves hyphens and apostrophes
+    in place ("Nugent-Hopkins" -> "nugent-hopkins"). Corpus text is tokenized
+    with `match_fold`, which maps every non-alphanumeric to a space. A key
+    carrying a hyphen or apostrophe therefore could never equal any corpus
+    token, and those players silently scored zero mentions while still being
+    reported as successfully measured.
+
+    Keying through `match_fold` puts both sides in the same space:
+    "nugent hopkins", "o reilly", "jean gabriel". Keys containing a space are
+    MULTI-TOKEN and must be matched as an adjacent sequence (see
+    `contains_sequence`); single-token keys are byte-for-byte what `fold`
+    produced before A50, so every unaffected player is untouched.
+    """
+    return match_fold(s)
+
+
+def is_multi_token(key: str) -> bool:
+    return " " in key
+
+
+def contains_sequence(toks: list[str], seq: tuple[str, ...]) -> bool:
+    """True iff `seq` appears as consecutive tokens in `toks` (A50)."""
+    if not seq:
+        return False
+    first, n = seq[0], len(seq)
+    limit = len(toks) - n
+    for i, t in enumerate(toks):
+        if t == first and i <= limit and tuple(toks[i:i + n]) == seq:
+            return True
+    return False
+
+
 def build_surname_map(players: list[dict]) -> dict[str, list[str]]:
     """Folded surname -> list of folded first names of pool players sharing it.
 
@@ -153,8 +188,8 @@ def build_surname_map(players: list[dict]) -> dict[str, list[str]]:
         parts = p["full_name"].split()
         if not parts:
             continue
-        sn = fold(parts[-1])
-        fn = fold(parts[0])
+        sn = name_key(parts[-1])
+        fn = name_key(parts[0])
         out.setdefault(sn, []).append(fn)
     return out
 
@@ -173,8 +208,8 @@ def make_evidence_check(full_name: str, surname_map: dict[str, list[str]],
           that initial is unique among pool players sharing the surname.
     """
     parts = full_name.split()
-    sn = fold(parts[-1])
-    fn = fold(parts[0])
+    sn = name_key(parts[-1])
+    fn = name_key(parts[0])
     sharers = surname_map.get(sn, [fn])
     shared = len(sharers) >= 2
     if not shared and not force:
@@ -182,23 +217,42 @@ def make_evidence_check(full_name: str, surname_map: dict[str, list[str]],
 
     initial = fn[:1]
     initial_unique = sum(1 for f in sharers if f[:1] == initial) == 1
+    # A50: `sn` may now be multi-token ("nugent hopkins"). The initial pattern
+    # is built on the match_fold'd text, where the separator is a space, so
+    # `re.escape(sn)` matches the sequence directly.
     initial_re = (
         re.compile(rf"\b{re.escape(initial)}\.?\s+{re.escape(sn)}\b")
         if initial_unique else None
     )
     word_re = re.compile(r"[a-z0-9']+")
+    fn_seq = tuple(fn.split()) if is_multi_token(fn) else ()
 
     def check(title: str, selftext: str) -> bool:
         text = fold(f"{title} {selftext}")
         tokens = word_re.findall(text)
-        if len(fn) >= 3:
+        if fn_seq:
+            # A50: a hyphenated/apostrophed first name is an adjacent token
+            # sequence in the match_fold'd text ("Jean-Gabriel" ->
+            # "jean gabriel"). Prefix matching on the joined form can never
+            # fire, which is the same defect as the surname bug.
+            if contains_sequence(match_fold(f"{title} {selftext}").split(),
+                                 fn_seq):
+                return True
+        elif len(fn) >= 3:
             if any(t.startswith(fn) for t in tokens):
                 return True
         else:
             if fn in tokens:
                 return True
-        if initial_re is not None and initial_re.search(text):
-            return True
+        if initial_re is not None:
+            # Single-token surnames keep the pre-A50 `fold` basis exactly (on
+            # that text "e.pettersson" has no separator and must NOT match).
+            # Only a multi-token surname needs the match_fold basis, because
+            # its separator only exists there.
+            basis = (match_fold(f"{title} {selftext}")
+                     if is_multi_token(sn) else text)
+            if initial_re.search(basis):
+                return True
         return False
 
     return check, shared
@@ -241,6 +295,7 @@ def surname_document_frequency(surnames: set[str],
     hits = {sn: 0 for sn in surnames}
     total = 0
     target = frozenset(surnames)
+    multi = {k: tuple(k.split()) for k in target if is_multi_token(k)}
     for path in sorted(corpus_dir.glob("*.jsonl")):
         seen: set[str] = set()
         with path.open("r", encoding="utf-8") as fh:
@@ -254,9 +309,14 @@ def surname_document_frequency(surnames: set[str],
                     continue
                 seen.add(pid)
                 total += 1
-                for sn in (match_tokens(post.get("title") or "",
-                                        post.get("selftext") or "") & target):
+                toks = match_fold(f"{post.get('title') or ''} "
+                                  f"{post.get('selftext') or ''}").split()
+                for sn in (set(toks) & target):
                     hits[sn] += 1
+                # A50: multi-token surnames are sequences, not set members.
+                for key, seq in multi.items():
+                    if contains_sequence(toks, seq):
+                        hits[key] += 1
     return {sn: (hits[sn] / total if total else 0.0) for sn in surnames}
 
 
@@ -374,7 +434,7 @@ def collision_surnames(players: list[dict]) -> dict[str, frozenset[str]]:
         parts = p["full_name"].split()
         if not parts:
             continue
-        sn, fn = fold(parts[-1]), fold(parts[0])
+        sn, fn = name_key(parts[-1]), name_key(parts[0])
         by_surname.setdefault(sn, []).append(fn)
         fn_to_surnames.setdefault(fn, set()).add(sn)
     return {sn: frozenset(fn_to_surnames[sn])
@@ -460,7 +520,7 @@ def build_groups(players: list[dict], wteams: dict[str, set[str]],
     groups: dict[str, list[dict]] = {}
     for p in players:
         parts = p["full_name"].split()
-        sn, fn = fold(parts[-1]), fold(parts[0])
+        sn, fn = name_key(parts[-1]), name_key(parts[0])
         checker, shared = make_evidence_check(
             p["full_name"], surname_map,
             force=(sn in guarded or sn in collisions))
@@ -552,6 +612,9 @@ def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
 
     missing: list[str] = []
     surnames = frozenset(groups)
+    # A50: split single- from multi-token keys once. The set intersection
+    # below is the unchanged fast path for every single-token surname.
+    multi_surnames = {k: tuple(k.split()) for k in surnames if is_multi_token(k)}
     for sub in ALL_SUBS:
         path = corpus_dir / f"{sub}.jsonl"
         if not path.exists():
@@ -573,6 +636,11 @@ def scan_corpus(groups: dict[str, list[dict]], counting: dict[str, list[str]],
                 toks = match_fold(f"{title} {selftext}").split()
                 tokens = set(toks)
                 hit_surnames = tokens & surnames
+                # A50: multi-token surnames ("nugent hopkins") cannot appear
+                # in the token SET; they are adjacent token sequences.
+                for key, seq in multi_surnames.items():
+                    if contains_sequence(toks, seq):
+                        hit_surnames.add(key)
                 if not hit_surnames:
                     continue
                 for sn in hit_surnames:
@@ -669,8 +737,8 @@ def main() -> None:
     counting = {p["player_id"]: counting_subs(wteams[p["player_id"]]) for p in players}
 
     # A42 pre-pass: corpus document frequency of every pool surname.
-    pool_surnames = {fold(p["full_name"].split()[-1]) for p in players}
-    pool_first_names = {fold(p["full_name"].split()[0]) for p in players}
+    pool_surnames = {name_key(p["full_name"].split()[-1]) for p in players}
+    pool_first_names = {name_key(p["full_name"].split()[0]) for p in players}
     print("A42: computing corpus document frequency for "
           f"{len(pool_surnames)} surnames ...")
     df = surname_document_frequency(pool_surnames)
@@ -729,7 +797,7 @@ def main() -> None:
             # column below — the evidence for why the row is NULL downstream
             # must stay visible in the CSV.
             mentions, upvotes = len(a["scores"]), sum(a["scores"].values())
-        sn = fold(p["full_name"].split()[-1])
+        sn = name_key(p["full_name"].split()[-1])
         me = next(m for m in groups[sn] if m["pid"] == pid)
         counts_rows.append({
             "player_id": pid,
