@@ -1,24 +1,56 @@
 # Sports Analytics Conference Projects — Instructions
 
-## Conference target
+## Target — CHANGED 2026-08-27
 
-**CASSIS — Cascadia Symposium on Statistics in Sports** (https://www.cascadiasports.com/)
+**The conference is off.** The owner made the Mann Cup (lacrosse) and cannot attend CASSIS
+on September 12, 2026. The project is no longer a conference submission.
+
+### Current deliverable — the only one
+
+A **clean, self-explanatory GitHub writeup** of the finished index, built to read well as a
+portfolio / resume artifact. Audience is now a *general technical reader and a hiring
+manager*, not a room of professional statisticians.
 
 | Field | Value |
 |---|---|
-| Date | September 12, 2026 |
-| Location | SFU Harbour Centre, Vancouver |
-| Format | Oral talks + poster session + panel. Oral is preferred; poster is the fallback for non-oral selections. |
-| Audience | Pro statisticians + analysts from sports teams, sports media, universities. Stat-literate, hostile to overclaim. NOT undergrad — judge floor is high. |
-| Abstract submission | 2-page PDF to `cascadia-sports@sfu.ca` |
-| Submission deadline | **May 31, 2026** |
-| Review completion | June 15, 2026 |
+| Output | Public repo presentation: the MI / `OAQ_portable` ranking, the interesting movers, a small number of findings |
+| Headline finding | **The NHL does not pay extra for players who generate more attention** |
+| Audience | Technical generalists + hiring managers. Assume no hockey-analytics vocabulary |
+| Bar | Understandable in three minutes; every headline number carries a CI; limits stated plainly, not buried |
+| Full spec + task order | `SESSION.md` |
 
-**Goal:** push for **best-in-show idea quality**, not just "accepted." Aim for an oral slot; design every decision to maximize the work's standing in a roomful of pro statisticians.
+**What changed about how to work:** the old goal was surviving hostile expert scrutiny. The
+new goal is **being understood by a smart stranger**. Clarity now outranks sophistication.
+An elegant method nobody can follow is worth less here than a plain one that lands.
 
-## The 7 criteria — checked on every plan, every change
+### Superseded, kept as record (do not delete without asking)
 
-These are the floor for a 9.5/10 idea. Push back on any proposal that weakens any one.
+CASSIS was real and the abstract *was accepted* (A10, 2026-06-17, poster) — that is a
+resume-worthy fact, not dead weight. Retained for the record: `Pilot Files/submission/`
+(accepted 2-page abstract + methods guide), the CASSIS framing in
+`Full Project Files/NHL_Marchand_Index.md`, and the conference details below.
+
+<details>
+<summary>Original CASSIS target (historical)</summary>
+
+**CASSIS — Cascadia Symposium on Statistics in Sports** (https://www.cascadiasports.com/)
+September 12, 2026 · SFU Harbour Centre, Vancouver · oral talks + poster session + panel.
+Audience: pro statisticians and analysts from teams, media, universities — stat-literate,
+hostile to overclaim. Abstract: 2-page PDF to `cascadia-sports@sfu.ca`, deadline May 31
+2026, review complete June 15 2026. Goal was best-in-show idea quality and an oral slot.
+
+</details>
+
+## The 7 criteria — now advisory, not the bar
+
+> **Status 2026-08-27:** these were the *CASSIS* bar. With the conference off they are no
+> longer a ship gate. Criteria **4 (per-claim uncertainty)**, **6 (honest limit-of-claim)**
+> and **7 (working artifact)** still bind — they are what makes the writeup credible and
+> are load-bearing for a resume piece. Criteria **1, 2, 3 and 5** are satisfied by work
+> already done and are not reasons to add scope. **Do not start new validation pathways to
+> chase criterion 2.** The project is in write-up, not expansion.
+
+Original text, retained:
 
 | # | Criterion | What "passes" looks like |
 |---|---|---|
@@ -30,7 +62,7 @@ These are the floor for a 9.5/10 idea. Push back on any proposal that weakens an
 | 6 | Honest limit-of-claim | Explicit "what we don't claim" on the poster, not in a footnote |
 | 7 | Working artifact | Demo, code repo, or interactive notebook — not slides alone |
 
-**Workflow hook:** when proposing or evaluating any change in this folder, explicitly check it against criteria 1–7. If it weakens any, flag the impact and offer a cheaper way to preserve that criterion. Failing one criterion drops the work to 9.0; failing two = below ship floor for CASSIS.
+**Workflow hook:** when proposing or evaluating any change in this folder, explicitly check it against criteria 1–7. If it weakens any, flag the impact and offer a cheaper way to preserve that criterion. **Superseded 2026-08-27** — see the status note above. Criteria 4, 6, 7 still bind; 1, 2, 3, 5 are advisory and are not a reason to add scope.
 
 ## Selected project + folder structure
 
@@ -65,7 +97,7 @@ When asked to work on "the project," it is the Marchand Index under `Full Projec
 - **No causal claims** we can't back with the data on hand.
 - **No revenue claims** for the Marchand Index — attention is explicitly a proxy.
 - **Pre-registration discipline:** hypotheses lock before any production run.
-- **LLM-derived features must be validated** (F1 + κ vs. hand labels) before appearing on the poster.
+- **LLM-derived features must be validated** (F1 + κ vs. hand labels) before appearing in the published writeup.
 
 ## Communication style (this project)
 
@@ -112,6 +144,53 @@ Where things go:
 
 When appending, also **fix what the addition invalidates** in that file — stale row counts, test counts, expected outputs. A file that half-reflects reality is worse than one that doesn't mention the change at all.
 
+## Git hygiene — a human has to read this
+
+The repo is read by a partner and — since 2026-08-27 — by anyone who lands on it as a
+public portfolio artifact. A push they can't scan is a push that doesn't get reviewed,
+and a messy history is visible to every future reader. On 2026-08-26 the working tree
+had **134 changed files and +1,014,065 diff lines**, of which 28 files were
+actual work. Rules that keep that from recurring:
+
+**Never mix data and code in one commit.** One commit does one kind of thing:
+
+| Prefix | Touches | Read by a reviewer? |
+|---|---|---|
+| `feat(aNN):` / `fix(aNN):` | `.py`, `.md` only | Yes — this is the work |
+| `data:` | `.csv`, `.jsonl` only | No — skim the message, skip the diff |
+| `chore:` | ignore files, moves, cleanup | Skim |
+
+A reviewer reads the `feat`/`fix` commits and skips the rest. That only works if
+the split is real, so never sneak a code change into a `data:` commit.
+
+**Commit at the end of every work session**, not the end of a branch. Fifty
+modified files means several sessions got fused into one unreadable blob.
+
+**Data stays tracked but stops flooding the diff.** `.gitattributes` sets
+`*.csv -diff` / `*.jsonl -diff`, so a regenerated pipeline output renders as
+"Binary files differ". Every byte is still versioned and `git show` still
+retrieves it — only the wall of text is gone. Do not remove this to "see" a data
+change; diff the file directly with a script instead.
+
+**Generated files are not committed.** `final_dataset/` is a snapshot of
+`marchand_index/raw/` built by `python export_final_dataset.py`; only its
+authored `README.md` is tracked. Committing a copy duplicated every data change
+and silently drifted (trends.csv, 34 rows). Same rule for anything else derived:
+if a script can rebuild it, gitignore it and commit the script.
+
+**Backups and logs live outside the repo.** `backup_*/` and `**/logs/` are
+ignored. Quarantined data sits in `../_marchand_quarantine/`, a sibling of the
+repo — never inside it.
+
+**Before pushing, check the shape of what you're handing over:**
+
+```
+git status --porcelain -uall | wc -l     # changed files; should be tens, not hundreds
+git diff --stat HEAD | tail -1           # diff lines; if it reads six digits, something is wrong
+python "Full Project Files/marchand_index/export_final_dataset.py" --check
+```
+
+
 ## Spec-to-code reconciliation — the md is not done when the code is done
 
 When a `.md` file describes code to be written (a plan, a spec, a README, an amendment) and then that code gets written, **go back and reconcile the md against what was actually built.** Writing the code is not the end of the task; the doc is part of the deliverable. Do this before reporting the work complete.
@@ -123,7 +202,7 @@ Reconcile in this order, and report what changed:
 3. **Decisions that changed during implementation** — the doc's approach vs. what the code actually does. If they differ, say which one is now authoritative and why.
 4. **Steps that turned out unnecessary, or new steps discovered** — mark them done/skipped/added rather than leaving the checklist looking untouched.
 
-**Critical exception — pre-registration files are NOT reconciled to the code.** `preregistration.md` (both copies) is a locked scientific record; the whole point is that it was written first. If the code diverges from a pre-registered rule, that is either (a) a bug in the code, fix the code, or (b) a genuine design change, which needs a **new numbered amendment** documenting the change and why. **Never silently edit a pre-registered rule to match what the code ended up doing** — that destroys the pre-registration's value and is the single easiest way to lose credibility with a CASSIS reviewer. Correcting a typo or a broken cross-reference is fine; changing a rule, threshold, or hypothesis is not.
+**Critical exception — pre-registration files are NOT reconciled to the code.** `preregistration.md` (both copies) is a locked scientific record; the whole point is that it was written first. If the code diverges from a pre-registered rule, that is either (a) a bug in the code, fix the code, or (b) a genuine design change, which needs a **new numbered amendment** documenting the change and why. **Never silently edit a pre-registered rule to match what the code ended up doing** — that destroys the pre-registration's value and is the single easiest way to lose credibility with any informed reader — the fact that hypotheses were locked first is one of the strongest things this project can show. Correcting a typo or a broken cross-reference is fine; changing a rule, threshold, or hypothesis is not.
 
 If reconciling would be substantial work, say so and ask — do not skip it silently and do not let the doc quietly rot.
 
@@ -158,7 +237,7 @@ The rules below are pre-locked design constraints for each candidate. They activ
 - K=10 peer matching, **never** single twin.
 - Both `OAQ_observed` (market-included) and `OAQ_portable` (market-stripped) reported. Headline = `OAQ_portable`.
 - `net_sentiment` is **never** in CES weights. Volume separated from sentiment.
-- LLM theme classifier must pass macro-F1 ≥ 0.60 AND Cohen's κ ≥ 0.55 before themes appear on the poster.
+- LLM theme classifier must pass macro-F1 ≥ 0.60 AND Cohen's κ ≥ 0.55 before themes appear in the published writeup.
 - H1–H4 pre-registered in `Full Project Files/docs/preregistration.md` BEFORE the model runs on production data.
 - Bootstrap CIs + `match_quality_flag` on every published OAQ.
 - Marchand framing: "high-skill player whose public salience and polarizing identity exceed what production-matched peers produce" — never "mid-skill."
@@ -172,8 +251,10 @@ The rules below are pre-locked design constraints for each candidate. They activ
 ## References
 
 - Vault defaults: `C:\Local Only\Ai projects\CLAUDE.md`
-- Conference: https://www.cascadiasports.com/
+- Conference (superseded 2026-08-27, not attending): https://www.cascadiasports.com/
 - NHL outcomes API: `https://api-web.nhle.com/`
 - OpenRouter: `https://openrouter.ai/api` (no `/v1`)
 - Live spec: `Full Project Files/NHL_Marchand_Index.md` · archived candidate: `Pilot Files/archive/NHL_Draft_Model.md`
-- Downstream value-prop backlog: `Full Project Files/marchand_index/value_propositions.md`
+- **Idea ledger — read before proposing anything:** `Full Project Files/marchand_index/value_propositions.md`
+  Part 1 = every idea already tried, with a WORKS / KINDA / DEAD / UNTESTED verdict. Part 2 = the unbuilt backlog (#1–#7).
+  **Add a row the day an idea gets tested**, not at session wrap-up.

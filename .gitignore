@@ -40,3 +40,21 @@ Thumbs.db
 *.out
 *.toc
 *.synctex.gz
+
+# Generated deliverable snapshot. `final_dataset/` is a copy of marchand_index/raw/
+# built by `python export_final_dataset.py`; committing it duplicated every data
+# change and drifted out of sync (trends.csv, 34 rows, caught 2026-08-26).
+# The authored README stays tracked; the copied data does not.
+Full Project Files/final_dataset/**
+!Full Project Files/final_dataset/README.md
+
+# Run logs (moved out of the package root into logs/ on 2026-08-26)
+**/logs/
+
+# Local backups / quarantined data — keep these OUTSIDE the repo
+backup_*/
+
+# superseded pilot: code removed 2026-08-31, local venv/cache left on disk
+"Pilot Files"/
+"Dashboard Inspo"/
+marchand_index/dashboard/

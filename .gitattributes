@@ -1,0 +1,10 @@
+# Data files are regenerated wholesale by the pipeline, so a re-run produces a
+# 100k+ line diff that no reviewer reads. `-diff` keeps them fully tracked and
+# versioned (nothing is lost, `git show` still has every byte) but renders the
+# change as "Binary files differ" so code review stays readable.
+*.csv -diff
+*.jsonl -diff
+
+# Not deliberately set: `* text=auto`. It would fix the LF/CRLF warnings but
+# renormalizes every tracked file at once, which is exactly the giant unreadable
+# diff this file exists to prevent. Do it alone, in its own commit.
