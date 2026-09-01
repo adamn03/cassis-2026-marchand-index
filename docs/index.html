@@ -328,8 +328,9 @@ footer p+p{margin-top:11px}
       <div class="s">per +1 SD of attention, on veteran re-signings. CI [&minus;6.5%, +6.5%]</div></div>
     <div class="tile"><div class="k">Ice-time premium, same model</div><div class="v">+43.8%</div>
       <div class="s">attention is worth at most a sixth of this, and plausibly nothing</div></div>
-    <div class="tile"><div class="k">Clearly above their peers</div><div class="v">26</div>
-      <div class="s">of 595 published players &mdash; 4.4%. Most of the league generates what its peers do</div></div>
+    <div class="tile"><div class="k">Clearly above their peers</div>
+      <div class="v" data-val="t1n">&mdash;</div>
+      <div class="s" data-val="t1s">Most of the league generates what its peers do</div></div>
   </div>
 </div>
 
@@ -472,21 +473,21 @@ footer p+p{margin-top:11px}
       points, seasons and draft position. Each replaces roughly half of every player's
       comparison group. The metric largely survives both, but not exactly.</p>
       <div class="figs">
-        <div><div class="fv a">0.92</div><div class="fl">season-detail rebuild</div><div class="fc">12 measures, 57% of peers replaced</div></div>
-        <div><div class="fv a">0.88</div><div class="fl">career-history rebuild</div><div class="fc">10 measures, 47% of peers replaced</div></div>
+        <div><div class="fv a">0.91</div><div class="fl">season-detail rebuild</div><div class="fc">12 measures, 57% of peers replaced</div></div>
+        <div><div class="fv a">0.89</div><div class="fl">career-history rebuild</div><div class="fc">10 measures, 47% of peers replaced</div></div>
       </div>
       <p>The career-history rebuild is reported as a test and is not published as a ranking.
       Comparing a 21-year-old against players with the same career behind him works only
       where such players exist, and at the edges of a career they do not.</p>
       <p>These two figures are why this page shows tiers instead of positions. Correlations
-      of 0.92 and 0.88 mean the broad picture holds &mdash; the same players sit near the
+      of 0.91 and 0.89 mean the broad picture holds &mdash; the same players sit near the
       top under any of the three definitions &mdash; while an individual position does not
       survive the change. The gap between those two facts is exactly the width of a
       tier.</p>
       <div class="why">
         <div><span class="lb w">What it means</span><span class="tx">The first objection to
         any residual is that it reflects the comparison group rather than the player. Two
-        unrelated redefinitions landing at 0.92 and 0.88, while each discards about half the
+        unrelated redefinitions landing at 0.91 and 0.89, while each discards about half the
         comparison group, is the evidence against that &mdash; and the evidence for
         reporting bands rather than ranks. It also disposes of the specific charge that the
         index measures accumulated fame: controlling for career length, games played and
@@ -789,6 +790,10 @@ footer p+p{margin-top:11px}
       if (v[k]) put(k, (v[k].rho >= 0 ? "+" : "") + v[k].rho.toFixed(3));
     });
     if (v.n) put("n", v.n);
+    const t1 = DATA.meta.tiers.mi.tiers[0];
+    put("t1n", t1.n);
+    put("t1s", `of ${DATA.meta.excluded.published_non_elc} published players — `
+             + `${t1.share}%. Most of the league generates what its peers do`);
 
     // The two-lists comparison is derived from the same rows the tables show,
     // so it can never disagree with them.
