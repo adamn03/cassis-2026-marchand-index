@@ -6,12 +6,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # marchand_index/
 import fetch_trends as ft  # noqa: E402
 
 
-def test_timeframe_is_the_widened_collection_window():
-    """A51/A52 widened collection. Trends is the one component that could NOT be
-    sliced back to the A11 window afterwards -- it stores a normalised mean, and
-    the weekly series was averaged away at fetch time. Recorded in
-    V-A11-Window and disclosed in the published methods."""
-    assert ft.TIMEFRAME == "2023-10-10 2026-04-17"
+def test_timeframe_is_the_locked_composite_window():
+    """Trends must be measured over the SAME window as every other component.
+
+    It briefly was not: A51/A52 widened `WINDOW_START_DATE` for the three-season
+    panel and this fetcher inherited it, putting the component on 921 days while
+    the rest sat on 365 (V-A11-Window). It could not be sliced back afterwards
+    -- the weekly series is averaged away at fetch time -- so it was re-fetched
+    on the correct window (V-Trends-Refetch). This asserts the composite window,
+    not the collection window, which is the distinction that was missed."""
+    import _common as c
+    assert ft.TIMEFRAME == "2025-04-18 2026-04-17"
+    assert ft.TIMEFRAME == (f"{c.COMPOSITE_WINDOW_START_DATE.isoformat()} "
+                            f"{c.WINDOW_END_DATE.isoformat()}")
+    assert c.COMPOSITE_WINDOW_DAYS == 365
 
 
 def test_anchor_is_locked_a16_value():

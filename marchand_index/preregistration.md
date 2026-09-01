@@ -2497,6 +2497,58 @@ Reddit + club Instagram + club X. λ = 0.5 is UNCHANGED.**
 > to and never rewritten.
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
 
+**V-Trends-Refetch (2026-09-01) — the last component moved onto the locked window.
+`trends_12mo` re-fetched at 365 days. Completes V-A11-Window; no design
+decision, so recorded here rather than as an amendment.**
+
+V-A11-Window restored four of the five composite measures to the A11/A14
+365-day window by slicing their stored daily vectors. `trends_12mo` could not be
+sliced — it stores a mean of a weekly index and the weekly series is averaged
+away at fetch time — so it was left on the 921-day collection window and
+disclosed. This closes that gap by re-fetching it.
+
+**The defect in the code, now fixed.** `fetch_trends.TIMEFRAME` was built from
+`WINDOW_START_DATE`, the *collection* constant A51/A52 widened. The comment
+defending it argued that a mean-of-weekly ratio against a fixed anchor is
+unit-free and therefore scale-comparable across window lengths. That is true of
+the **scale** and false of the **period**: a 921-day mean describes two and a
+half seasons of search interest, so any player whose popularity moved across
+those seasons was measured over a different span than the other four measures.
+`TIMEFRAME` now derives from `COMPOSITE_WINDOW_START_DATE`.
+
+**When the drift happened.** V-A11-Trends (2026-06-26) verified by live call that
+`trends.csv` was on the fixed 365-day window at that date, reporting `n=53`
+weeks. The stored file re-checked today read `n_weeks = 132`. The drift is
+therefore squarely attributable to A51/A52 widening `WINDOW_START_DATE`
+afterwards, not to the original fetch — and it went unnoticed because no test
+asserted the composite's window, only each fetcher's.
+
+**Naming fix, because the name caused the original bug.**
+`_common.LEGACY_WINDOW_START_DATE` is not legacy — it is the window A11 and A14
+lock the composite to. It is renamed `COMPOSITE_WINDOW_START_DATE` (old name
+retained as an alias), alongside `COMPOSITE_WINDOW_DAYS = 365`. Calling the
+live constant "legacy" is what let every `*_12mo` total drift onto the
+collection window without anyone noticing.
+
+**Result.** 771 rows, 755 non-null, 761 topic-resolved; `n_weeks` 132 → **53**
+on every row. Spearman between the old 921-day values and the new 365-day
+values is **0.9353**, so the window was not a cosmetic difference.
+
+**A regression the re-fetch introduced, caught and repaired.** The anchor
+player's own row is anchor ÷ anchor ≡ 1.0 by construction, and A35 clause 1
+pre-declared Sidney Crosby as a secondary anchor for that row alone. That
+re-measure runs as a separate mode (`fetch_trends.py --a35-marchand-row`), not
+as part of the main pass, so the fresh fetch left Brad Marchand null — the
+project's namesake with no Trends value. The mode was run; his row is
+`topic_secondary_anchor`, `n_weeks` 53, and nulls fell 16 → 15. Anyone
+re-fetching Trends must run that second pass or repeat this.
+
+**Effect.** All five composite measures now sit on the same pre-registered
+365-day window for the first time. Tiers are unchanged in shape
+(24 / 304 / 266 / 2); the held-out follower validation reads 0.729 on the
+composite and 0.455 on the residual. `raw/trends.pre_a11repair.csv` retains the
+921-day file.
+
 **V-A11-Window (2026-08-31) — the composite had silently drifted off the locked
 A11/A14 window onto the 921-day collection window. Detected, repaired, and
 re-run. No design decision; a locked rule was restored, so this is recorded

@@ -49,8 +49,8 @@ import unicodedata
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _common import (RAW_DIR, WINDOW_END_DATE, WINDOW_START_DATE,  # noqa: E402
-                     atomic_write_csv, load_csv, load_players)
+from _common import (COMPOSITE_WINDOW_START_DATE, RAW_DIR,  # noqa: E402
+                     WINDOW_END_DATE, atomic_write_csv, load_csv, load_players)
 
 # pytrends passes Retry(method_whitelist=...); urllib3>=2.0 renamed that kwarg
 # to allowed_methods. Shim the alias so TrendReq builds under urllib3 2.6.x.
@@ -69,12 +69,20 @@ _retry.Retry.__init__ = _retry_init
 
 from pytrends.request import TrendReq  # noqa: E402
 
-# A11 fixed window, sourced from _common (A51: start moved back to the 2023-24
-# opener, end unchanged). Still FIXED, not run-time anchored. 921 days keeps
-# Google Trends on WEEKLY resolution (it switches to monthly only past 5y), so
-# `trends_12mo` stays a mean-of-weekly ratio and remains scale-comparable with
-# the 365-day values — the ratio to the fixed anchor is unit-free.
-TIMEFRAME = f"{WINDOW_START_DATE.isoformat()} {WINDOW_END_DATE.isoformat()}"
+# The A11/A14 composite window: a fixed 365 days ending the last day of the
+# 2025-26 regular season. Fixed, never run-time anchored.
+#
+# This previously used WINDOW_START_DATE, which A51/A52 widened to 2023-10-10
+# for the three-season panel. The argument at the time was that a mean-of-weekly
+# ratio to a fixed anchor is unit-free and therefore scale-comparable across
+# window lengths. That is true of the SCALE and false of the PERIOD: a 921-day
+# mean describes two and a half seasons of search interest, so a player whose
+# popularity moved across those seasons is measured against a different span
+# than the other four components, which V-A11-Window restored to 365 days.
+# Trends was the one component that could not be sliced back after the fact --
+# the weekly series is averaged away at fetch time and never stored -- so it is
+# re-fetched on the correct window instead.
+TIMEFRAME = f"{COMPOSITE_WINDOW_START_DATE.isoformat()} {WINDOW_END_DATE.isoformat()}"
 ANCHOR_NAME = "Brad Marchand"         # A16 fixed anchor
 # A44: anchor MID pinned (verified live 2026-07-22; Google renamed entity
 # types to "<Team> <position>" — e.g. "Florida Panthers center" — breaking the

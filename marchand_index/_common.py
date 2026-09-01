@@ -52,8 +52,18 @@ WINDOW_END = WINDOW_END_DATE.strftime("%Y%m%d")       # "20260417"
 # Seasons overlapping the window (A22 season-filter rule, widened by A51).
 WINDOW_SEASONS = {"20232024", "20242025", "20252026"}
 
-# The legacy window, retained so gap-fill fetchers know what is already on disk.
-LEGACY_WINDOW_START_DATE = _dt.date(2025, 4, 18)
+# The window the COMPOSITE is defined on: a fixed 365 days ending the last day
+# of the 2025-26 regular season, locked by A11 (Reddit) and A14 (en-Wikipedia).
+#
+# This is NOT a legacy value. WINDOW_START_DATE above governs COLLECTION, which
+# A51/A52 widened to 2023-10-10 so the three-season panel could be built from one
+# pass; the composite's own window never moved. Calling this constant "LEGACY"
+# is what allowed every *_12mo total to drift onto the 921-day collection window
+# unnoticed -- see V-A11-Window in preregistration.md. The old name is kept as an
+# alias so existing imports still resolve.
+COMPOSITE_WINDOW_START_DATE = _dt.date(2025, 4, 18)
+COMPOSITE_WINDOW_DAYS = (WINDOW_END_DATE - COMPOSITE_WINDOW_START_DATE).days + 1  # 365
+LEGACY_WINDOW_START_DATE = COMPOSITE_WINDOW_START_DATE   # deprecated alias
 
 
 def window_epoch_bounds() -> tuple[int, int]:
