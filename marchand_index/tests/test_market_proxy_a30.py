@@ -30,10 +30,18 @@ def _df(mp):
                          "player_id": range(len(mp))})
 
 
-def test_primary_uses_all_three_a30_components():
+def test_primary_uses_the_a54_weighted_components():
+    """A54 replaced A30's equal-weight thirds with 0.40 social / 0.40
+    attendance / 0.20 population, and broadened the social block from Reddit
+    alone to Reddit + club Instagram + X. Population was carrying almost no
+    signal (club-level rho +0.055) while holding a third of the instrument."""
     mp = _mp()
     _, used, _ = co.compute_market_z(_df(mp), mp=mp)
-    assert used == co.MARKET_COMPONENTS_A30
+    assert "attendance_pct_capacity" in used
+    assert "metro_population" in used
+    assert "team_sub_subscribers" in used
+    assert co.A54_WEIGHTS == {"social": 0.40, "attendance": 0.40,
+                              "population": 0.20}
 
 
 def test_graceful_degradation_drops_incomplete_component():

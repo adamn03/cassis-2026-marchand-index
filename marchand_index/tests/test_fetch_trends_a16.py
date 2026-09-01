@@ -6,8 +6,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # marchand_index/
 import fetch_trends as ft  # noqa: E402
 
 
-def test_window_is_a11_fixed():
-    assert ft.TIMEFRAME == "2025-04-18 2026-04-17"
+def test_timeframe_is_the_widened_collection_window():
+    """A51/A52 widened collection. Trends is the one component that could NOT be
+    sliced back to the A11 window afterwards -- it stores a normalised mean, and
+    the weekly series was averaged away at fetch time. Recorded in
+    V-A11-Window and disclosed in the published methods."""
+    assert ft.TIMEFRAME == "2023-10-10 2026-04-17"
 
 
 def test_anchor_is_locked_a16_value():

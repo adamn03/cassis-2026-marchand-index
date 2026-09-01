@@ -8,8 +8,10 @@ import fetch_wikipedia as fw  # noqa: E402
 import compute_oaq as co  # noqa: E402
 
 
-def test_window_constants_are_the_fixed_a11_interval():
-    assert fto.WINDOW_START == "20250418"
+def test_window_constants_are_the_fixed_a29_interval():
+    # A51/A52 widened collection; A29 rule 1 (team and player windows identical)
+    # is what this test actually protects, and it still holds.
+    assert fto.WINDOW_START == "20231010"
     assert fto.WINDOW_END == "20260417"
     # Must stay identical to the player wiki fetcher (A29 rule 1).
     assert fto.WINDOW_START == fw.WINDOW_START

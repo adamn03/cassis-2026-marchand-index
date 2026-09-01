@@ -96,9 +96,12 @@ def test_apply_repair_null_total_is_empty_sentinel():
 
 # --- constants align with the en-wiki fetcher (A14) --------------------------
 
-def test_window_is_a14_fixed():
-    assert rw.WINDOW_START == "20250418"
-    assert rw.WINDOW_END == "20260417"
+def test_window_matches_the_en_wiki_fetcher():
+    """A19 repairs rows by re-fetching them, so its window must equal the
+    fetcher's -- that identity is the point, not the literal date."""
+    import fetch_wikipedia as fw
+    assert rw.WINDOW_START == fw.WINDOW_START == "20231010"
+    assert rw.WINDOW_END == fw.WINDOW_END == "20260417"
 
 
 def test_pv_fields_match_fetcher_schema():

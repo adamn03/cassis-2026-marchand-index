@@ -106,7 +106,10 @@ def test_renorm_equals_imputing_the_weighted_mean_of_the_present_components():
     nulled = co.apply_null_taxonomy(_null_trends(df.copy(), 3, "no_hockey_topic"))
     er_renorm, _ = co.compute_engagement_raw(nulled)
 
-    comp_z = {c: co.zscore_array(nulled[c].to_numpy(dtype=float))
+    # A57: the composite stabilises each component before standardising,
+    # so the hand-computed comparison has to apply the same transform or
+    # it is checking the renorm identity on a different scale.
+    comp_z = {c: co.zscore_array(co.stabilize(nulled[c].to_numpy(dtype=float)))
               for c in co.COMPONENTS}
     present = [c for c in co.COMPONENTS if c != "trends_12mo"]
     w = sum(co.WEIGHTS[c] for c in present)

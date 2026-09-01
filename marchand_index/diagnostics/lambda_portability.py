@@ -26,18 +26,26 @@ N_BOOT = 1000
 MIN_PEERS = 5
 
 
-def event_windows(t_idx: int) -> tuple[range, range]:
-    """Pre/post day-index ranges for an event at vector index t_idx,
-    clipped to [0, 365): pre=[t-63, t-8], post=[t+8, t+63], ±7 excluded."""
+def event_windows(t_idx: int, n: int = WINDOW_LEN) -> tuple[range, range]:
+    """Pre/post day-index ranges for an event at vector index t_idx, clipped to
+    [0, n): pre=[t-63, t-8], post=[t+8, t+63], the +/-7 days around the event
+    excluded.
+
+    `n` defaults to the collection window but MUST be overridden with the actual
+    series length when one is in hand. Clipping to a module constant while
+    indexing a caller-supplied list assumes every vector is exactly that long;
+    when A51 widened the window from 365 to 921 that assumption broke and this
+    function began indexing past the end of any shorter series.
+    """
     pre = range(max(0, t_idx - 63), max(0, t_idx - 7))       # t-63 .. t-8
-    post = range(min(WINDOW_LEN, t_idx + 8), min(WINDOW_LEN, t_idx + 64))
+    post = range(min(n, t_idx + 8), min(n, t_idx + 64))
     return pre, post
 
 
 def delta_log_attention(daily: list[int], t_idx: int, min_days: int = 30) -> float | None:
     """log1p(mean post) - log1p(mean pre); None if either side < min_days days."""
     import math
-    pre, post = event_windows(t_idx)
+    pre, post = event_windows(t_idx, len(daily))
     if len(pre) < min_days or len(post) < min_days:
         return None
     mp = sum(daily[i] for i in pre) / len(pre)

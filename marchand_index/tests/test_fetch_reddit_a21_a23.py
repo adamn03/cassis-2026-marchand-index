@@ -116,8 +116,13 @@ def test_unique_surname_always_attributes():
 # --------------------------------------------------------------------------- #
 # A22 — sub selection                                                          #
 # --------------------------------------------------------------------------- #
-def test_counting_subs_uta_includes_predecessor():
-    assert fr.counting_subs({"UTA"}) == ["hockey", "utahmammoth", "UtahHockey"]
+def test_counting_subs_uta_includes_both_predecessors():
+    """The franchise has had three homes inside the collection window: Arizona
+    (r/Coyotes, 2023-24), Utah Hockey Club (r/UtahHockey, 2024-25) and Utah
+    Mammoth (r/utahmammoth, 2025-26). Dropping r/Coyotes would silently truncate
+    a third of the window for these players."""
+    assert fr.counting_subs({"UTA"}) == [
+        "hockey", "utahmammoth", "UtahHockey", "Coyotes"]
 
 
 def test_counting_subs_traded_two_teams():
@@ -196,22 +201,27 @@ def test_scan_corpus_dedups_crosspost_across_subs(tmp_path):
 # --------------------------------------------------------------------------- #
 # Corpus puller — window + resume                                              #
 # --------------------------------------------------------------------------- #
-def test_window_cutoffs_match_a11():
+def test_corpus_window_covers_the_widened_collection_interval():
+    """The corpus is pulled over the full A51/A52 window; the A11 subset is
+    recovered afterwards from each submission's created_utc (V-A11-Window)."""
     lower, upper = frc.window_cutoffs()
-    assert lower == 1744934400        # 2025-04-18 00:00 UTC
+    assert lower == 1696896000        # 2023-10-10 00:00 UTC
     assert upper == 1776470400        # 2026-04-18 00:00 UTC (exclusive)
-    assert (upper - lower) == 365 * 86400
+    assert (upper - lower) == 921 * 86400
 
 
-def test_load_part_drops_torn_tail_and_dedups(tmp_path):
+def test_load_jsonl_drops_torn_tail_and_dedups(tmp_path):
     part = tmp_path / "hockey.jsonl.part"
     good1 = json.dumps({"id": "a1", "created_utc": 1750000000, "title": "t"})
     good2 = json.dumps({"id": "a2", "created_utc": 1750000100, "title": "t"})
     dup = good2
     torn = '{"id": "a3", "created_'
     part.write_text("\n".join([good1, good2, dup, torn]), encoding="utf-8")
-    seen, max_ts, lines = frc.load_part(part)
+    # load_part was renamed load_jsonl and now also reports min_ts, so a
+    # partially-pulled file can be resumed from either end of its range.
+    seen, min_ts, max_ts, lines = frc.load_jsonl(part)
     assert seen == {"a1", "a2"}
+    assert min_ts == 1750000000
     assert max_ts == 1750000100
     assert len(lines) == 2
 

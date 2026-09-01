@@ -14,7 +14,9 @@ def test_event_windows_interior():
 
 
 def test_event_windows_clip_at_window_end():
-    pre, post = event_windows(340)               # deadline-class mover
+    # Clipping is relative to the series length passed in, not to a global --
+    # a 365-day vector must clip at 364 even though collection now runs 921.
+    pre, post = event_windows(340, 365)          # deadline-class mover
     assert max(post) == 364 and len(post) == 17  # truncated
 
 

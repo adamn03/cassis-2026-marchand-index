@@ -106,18 +106,30 @@ def test_separator_names_have_nonzero_mentions(name, counts):
     assert row.reddit_mentions_12mo.iloc[0] > 0, f"{name} still scoring zero"
 
 
-def test_only_genuine_zero_remains(counts):
+def test_no_separator_name_scores_a_false_zero(counts):
     """Pre-A50 there were 10 `ok` rows reporting a false zero, every one of
-    them a hyphen/apostrophe name. A genuine zero is still possible for a
-    fringe player, so this pins the survivor by name rather than asserting
-    none can exist — if a NEW name appears here, a matcher defect is back.
+    them a hyphen/apostrophe name.
+
+    This originally pinned the single legitimate survivor by name. That became
+    unstable once V-A11-Window narrowed the counting window from 921 days back
+    to the pre-registered 365: a fringe player with a couple of mentions spread
+    over two and a half seasons can legitimately have none in one year, and the
+    genuine-zero roster grew from 1 to 9 without any matcher defect. What the
+    test actually guards is that no SEPARATOR name is among them, which is
+    checked directly and does not drift with the window.
     """
     zeros = counts[(counts.reddit_mentions_12mo == 0)
                    & (counts.reddit_status == "ok")]
-    assert sorted(zeros.full_name) == ["Maksymilian Szuber"]
-    # A genuine zero has nothing pending: no ambiguous, no guard-filtered.
-    assert (zeros.ambiguous_mentions == 0).all()
+    assert not (set(zeros.full_name) & set(AFFECTED)),         "a hyphen/apostrophe name is scoring zero again -- matcher regression"
+    # The common-word guard must never be the reason someone reads zero --
+    # that would be the guard over-firing rather than a genuine absence.
     assert (zeros.guard_filtered_mentions == 0).all()
+    # Ambiguous mentions ARE allowed to be non-zero here. A15's collision guard
+    # withholds attribution when a surname matches two pooled players, so a
+    # player can legitimately have every mention withheld: Fredrik Olofsson
+    # reads 0 counted / 43 ambiguous because they cannot be separated from
+    # Victor Olofsson inside the 365-day window. That is the guard working, and
+    # the count is disclosed rather than silently attributed.
 
 
 def test_separator_names_are_not_flagged_measured_zero(counts):

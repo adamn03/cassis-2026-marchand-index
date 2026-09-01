@@ -56,9 +56,14 @@ def venue_team(subreddit: str, venue_map: dict[str, str]) -> str | None:
     return venue_map.get(key)
 
 
-# `mover_dates.csv` names teams by nickname; everything else uses the project's
-# own team codes (LA not LAK, NAS not NSH, MON not MTL, VEG not VGK). Both Utah
-# names map to UTA because the franchise was renamed mid-window.
+# `mover_dates.csv` originally named teams by nickname; everything else uses the
+# project's own team codes (LA not LAK, NAS not NSH, MON not MTL, VEG not VGK).
+# Both Utah names map to UTA because the franchise was renamed mid-window.
+#
+# A38's move to dated game logs changed that file to carry NHL team codes
+# instead (build_mover_list.canon_team). Identity entries for every code are
+# appended below the nickname block, so the map resolves either vintage and a
+# re-generated mover file cannot silently drop every row.
 NICKNAME_TO_CODE = {
     "Ducks": "ANA",
     "Bruins": "BOS",
@@ -95,6 +100,14 @@ NICKNAME_TO_CODE = {
     "Capitals": "WAS",
     "Jets": "WPG",
 }
+# Game-log vintage: NHL codes, plus the project-code aliases they differ on.
+NICKNAME_TO_CODE.update({c: c for c in set(NICKNAME_TO_CODE.values())})
+NICKNAME_TO_CODE.update({
+    "LAK": "LA", "NSH": "NAS", "MTL": "MON", "VGK": "VEG",
+    "SJS": "SJ", "TBL": "TB", "NJD": "NJ", "WSH": "WAS",
+    "ARI": "UTA", "UTA": "UTA",
+})
+
 
 
 def build_move_timeline(

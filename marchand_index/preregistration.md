@@ -2497,4 +2497,66 @@ Reddit + club Instagram + club X. λ = 0.5 is UNCHANGED.**
 > to and never rewritten.
 **Verification log (not amendments — no design decision, no tuning; recorded for audit).**
 
+**V-A11-Window (2026-08-31) — the composite had silently drifted off the locked
+A11/A14 window onto the 921-day collection window. Detected, repaired, and
+re-run. No design decision; a locked rule was restored, so this is recorded
+here rather than as an amendment.**
+
+**The defect.** A11 (Reddit) and A14 (en-Wikipedia) lock the attention window at
+a fixed **365 days ending 2026-04-17**. A51/A52 widened
+`_common.WINDOW_START_DATE` to **2023-10-10** so the three-season panel could be
+built from a single pass of collection. Every fetcher imports that constant,
+so the `*_12mo` totals became **921-day** totals — two and a half seasons,
+including two offseasons — while still named `12mo`, still described as a
+12-month window in `results.md`, and still matched against a **single** season
+of production in §6.
+
+The error is not a rounding artifact. Verified on the pooled set:
+
+| Column | stored (921 d) | true A11 (365 d) | ratio |
+|---|---|---|---|
+| `wiki_12mo` median | 81,716 | 32,293 | 2.53 |
+| `wiki_intl_12mo` median | 14,318 | 5,712 | 2.51 |
+| `reddit_mentions_12mo` median | 349 | 132 | 2.64 |
+
+The stored value equalled the full 921-day sum for **956 of 973** rows.
+
+**Why it is a bug and not an amendment.** A51 widened *collection*; nothing in
+A51 or A52 amends the §3/A11/A14 window that defines the composite, and both
+amendments state the composite is unchanged. The code diverged from a
+pre-registered rule, which §14 resolves as "fix the code". Restoring A11 needs
+no new amendment and grants no new latitude — it returns the composite to the
+window that was locked before any of this data existed.
+
+**The repair (`repair_window_a11.py`).** No re-fetch: the daily vectors already
+carry all 921 days, and the A11 window is exactly their last 365 entries.
+
+- `wiki_12mo` — recomputed as the tail-365 sum of `wiki_daily.daily_views`.
+- `wiki_intl_12mo` — same, per edition, then summed across editions.
+- `reddit_mentions_12mo` / `reddit_upvotes_12mo` — `reddit_detail.csv` carries no
+  date, but the cached corpus retains `created_utc` per submission and joins on
+  `submission_id` at **100.0%** (the recovery route already recorded as WORKS in
+  `value_propositions.md`). Counts recomputed over submissions falling inside
+  the A11 interval.
+- A player whose daily vector is shorter than 365 days is **left untouched**
+  rather than summed as though complete, which would understate him against a
+  fully-observed pool.
+- Pre-repair files retained as `raw/*.pre_a11repair.csv`.
+
+**One component is NOT repaired, and it is disclosed rather than mixed.**
+`trends_12mo` is a **mean** of a weekly index normalised to a fixed anchor
+(A16/A44), not a window sum, so it does not scale with window length the way a
+total does; and the weekly series was averaged away at fetch time and not
+retained (`value_propositions.md`: "Google Trends weekly series — DEAD,
+unrecoverable"), so a 365-day mean cannot be reconstructed without a re-fetch.
+It therefore remains on the 921-day timeframe while the other four components
+sit on 365 days. This is stated in the published methods; it is the one
+component whose window does not match, it carries §4/A12 weight 0.16, and a
+re-fetch storing the weekly series is the fix whenever Trends is next collected.
+
+**Effect.** Every published number changes. The pre-repair figures are retained
+in git history per §13. The peer vector, pool, denominators, λ (A56), the A57
+transform, and the tier construction are all unchanged — only the four
+component totals the composite is built from.
+
 **V-A11-Trends (2026-06-26) — live spot-check confirming `raw/trends.csv` was fetched on the A11 fixed window, not a run-anchored one.** `fetch_trends.py:52` uses `timeframe="2025-04-18 2026-04-17"`, but the stored `trends.csv` carries `fetch_date=2026-06-20` and the fixed-window code only landed 2026-06-20 13:21 (commit `0c3ccbe`); whether the file predated the fix that day was not decidable from git/data alone. A single live `pytrends` call resolves it (the test is window-vintage, so one salient distinctive-name player suffices). **Player: Connor McDavid** (stored `trends_12mo = 24.7358`; he had a 2026 playoff run, so the two windows diverge maximally). Result: a fresh **fixed-window** [2025-04-18, 2026-04-17] fetch gives mean **26.13** (n=53) — **5.6 % from stored, within Trends sampling noise → MATCH**, i.e. the stored file used the fixed window. The same player's **run-anchored** (`today 12-m`) series shows the expected post-window playoff spike the fixed window correctly excludes — weeks 2026-04-19 = 32, **2026-04-26 = 47 (peak)**, 2026-05-03 = 33, all after the 2026-04-17 window end. Conclusion: the `trends` component (§4/A12 weight 0.16) is on the A11 window and **excludes the 2026-playoff confound**; the SESSION residual is closed by live evidence. No file or weight changes; verification only. (One live call; perishable, so not re-run across the set.)

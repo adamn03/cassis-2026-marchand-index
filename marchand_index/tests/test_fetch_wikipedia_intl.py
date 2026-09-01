@@ -10,16 +10,27 @@ def test_whitelist_is_locked_seven_editions():
     assert fwi.WHITELIST == ("sv", "fi", "cs", "ru", "de", "sk", "fr")
 
 
-def test_window_is_a11_fixed_hardcoded():
-    assert fwi.WINDOW_START == "20250418"
+def test_collection_window_is_the_widened_a51_interval():
+    """A51/A52 widened COLLECTION to 2023-10-10 so the three-season panel comes
+    from one pass. The composite is still the A11 365-day window -- it is sliced
+    back out of the daily vectors by repair_window_a11.py, not re-fetched."""
+    assert fwi.WINDOW_START == "20231010"
     assert fwi.WINDOW_END == "20260417"
 
 
 def test_window_strings_returns_fixed_window_and_today_fetch_date():
     import datetime as dt
     start, end, fetch_date = fwi.window_strings()
-    assert (start, end) == ("20250418", "20260417")
+    assert (start, end) == ("20231010", "20260417")
     assert fetch_date == dt.date.today().isoformat()
+
+
+def test_a11_window_is_still_recoverable_from_the_widened_collection():
+    """The composite's locked window must remain a suffix of what is collected,
+    or V-A11-Window's repair could not slice it back out."""
+    import _common as c
+    assert c.LEGACY_WINDOW_START_DATE > c.WINDOW_START_DATE
+    assert (c.WINDOW_END_DATE - c.LEGACY_WINDOW_START_DATE).days + 1 == 365
 
 
 # --- Task 2: sitelink whitelist filtering ---

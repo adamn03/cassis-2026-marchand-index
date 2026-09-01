@@ -319,7 +319,10 @@ def test_unmeasurable_renormalizes_weights():
     out = _apply_reddit_null(df)
     er, _ = co.compute_engagement_raw(out)
 
-    comp_z = {c: co.zscore_array(out[c].to_numpy(dtype=float))
+    # A57: the composite stabilises each component before standardising,
+    # so the hand-computed comparison has to apply the same transform or
+    # it is checking the renorm identity on a different scale.
+    comp_z = {c: co.zscore_array(co.stabilize(out[c].to_numpy(dtype=float)))
               for c in co.COMPONENTS}
     present = [c for c in co.COMPONENTS
                if c not in ("reddit_mentions_12mo", "reddit_upvotes_12mo")]

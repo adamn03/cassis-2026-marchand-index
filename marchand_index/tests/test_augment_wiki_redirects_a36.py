@@ -41,9 +41,25 @@ class _FakeSession:
         return _Resp(404)
 
 
-_FULL = "/daily/20250418/20260417"
-_H1 = "/daily/20250418/20251017"
-_H2 = "/daily/20251018/20260417"
+# Derived from the module's own constants rather than hardcoded: A51 widened
+# the window to 921 days and replaced the two fixed halves with 180-day chunks,
+# which silently broke every fixture keyed to the old URLs.
+import datetime as _dt
+
+
+def _chunk_urls():
+    out = []
+    for off in range(0, awr.WINDOW_DAYS, 180):
+        c0 = awr.WINDOW_START_DATE + _dt.timedelta(days=off)
+        c1 = min(awr.WINDOW_START_DATE + _dt.timedelta(days=off + 179),
+                 awr.WINDOW_START_DATE + _dt.timedelta(days=awr.WINDOW_DAYS - 1))
+        out.append(f"/daily/{c0:%Y%m%d}/{c1:%Y%m%d}")
+    return out
+
+
+_FULL = f"/daily/{awr.WINDOW_START}/{awr.WINDOW_END}"
+_CHUNKS = _chunk_urls()
+_H1, _H2 = _CHUNKS[0], _CHUNKS[1]
 
 
 def test_parse_redirects_extracts_and_filters_disambig():
@@ -87,7 +103,7 @@ def test_full_window_200_returns_complete_series_without_splitting():
     s = _FakeSession({_FULL: _Resp(200, items)})
     out = fetch_daily_pairs(s, "en.wikipedia", "Leo Carlsson")
     assert out == [("2025041800", 71385)]
-    assert not any(_H1 in u or _H2 in u for u in s.calls)  # no split needed
+    assert not any(c in u for c in _CHUNKS for u in s.calls)  # no split needed
 
 
 def test_one_half_404_returns_none_not_partial():
@@ -111,15 +127,14 @@ def test_other_half_404_also_returns_none():
     assert fetch_daily_pairs(s, "en.wikipedia", "Zach Whitecloud") is None
 
 
-def test_both_halves_200_recovers_complete_merged_series():
-    # Genuine recovery: full flakes but BOTH halves 200 -> merged, non-null.
-    s = _FakeSession({
-        _FULL: _Resp(404),
-        _H1: _Resp(200, [{"timestamp": "2025041800", "views": 100}]),
-        _H2: _Resp(200, [{"timestamp": "2025120100", "views": 250}]),
-    })
-    out = fetch_daily_pairs(s, "en.wikipedia", "Someone")
-    assert out == [("2025041800", 100), ("2025120100", 250)]
+def test_every_chunk_200_recovers_complete_merged_series():
+    # Genuine recovery: the full request flakes but EVERY chunk 200s, so the
+    # merged series is complete and may safely replace the stored value.
+    resp = {_FULL: _Resp(404)}
+    for i, c in enumerate(_CHUNKS):
+        resp[c] = _Resp(200, [{"timestamp": f"20250418{i:02d}", "views": 100 + i}])
+    out = fetch_daily_pairs(_FakeSession(resp), "en.wikipedia", "Someone")
+    assert out == [(f"20250418{i:02d}", 100 + i) for i in range(len(_CHUNKS))]
 
 
 def test_full_404_all_sub_windows_404_returns_none():

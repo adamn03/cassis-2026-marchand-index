@@ -20,19 +20,23 @@ def _raw_row(pid, sit, ct=0.0, xt=0.0, ozs=0.0, dzs=0.0, ice=1000.0, gp=10,
 
 
 def test_url_and_locked_constants():
-    assert fmp.MP_URL == (
+    # A51 turned the single MP_URL constant into mp_url(year) so the three
+    # season files can be pulled in one pass; PANEL_YEARS records which.
+    assert fmp.mp_url("2025") == (
         "https://moneypuck.com/moneypuck/playerData/seasonSummary/"
         "2025/regular/skaters.csv"
     )
+    assert fmp.PANEL_YEARS == ["2023", "2024", "2025"]
     assert fmp.START_YEAR == "2025"
     assert fmp.LOCKED_SITUATION == "5on5"
     assert fmp.ONICE_MIN_ICETIME_5V5 == 150
 
 
 def test_out_fields_match_spec_schema():
+    # A51 added `season`: the file is now one row per player-season.
     assert fmp.OUT_FIELDS == [
-        "player_id", "nhl_player_id", "full_name", "team_code", "situation",
-        "cf_pct", "xgf_pct", "ozs_pct", "mp_icetime_5v5",
+        "player_id", "nhl_player_id", "full_name", "team_code", "season",
+        "situation", "cf_pct", "xgf_pct", "ozs_pct", "mp_icetime_5v5",
         "mp_games_played_5v5", "n_team_rows", "onice_status", "fetch_date",
     ]
 
