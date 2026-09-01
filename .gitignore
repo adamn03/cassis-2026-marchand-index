@@ -55,8 +55,8 @@ Full Project Files/final_dataset/**
 backup_*/
 
 # superseded pilot: code removed 2026-08-31, local venv/cache left on disk
-"Pilot Files"/
-"Dashboard Inspo"/
+Pilot Files/
+Dashboard Inspo/
 marchand_index/dashboard/
 
 # the published dashboard is a deliverable, not a scratch html file
