@@ -8,7 +8,7 @@ That gap is measurable. This project measures it for all 771 skaters in the NHL.
 **Accepted for [CASSIS 2026](https://www.cascadiasports.com/) — the Cascadia Symposium on
 Statistics in Sports.**
 
-### ➜ **[Open the dashboard](https://claude.ai/code/artifact/88e1f128-bce0-45d8-ab3a-743bd90a6c54)**
+### ➜ **[Open the dashboard](https://adamn03.github.io/cassis-2026-marchand-index/)**
 
 ---
 
