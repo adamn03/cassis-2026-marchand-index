@@ -16,25 +16,25 @@
     "V1a": {
       "test": "Spearman rho(OAQ_portable, jersey_rank) over rank overlap",
       "metric": "spearman_rho",
-      "value": -0.5030303030303029,
+      "value": -0.4666666666666666,
       "ci95": [
-        -0.9126875,
-        0.14498510427010897
+        -0.9007246376811594,
+        0.20786163522012552
       ],
       "n": 10,
       "floor": 0.4,
       "target": 0.5,
       "underpowered": false,
       "convention": "jersey_rank is 1=best, so a NEGATIVE rho indicates AGREEMENT (high OAQ_portable -> low/better rank number).",
-      "perm_p": 0.07237927620723793
+      "perm_p": 0.08945910540894592
     },
     "V1b": {
       "test": "AUC OAQ_portable discriminating jersey_list_member (1/0) \u2014 A31 confirmatory primary",
       "metric": "auc",
-      "value": 0.8982826948480845,
+      "value": 0.8939422532553312,
       "ci95": [
-        0.8096386110586903,
-        0.9674466880543499
+        0.7951405925646349,
+        0.9682982638233629
       ],
       "ci_method": "stratified player-level bootstrap (A31 rule 1): each draw resamples positives and negatives separately, with replacement; 1000 draws, seed 20260526; Hanley & McNeil 1982",
       "n_total": 771,
@@ -52,12 +52,12 @@
         "power_at_floor": 0.8182763669222013,
         "power_at_target": 0.9918326059429772
       },
-      "mwu_one_sided_p": 1.59949319027854e-07,
+      "mwu_one_sided_p": 2.1449663786292289e-07,
       "baselines": {
         "engagement_raw": {
-          "auc": 0.9885827514625402,
+          "auc": 0.9879222494810341,
           "ci95": [
-            0.9754670692583506,
+            0.974429137573127,
             0.9966974900924703
           ]
         },
@@ -69,28 +69,28 @@
           ]
         },
         "OAQ_observed": {
-          "auc": 0.8982826948480845,
+          "auc": 0.8939422532553312,
           "ci95": [
-            0.8096386110586903,
-            0.9674466880543499
+            0.7951405925646349,
+            0.9682982638233629
           ]
         }
       },
       "delta_auc_paired": {
         "OAQ_portable_minus_engagement_raw": {
-          "delta": -0.0927844876391772,
-          "point": -0.09030005661445561,
+          "delta": -0.09653547839214947,
+          "point": -0.09397999622570297,
           "ci95": [
-            -0.17221409699943388,
-            -0.028293074164936816
+            -0.1828010001887148,
+            -0.027441498395923775
           ]
         },
         "OAQ_portable_minus_ppg": {
-          "delta": -0.07505698084562183,
-          "point": -0.07224111467572503,
+          "delta": -0.07948960964350824,
+          "point": -0.0765815562684784,
           "ci95": [
-            -0.16036917261968392,
-            0.001599027867895675
+            -0.17648029253104974,
+            0.00246351144099763
           ]
         }
       }
@@ -98,10 +98,10 @@
     "V2": {
       "test": "AUC OAQ_portable discriminating fan-vote All-Star union 2022+2023+2024 (A33; asg2024_member column, 1/0)",
       "metric": "auc",
-      "value": 0.7698412698412699,
+      "value": 0.7516190476190476,
       "ci95": [
-        0.657020081599768,
-        0.8657439047984579
+        0.6318454621860724,
+        0.8552700114898506
       ],
       "n_total": 771,
       "n_members": 21,
@@ -109,16 +109,16 @@
       "target": 0.55,
       "underpowered": false,
       "note": "A33 union membership (2022 captains + Last Men In, 2023 fan ballot, 2024 fan vote); no season published per-player vote totals, so V2 is AUC; no Spearman computed.",
-      "perm_p": 9.99990000099999e-06
+      "perm_p": 2.999970000299997e-05
     },
     "V3": {
       "test": "aggregation-consistency check (A29): Spearman rho(sum_OAQ_observed_per_team, team_wiki_12mo) across n teams",
       "pathway_class": "shared-method with the wiki_en composite component (A29 rule 4) \u2014 NOT counted toward the >=3-independent-pathways claim",
       "metric": "spearman_rho",
-      "value": 0.06085043988269794,
+      "value": 0.043255131964809374,
       "ci95": [
-        -0.33092905779845455,
-        0.4105048052507593
+        -0.3311779489085337,
+        0.39564000975872554
       ],
       "n": 32,
       "floor": 0.4,
@@ -127,10 +127,10 @@
       "outcome_signal": "team Wikipedia 12-mo pageviews (A6 graceful-degradation: Reddit subscriber 403)",
       "predictor": "sum of OAQ_observed across each team's 5 pilot players",
       "robustness_eng_raw": {
-        "rho": 0.11876832844574779,
+        "rho": 0.11107038123167154,
         "ci95": [
-          -0.2681717300839505,
-          0.47200653234932555
+          -0.27084851675064575,
+          0.4599878751393722
         ],
         "note": "mechanical baseline: sum of engagement_raw (no peer-skill control)"
       },
@@ -168,19 +168,19 @@
         "WAS",
         "WPG"
       ],
-      "perm_p": 0.3722662773372266
+      "perm_p": 0.4078659213407866
     },
     "BH_secondary": {
       "V2": {
-        "p": 9.99990000099999e-06,
+        "p": 2.999970000299997e-05,
         "supported": true
       },
       "V1a": {
-        "p": 0.07237927620723793,
+        "p": 0.08945910540894592,
         "supported": false
       },
       "V3": {
-        "p": 0.3722662773372266,
+        "p": 0.4078659213407866,
         "supported": false
       }
     }
@@ -189,10 +189,10 @@
     "PA": {
       "description": "OAQ_portable aligns with independent jersey demand (V1 Spearman >= 0.40)",
       "metric": "spearman_rho (signed; negative = agreement)",
-      "value": -0.5030303030303029,
+      "value": -0.4666666666666666,
       "ci95": [
-        -0.9126875,
-        0.14498510427010897
+        -0.9007246376811594,
+        0.20786163522012552
       ],
       "n": 10,
       "floor": 0.4,
@@ -203,10 +203,10 @@
       "description": "OAQ_portable aligns with independent fan voting (V2 Spearman >= 0.45)",
       "metric": "spearman_rho (unavailable: asg2024 membership-only)",
       "value": null,
-      "auc_proxy": 0.7698412698412699,
+      "auc_proxy": 0.7516190476190476,
       "auc_ci95": [
-        0.657020081599768,
-        0.8657439047984579
+        0.6318454621860724,
+        0.8552700114898506
       ],
       "n_members": 21,
       "floor": 0.45,
@@ -216,20 +216,20 @@
     "PD": {
       "description": "Sum of OAQ_observed per team aligns with team Wikipedia pageviews \u2014 aggregation-consistency check, A29: shared-method, not an independent pathway (V3 Spearman >= 0.40)",
       "metric": "spearman_rho",
-      "value": 0.06085043988269794,
+      "value": 0.043255131964809374,
       "ci95": [
-        -0.33092905779845455,
-        0.4105048052507593
+        -0.3311779489085337,
+        0.39564000975872554
       ],
       "n": 32,
       "floor": 0.4,
       "underpowered": false,
       "verdict": "disconfirmed",
       "robustness_eng_raw": {
-        "rho": 0.11876832844574779,
+        "rho": 0.11107038123167154,
         "ci95": [
-          -0.2681717300839505,
-          0.47200653234932555
+          -0.27084851675064575,
+          0.4599878751393722
         ],
         "note": "mechanical baseline: sum of engagement_raw (no peer-skill control)"
       }
@@ -238,40 +238,40 @@
       "description": ">=3 of top-10 by engagement_raw displaced out of top-10 by marchand_index_rawcap (A49.2 headline); both lists on the non-ELC pool",
       "top10_engagement_raw": [
         "Connor McDavid",
-        "Alex Ovechkin",
         "Sidney Crosby",
-        "Auston Matthews",
+        "Alex Ovechkin",
+        "Jack Hughes",
         "Brad Marchand",
         "Quinn Hughes",
-        "Jack Hughes",
+        "Auston Matthews",
         "Mitch Marner",
         "Leon Draisaitl",
-        "Matthew Tkachuk"
+        "Nathan MacKinnon"
       ],
       "top10_marchand_index_rawcap": [
-        "Matt Rempe",
         "Alexandre Texier",
         "Joe Veleno",
+        "Matt Rempe",
         "Arber Xhekaj",
         "Brent Burns",
         "Michael Kesselring",
         "Pavol Regenda",
-        "Corey Perry",
         "Spencer Stastney",
-        "Nick Cousins"
+        "Nick Cousins",
+        "Corey Perry"
       ],
       "n_displaced": 10,
       "displaced_names": [
         "Connor McDavid",
-        "Alex Ovechkin",
         "Sidney Crosby",
-        "Auston Matthews",
+        "Alex Ovechkin",
+        "Jack Hughes",
         "Brad Marchand",
         "Quinn Hughes",
-        "Jack Hughes",
+        "Auston Matthews",
         "Mitch Marner",
         "Leon Draisaitl",
-        "Matthew Tkachuk"
+        "Nathan MacKinnon"
       ],
       "floor": 3,
       "verdict": "confirmed"
@@ -289,25 +289,25 @@
       "V1a": {
         "test": "Spearman rho(OAQ_portable, jersey_rank) over rank overlap",
         "metric": "spearman_rho",
-        "value": -0.5030303030303029,
+        "value": -0.4666666666666666,
         "ci95": [
-          -0.9126875,
-          0.14498510427010897
+          -0.9007246376811594,
+          0.20786163522012552
         ],
         "n": 10,
         "floor": 0.4,
         "target": 0.5,
         "underpowered": false,
         "convention": "jersey_rank is 1=best, so a NEGATIVE rho indicates AGREEMENT (high OAQ_portable -> low/better rank number).",
-        "perm_p": 0.07237927620723793
+        "perm_p": 0.08945910540894592
       },
       "V1b": {
         "test": "AUC OAQ_portable discriminating jersey_list_member (1/0) \u2014 A31 confirmatory primary",
         "metric": "auc",
-        "value": 0.8982826948480845,
+        "value": 0.8939422532553312,
         "ci95": [
-          0.8096386110586903,
-          0.9674466880543499
+          0.7951405925646349,
+          0.9682982638233629
         ],
         "ci_method": "stratified player-level bootstrap (A31 rule 1): each draw resamples positives and negatives separately, with replacement; 1000 draws, seed 20260526; Hanley & McNeil 1982",
         "n_total": 771,
@@ -325,12 +325,12 @@
           "power_at_floor": 0.8182763669222013,
           "power_at_target": 0.9918326059429772
         },
-        "mwu_one_sided_p": 1.59949319027854e-07,
+        "mwu_one_sided_p": 2.1449663786292289e-07,
         "baselines": {
           "engagement_raw": {
-            "auc": 0.9885827514625402,
+            "auc": 0.9879222494810341,
             "ci95": [
-              0.9754670692583506,
+              0.974429137573127,
               0.9966974900924703
             ]
           },
@@ -342,28 +342,28 @@
             ]
           },
           "OAQ_observed": {
-            "auc": 0.8982826948480845,
+            "auc": 0.8939422532553312,
             "ci95": [
-              0.8096386110586903,
-              0.9674466880543499
+              0.7951405925646349,
+              0.9682982638233629
             ]
           }
         },
         "delta_auc_paired": {
           "OAQ_portable_minus_engagement_raw": {
-            "delta": -0.0927844876391772,
-            "point": -0.09030005661445561,
+            "delta": -0.09653547839214947,
+            "point": -0.09397999622570297,
             "ci95": [
-              -0.17221409699943388,
-              -0.028293074164936816
+              -0.1828010001887148,
+              -0.027441498395923775
             ]
           },
           "OAQ_portable_minus_ppg": {
-            "delta": -0.07505698084562183,
-            "point": -0.07224111467572503,
+            "delta": -0.07948960964350824,
+            "point": -0.0765815562684784,
             "ci95": [
-              -0.16036917261968392,
-              0.001599027867895675
+              -0.17648029253104974,
+              0.00246351144099763
             ]
           }
         }
@@ -371,10 +371,10 @@
       "V2": {
         "test": "AUC OAQ_portable discriminating fan-vote All-Star union 2022+2023+2024 (A33; asg2024_member column, 1/0)",
         "metric": "auc",
-        "value": 0.7698412698412699,
+        "value": 0.7516190476190476,
         "ci95": [
-          0.657020081599768,
-          0.8657439047984579
+          0.6318454621860724,
+          0.8552700114898506
         ],
         "n_total": 771,
         "n_members": 21,
@@ -382,16 +382,16 @@
         "target": 0.55,
         "underpowered": false,
         "note": "A33 union membership (2022 captains + Last Men In, 2023 fan ballot, 2024 fan vote); no season published per-player vote totals, so V2 is AUC; no Spearman computed.",
-        "perm_p": 9.99990000099999e-06
+        "perm_p": 2.999970000299997e-05
       },
       "V3": {
         "test": "aggregation-consistency check (A29): Spearman rho(sum_OAQ_observed_per_team, team_wiki_12mo) across n teams",
         "pathway_class": "shared-method with the wiki_en composite component (A29 rule 4) \u2014 NOT counted toward the >=3-independent-pathways claim",
         "metric": "spearman_rho",
-        "value": 0.06085043988269794,
+        "value": 0.043255131964809374,
         "ci95": [
-          -0.33092905779845455,
-          0.4105048052507593
+          -0.3311779489085337,
+          0.39564000975872554
         ],
         "n": 32,
         "floor": 0.4,
@@ -400,10 +400,10 @@
         "outcome_signal": "team Wikipedia 12-mo pageviews (A6 graceful-degradation: Reddit subscriber 403)",
         "predictor": "sum of OAQ_observed across each team's 5 pilot players",
         "robustness_eng_raw": {
-          "rho": 0.11876832844574779,
+          "rho": 0.11107038123167154,
           "ci95": [
-            -0.2681717300839505,
-            0.47200653234932555
+            -0.27084851675064575,
+            0.4599878751393722
           ],
           "note": "mechanical baseline: sum of engagement_raw (no peer-skill control)"
         },
@@ -441,19 +441,19 @@
           "WAS",
           "WPG"
         ],
-        "perm_p": 0.3722662773372266
+        "perm_p": 0.4078659213407866
       },
       "BH_secondary": {
         "V2": {
-          "p": 9.99990000099999e-06,
+          "p": 2.999970000299997e-05,
           "supported": true
         },
         "V1a": {
-          "p": 0.07237927620723793,
+          "p": 0.08945910540894592,
           "supported": false
         },
         "V3": {
-          "p": 0.3722662773372266,
+          "p": 0.4078659213407866,
           "supported": false
         }
       }
@@ -463,43 +463,43 @@
     "variants": {
       "marchand_index_rawcap": {
         "V1a": {
-          "value": -0.4787878787878787,
-          "delta": 0.024242424242424232
+          "value": -0.4666666666666666,
+          "delta": 0.0
         },
         "V1b": {
-          "value": 0.7712187678809842,
-          "delta": -0.12706392696710034
+          "value": 0.7709326721342743,
+          "delta": -0.12300958112105687
         },
         "V2": {
-          "value": 0.6352201257861635,
-          "delta": -0.1346211440551064
+          "value": 0.6252727506096778,
+          "delta": -0.12634629700936983
         }
       },
       "OAQ_portable_lockedv1": {
         "V1a": {
-          "value": -0.12727272727272726,
-          "delta": 0.3757575757575757
+          "value": -0.09090909090909088,
+          "delta": 0.37575757575757573
         },
         "V1b": {
-          "value": 0.6787129647103227,
-          "delta": -0.21956973013776182
+          "value": 0.6757878845065106,
+          "delta": -0.21815436874882055
         },
         "V2": {
-          "value": 0.5357460317460317,
-          "delta": -0.23409523809523813
+          "value": 0.5262857142857142,
+          "delta": -0.22533333333333339
         }
       },
       "OAQ_portable_market_lockedv1": {
         "V1a": {
-          "value": -0.5030303030303029,
+          "value": -0.4666666666666666,
           "delta": 0.0
         },
         "V1b": {
-          "value": 0.8982826948480845,
+          "value": 0.8939422532553312,
           "delta": 0.0
         },
         "V2": {
-          "value": 0.7698412698412699,
+          "value": 0.7516190476190476,
           "delta": 0.0
         }
       }
