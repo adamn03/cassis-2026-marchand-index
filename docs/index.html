@@ -1,0 +1,836 @@
+<title>Marchand Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* Obsidian ground, amber signal. Single committed theme: every colour is
+   painted explicitly so the page never borrows a host background. */
+:root{
+  --bg:#17171C; --bg2:#1E1E25; --bg3:#25252E; --bg4:#2C2C36;
+  --line:#32323D; --line2:#292933;
+  --tx:#F2EEE8; --tx2:#B7B0A6; --tx3:#847D74;
+  --am:#FF9D50; --am-hi:#FFD09C; --am-lo:#C04800; --am-dim:#6B3210;
+  --pos:#5FB49C; --neg:#D9705E;
+  --r:16px; --rs:10px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--tx);
+  font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 26px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+h1,h2,h3,h4{margin:0;letter-spacing:-.022em;text-wrap:balance}
+p{margin:0}
+a{color:var(--am)}
+
+.eyebrow{
+  font-size:10.5px;font-weight:800;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--am);
+}
+.lede{color:var(--tx2);max-width:70ch}
+
+/* ---------- header ---------- */
+.top{
+  position:sticky;top:0;z-index:40;background:rgba(23,23,28,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+}
+.topin{display:flex;align-items:center;gap:22px;padding:13px 0}
+.mark{display:flex;align-items:baseline;gap:10px;flex:1;min-width:0}
+.mark b{font-size:17px;font-weight:800;letter-spacing:-.03em;white-space:nowrap}
+.mark span{font-size:12.5px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.navlinks{display:flex;gap:20px}
+.navlinks a{
+  font-size:12.5px;font-weight:600;color:var(--tx2);text-decoration:none;
+  padding:4px 0;border-bottom:1.5px solid transparent
+}
+.navlinks a:hover{color:var(--am);border-bottom-color:var(--am)}
+@media(max-width:820px){.navlinks{display:none}}
+
+/* ---------- hero ---------- */
+.hero{padding:62px 0 34px}
+.hero h1{font-size:clamp(34px,5.4vw,58px);font-weight:800;line-height:1.04;margin:16px 0 20px;max-width:19ch}
+.hero h1 em{font-style:normal;color:var(--am)}
+.hero .lede{font-size:clamp(16.5px,1.8vw,19px)}
+
+.defbox{
+  margin-top:30px;background:var(--bg2);border:1px solid var(--line);
+  border-left:3px solid var(--am);border-radius:var(--r);padding:20px 24px;max-width:76ch
+}
+.defbox p+p{margin-top:11px}
+.defbox .k{color:var(--am-hi);font-weight:700}
+
+/* ---------- stat tiles ---------- */
+.tiles{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(184px,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden;margin:34px 0
+}
+.tile{background:var(--bg2);padding:17px 19px}
+.tile .k{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);margin-bottom:9px}
+.tile .v{font-size:28px;font-weight:600;line-height:1;letter-spacing:-.02em;color:var(--am-hi)}
+.tile .v.plain{color:var(--tx)}
+.tile .s{font-size:12.5px;color:var(--tx3);margin-top:8px;line-height:1.45}
+
+/* ---------- sections ---------- */
+section{padding:52px 0;border-top:1px solid var(--line2)}
+.shead{margin-bottom:26px}
+.shead h2{font-size:clamp(22px,3vw,30px);font-weight:800;margin:11px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:15px}
+.chip{
+  font-size:11px;font-weight:600;padding:4px 9px;border-radius:2px;
+  background:var(--bg3);border:1px solid var(--line);color:var(--tx2)
+}
+.chip.new{background:var(--am-dim);border-color:var(--am-lo);color:var(--am-hi)}
+
+/* ---------- controls ---------- */
+.bar{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:16px}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--bg2)}
+.seg button{
+  font-family:inherit;font-size:12.5px;font-weight:600;padding:9px 15px;border:0;
+  background:transparent;color:var(--tx2);cursor:pointer;border-right:1px solid var(--line)
+}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--bg3);color:var(--tx)}
+.seg button[aria-pressed="true"]{background:var(--am);color:#1A1005}
+.seg button:focus-visible,input:focus-visible{outline:2px solid var(--am-hi);outline-offset:1px}
+.search{position:relative;flex:1;min-width:210px;max-width:340px}
+.search input{
+  width:100%;font-family:inherit;font-size:13px;padding:10px 14px 10px 34px;border-radius:999px;
+  background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);color:var(--tx)
+}
+.search input::placeholder{color:var(--tx3)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.5}
+
+/* ---------- table ---------- */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--bg2)}
+table{border-collapse:collapse;width:100%;min-width:700px}
+th{
+  font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);
+  text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);
+  background:var(--bg3);white-space:nowrap
+}
+td{padding:10px 14px;border-bottom:1px solid var(--line2);font-size:14.5px}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--bg3)}
+.rk{color:var(--tx3);font-size:13px;width:40px}
+.nm{font-weight:600;white-space:nowrap}
+.mt{font-size:11.5px;color:var(--tx3);letter-spacing:.04em}
+.vl{font-weight:600;color:var(--am-hi);white-space:nowrap}
+td.r,th.r{text-align:right}
+.ci{position:relative;height:20px;min-width:130px}
+.ci i{position:absolute;left:0;right:0;top:9px;height:2px;background:var(--line);border-radius:1px}
+.ci b{position:absolute;top:8px;height:4px;background:var(--am-dim);border-radius:2px}
+.ci s{position:absolute;top:5px;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:var(--am)}
+.cin{font-size:11px;color:var(--tx3);white-space:nowrap}
+.tagelc{
+  font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--am);border:1px solid var(--am-lo);border-radius:2px;padding:1px 5px;margin-left:7px
+}
+.tagout{
+  font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--tx3);border:1px solid var(--line);border-radius:2px;padding:1px 5px;margin-left:7px
+}
+.note{font-size:12.5px;color:var(--tx3);margin-top:11px;max-width:80ch}
+.panelhead{
+  display:flex;align-items:baseline;gap:11px;margin:30px 0 12px;flex-wrap:wrap
+}
+.panelhead h4{font-size:14px;font-weight:700}
+.panelhead span{font-size:12px;color:var(--tx3)}
+.empty{padding:22px 16px;color:var(--tx3);font-size:13.5px;text-align:center}
+
+
+/* ---------- tiers ---------- */
+.whycard{
+  background:linear-gradient(158deg,var(--bg3) 0%,var(--bg2) 62%);
+  border:1px solid var(--line);border-radius:var(--r);
+  padding:22px 26px;margin-bottom:22px;max-width:84ch
+}
+.whycard h4{font-size:14.5px;font-weight:700;color:var(--am-hi);margin-bottom:11px}
+.whycard p{font-size:14px;color:var(--tx2);max-width:78ch}
+.whycard p+p{margin-top:10px}
+.whycard strong{color:var(--tx)}
+.widthnote{font-size:12px;color:var(--tx3);margin-left:auto}
+
+#tierwrap{display:flex;flex-direction:column;gap:14px}
+.tier{
+  background:linear-gradient(158deg,var(--bg3) 0%,var(--bg2) 58%);
+  border:1px solid var(--line);border-radius:var(--r);
+  padding:22px 26px;display:grid;grid-template-columns:210px 1fr;gap:26px
+}
+.tier.t0{border-color:var(--am-lo)}
+.tier .tl{display:flex;flex-direction:column;gap:7px}
+.tier .tname{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.tier.t0 .tname{color:var(--am-hi)}
+.tier .trange{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--tx3);
+  background:var(--bg4);border-radius:6px;padding:3px 8px;align-self:flex-start
+}
+.tier .tcount{font-size:13px;color:var(--tx2)}
+.tier .tcount b{
+  font-family:"IBM Plex Mono",monospace;font-size:21px;font-weight:600;
+  color:var(--tx);display:block;line-height:1.2
+}
+.tier .tbarw{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:3px}
+.tier .tbar{display:block;height:100%;background:linear-gradient(90deg,var(--am-lo),var(--am));border-radius:3px}
+.faces{display:flex;flex-wrap:wrap;gap:9px;align-content:flex-start}
+.face{
+  display:flex;align-items:center;gap:9px;background:var(--bg2);
+  border:1px solid var(--line);border-radius:999px;padding:5px 14px 5px 5px
+}
+.face img,.face .ph{width:30px;height:30px;border-radius:50%;flex:none;object-fit:cover;background:var(--bg4)}
+.face .ph{display:grid;place-items:center;font-size:10px;font-weight:800;color:var(--tx3)}
+.face span.n{font-size:13px;font-weight:600;white-space:nowrap}
+.face span.t{font-size:11px;color:var(--tx3);margin-left:2px}
+.elcline{
+  margin-top:14px;padding-top:13px;border-top:1px solid var(--line2);
+  display:flex;align-items:center;gap:11px;flex-wrap:wrap
+}
+.elcline .lab{
+  font-size:9.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--am);border:1px solid var(--am-lo);border-radius:5px;padding:2px 7px
+}
+.elcline .names{font-size:12.5px;color:var(--tx3)}
+.tier .empty2{font-size:13px;color:var(--tx3);align-self:center}
+#searchres{
+  background:var(--bg2);border:1px solid var(--am-lo);border-radius:var(--r);
+  padding:18px 22px;margin-bottom:16px
+}
+#searchres h4{font-size:13px;font-weight:700;color:var(--am-hi);margin-bottom:12px}
+.sr{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;
+    padding:8px 0;border-bottom:1px solid var(--line2)}
+.sr:last-child{border-bottom:0}
+.sr .who2{display:flex;align-items:center;gap:10px}
+.sr img,.sr .ph{width:30px;height:30px;border-radius:50%;object-fit:cover;background:var(--bg4);flex:none}
+.sr .ph{display:grid;place-items:center;font-size:10px;font-weight:800;color:var(--tx3)}
+.sr .tierchip{
+  font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;
+  background:var(--bg4);color:var(--tx2);white-space:nowrap
+}
+.sr .tierchip.t0{background:var(--am-dim);color:var(--am-hi)}
+.sr .val{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--tx2);white-space:nowrap}
+@media(max-width:760px){
+  .tier{grid-template-columns:1fr;gap:16px}
+  .sr{grid-template-columns:1fr auto}
+}
+
+/* ---------- findings ---------- */
+.standing{
+  background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--tx3);
+  border-radius:var(--r);padding:16px 20px;margin-bottom:22px;font-size:14px;color:var(--tx2);max-width:82ch
+}
+.find{display:flex;flex-direction:column;gap:16px}
+.fcard{background:linear-gradient(158deg,var(--bg3) 0%,var(--bg2) 55%);border:1px solid var(--line);border-radius:var(--r);padding:26px 28px}
+.fcard h3{font-size:18.5px;font-weight:700;margin-bottom:12px;color:var(--am-hi)}
+.fcard p{max-width:80ch;color:var(--tx2);font-size:14.5px}
+.fcard p+p{margin-top:11px}
+.why{
+  margin-top:16px;padding-top:15px;border-top:1px solid var(--line2);
+  display:flex;flex-direction:column;gap:9px
+}
+.why div{display:grid;grid-template-columns:96px 1fr;gap:13px;align-items:start}
+.why .lb{
+  font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  padding-top:3px
+}
+.why .lb.w{color:var(--am)} .why .lb.f{color:var(--tx3)}
+.why .tx{font-size:13.5px;color:var(--tx2);max-width:74ch}
+.figs{display:flex;flex-wrap:wrap;gap:26px;margin:17px 0 4px}
+.figs>div{min-width:150px}
+.figs .fv{font-size:24px;font-weight:600;line-height:1}
+.figs .fv.a{color:var(--am)} .figs .fv.b{color:var(--tx)}
+.figs .fl{font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--tx3);margin-top:8px}
+.figs .fc{font-size:11.5px;color:var(--tx3);margin-top:5px}
+.flip{
+  display:grid;grid-template-columns:auto repeat(3,1fr);gap:7px 16px;
+  margin-top:16px;max-width:520px;align-items:center
+}
+.flip .h{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3)}
+.flip .l{font-size:12.5px;color:var(--tx2);font-weight:600}
+.flip .n{font-size:13.5px}
+.flip .n.up{color:var(--am-hi)} .flip .n.dn{color:var(--pos)}
+
+/* ---------- methods ---------- */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(276px,1fr));gap:16px}
+.mcard{background:linear-gradient(158deg,var(--bg3) 0%,var(--bg2) 60%);border:1px solid var(--line);border-radius:var(--r);padding:22px 24px}
+.mcard h4{font-size:14px;font-weight:700;color:var(--am-hi);margin-bottom:10px}
+.mcard p,.mcard li{font-size:13.5px;color:var(--tx2)}
+.mcard ul{margin:0;padding-left:17px;display:flex;flex-direction:column;gap:7px}
+dl.terms{margin:0;display:flex;flex-direction:column;gap:14px}
+dl.terms dt{font-size:13.5px;font-weight:700;color:var(--tx)}
+dl.terms dd{margin:4px 0 0;font-size:13.5px;color:var(--tx2);max-width:78ch}
+table.map{min-width:0;width:100%}
+table.map td{font-size:13px;padding:9px 12px}
+table.map td:first-child{font-weight:600}
+
+
+/* headshots */
+.who{display:flex;align-items:center;gap:10px}
+.mug{width:34px;height:34px;border-radius:50%;flex:none;object-fit:cover;
+     background:var(--bg4);border:1px solid var(--line)}
+.mug.ph{display:grid;place-items:center;font-size:11px;font-weight:800;color:var(--tx3);letter-spacing:.02em}
+
+footer .accepted{
+  font-size:19px;line-height:1.45;color:var(--tx);max-width:56ch;
+  padding:16px 22px;margin-bottom:18px;
+  background:linear-gradient(158deg,var(--bg3) 0%,var(--bg2) 60%);
+  border:1px solid var(--am-lo);border-radius:var(--r)
+}
+footer .accepted strong{color:var(--am-hi);font-weight:800}
+#footmeta{
+  font-size:13.5px;color:var(--tx2);line-height:1.7;letter-spacing:.01em;max-width:none
+}
+footer{padding:44px 0 68px;border-top:1px solid var(--line2);color:var(--tx3);font-size:13px}
+footer p{max-width:80ch}
+footer p+p{margin-top:11px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media(max-width:640px){.why div{grid-template-columns:1fr;gap:3px}}
+</style>
+
+<div class="top"><div class="wrap topin">
+  <div class="mark"><b>Marchand Index</b><span>attention above skill-matched peers &middot; NHL 2025&ndash;26</span></div>
+  <nav class="navlinks">
+    <a href="#tiers">The result</a>
+    <a href="#findings">Findings</a>
+    <a href="#methods">Methods</a>
+  </nav>
+</div></div>
+
+<div class="wrap">
+
+<div class="hero">
+  <p class="eyebrow">771 skaters &middot; 32 clubs &middot; one fixed season</p>
+  <h1>Who draws more attention than their <em>play</em> explains?</h1>
+  <p class="lede">
+    Some players are famous out of proportion to how well they play. That is measurable.
+    This finds each player&rsquo;s ten closest comparables in the league and asks how much
+    more public attention he generates than they do &mdash; then asks whether anyone pays
+    for the difference.
+  </p>
+
+  <div class="defbox">
+    <p><span class="k">It is a residual.</span> Not a ranking of who is famous, and not a
+    ranking of who is good. It is what is left over after you subtract the attention a
+    player&rsquo;s skill-matched peers already generate. A player scores high only by being
+    far more visible than players who produce what he produces.</p>
+    <p>Two numbers are published. <span class="k">Marchand Index</span> is that residual on
+    its own. <span class="k">Marchand Index, salary adjusted</span> divides it by the
+    player&rsquo;s cap hit, which asks a different question &mdash; not &ldquo;who is
+    over-noticed&rdquo; but &ldquo;who is over-noticed per dollar.&rdquo; The two lists are
+    not the same, and the gap between them is one of the findings.</p>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><div class="k">Attention premium in pay</div><div class="v">&minus;0.4%</div>
+      <div class="s">per +1 SD of attention, on veteran re-signings. CI [&minus;6.5%, +6.5%]</div></div>
+    <div class="tile"><div class="k">Ice-time premium, same model</div><div class="v">+43.8%</div>
+      <div class="s">attention is worth at most a sixth of this, and plausibly nothing</div></div>
+    <div class="tile"><div class="k">Clearly above their peers</div><div class="v">26</div>
+      <div class="s">of 595 published players &mdash; 4.4%. Most of the league generates what its peers do</div></div>
+  </div>
+</div>
+
+<section id="tiers">
+  <div class="shead">
+    <p class="eyebrow">The result</p>
+    <h2>Where players land</h2>
+    <p class="lede">Peers are matched on what a player did in 2025&ndash;26: scoring rate,
+    minutes, situation, even-strength play-driving, shot and chance creation. Attention is
+    then compared against the average of his ten closest comparables.</p>
+  </div>
+
+  <div class="whycard">
+    <h4>Why tiers and not a numbered list</h4>
+    <p>A ranking implies the metric can tell #7 from #8. It cannot. Rebuild the peer group
+    using a different but equally defensible set of statistics and a player moves by
+    <strong>0.45 standard deviations</strong> on average &mdash; about
+    <strong>2.4&times;</strong> more than the sampling error in the attention data itself.
+    Roughly a third of any top&nbsp;25 changes.</p>
+    <p>So the tiers below are sized to that uncertainty: wide enough that a player in one
+    tier is genuinely separated from a player in the next, at 95% confidence.
+    <strong>Between tiers is a claim. Inside a tier, the order is not</strong>, which is why
+    no order is shown.</p>
+  </div>
+
+  <div class="bar">
+    <div class="seg" data-metric="A">
+      <button data-v="mi" aria-pressed="true">Marchand Index</button>
+      <button data-v="sa" aria-pressed="false">Salary adjusted</button>
+    </div>
+    <div class="search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input type="search" data-search="A" placeholder="Find any of the 771 players&hellip;" aria-label="Search players">
+    </div>
+    <span class="widthnote" data-tierwidth></span>
+  </div>
+
+  <div id="searchres" hidden></div>
+
+  <div id="tierwrap"></div>
+
+  <p class="note" data-note="A"></p>
+</section>
+
+<section id="findings">
+  <div class="shead">
+    <p class="eyebrow">What came out of it</p>
+    <h2>Findings</h2>
+  </div>
+  <div class="standing">
+    <strong style="color:var(--tx)">Scope.</strong> These are associations measured on one
+    season of observational data, at the level of individual players. They do not establish
+    cause, and confirming any of them takes data this project does not hold. That is stated
+    on each finding rather than left implied.
+  </div>
+
+  <div class="find">
+    <div class="fcard">
+      <h3>The index tracks a following it never looked at</h3>
+      <p>The attention measure is built from Wikipedia, Reddit and Google searches. It was
+      never shown a single follower count. Checked afterwards against the larger of each
+      player's Instagram and X followings, it lines up closely.</p>
+      <div class="figs">
+        <div><div class="fv a" data-val="engagement_raw">&mdash;</div><div class="fl">attention composite</div><div class="fc">vs. log followers</div></div>
+        <div><div class="fv b" data-val="OAQ_observed">&mdash;</div><div class="fl">Marchand Index</div><div class="fc">after removing peers</div></div>
+      </div>
+      <p>The correlation falls as more is subtracted, which is the direction it should
+      fall. A raw attention total tracks raw following closely; a residual should not,
+      because the part explained by production has been removed. That the residual still
+      holds a positive relationship means it is measuring public interest rather than
+      statistical leftovers.</p>
+      <div class="why">
+        <div><span class="lb w">What it means</span><span class="tx">An independent,
+        off-platform measure of public following agrees with the index. Follower counts are
+        deliberately kept out of the index itself: a follower total is a lifetime stock and
+        the index measures one season of flow. Keeping them out is what makes them usable
+        as a check.</span></div>
+        <div><span class="lb f">Limits</span><span class="tx">Followers were available for
+        <span data-val="n">&mdash;</span> of the published players. Accounts are
+        self-selected, so a player who does not use social media is not a player nobody
+        follows.</span></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <h3>The NHL does not pay extra for attention</h3>
+      <p>In a next-contract model fit over 545 signings, a veteran re-signing who generates
+      one standard deviation more attention than his peers earns essentially nothing extra.
+      The interval is narrow enough to exclude a meaningful premium, which makes this a
+      bounded null rather than a shortage of evidence.</p>
+      <div class="figs">
+        <div><div class="fv a">&minus;0.4%</div><div class="fl">+1 SD attention</div><div class="fc">CI [&minus;6.5%, +6.5%]</div></div>
+        <div><div class="fv b">+43.8%</div><div class="fl">+1 SD ice time</div><div class="fc">same model, same signings</div></div>
+      </div>
+      <div class="why">
+        <div><span class="lb w">What it means</span><span class="tx">Attention is a cost the
+        market does not charge for. A club acquiring a high-salience player receives the
+        public interest without paying a premium. The same result gives an agent a concrete
+        number to argue against, and tells a front office that salience is one of the few
+        attributes still available at no markup.</span></div>
+        <div><span class="lb f">Limits</span><span class="tx">This is the one result here
+        that must cross seasons, because a next contract is by definition signed in a later
+        one. It also cannot separate clubs leaving money on the table from attention being
+        genuinely worth little to a single club, since much of the revenue it generates
+        accrues to the league rather than the team.</span></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <h3>Dividing by salary changes almost everyone</h3>
+      <p>The two published figures disagree about who matters. On the residual alone the top
+      ten is made of superstars on expensive contracts. Divided by salary, the median cap
+      hit of the top ten falls by roughly two thirds and the list fills with veterans and
+      agitators on cheap deals. The figures below are computed from the same rows the tables
+      above show.</p>
+      <div class="figs">
+        <div><div class="fv b" data-val="capMi">&mdash;</div><div class="fl">median cap, residual top 10</div><div class="fc" data-val="namesMi">&mdash;</div></div>
+        <div><div class="fv a" data-val="capSa">&mdash;</div><div class="fl">median cap, per-dollar top 10</div><div class="fc" data-val="namesSa">&mdash;</div></div>
+        <div><div class="fv a" data-val="overlapN">&mdash;</div><div class="fl">in both lists</div><div class="fc" data-val="overlapNames">&mdash;</div></div>
+      </div>
+      <p>The cheap half of that second list is a denominator effect, not a discovery about
+      playing style. Tested directly, the residual has no relationship with penalty minutes
+      (<span class="mono">&rho; = 0.13</span>) or hits (<span class="mono">&rho; = 0.01</span>).
+      The index does not find agitators. Dividing by a small salary does.</p>
+      <div class="why">
+        <div><span class="lb w">What it means</span><span class="tx">Two different questions
+        produce two different answers, and the choice between them has to be made
+        deliberately. &ldquo;Who is most over-noticed&rdquo; and &ldquo;who is most
+        over-noticed per dollar&rdquo; share only half their top ten. The players in both
+        are the rare case: large in absolute attention and cheap relative to it.</span></div>
+        <div><span class="lb f">Limits</span><span class="tx">That overlap is a small enough
+        set that one retirement or one contract changes it.</span></div>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <h3>How much the ranking depends on who counts as a peer</h3>
+      <p>The peer definition was rebuilt twice against unrelated objections: once with six
+      further measures of this season's play, once against career history &mdash; games,
+      points, seasons and draft position. Each replaces roughly half of every player's
+      comparison group. The metric largely survives both, but not exactly.</p>
+      <div class="figs">
+        <div><div class="fv a">0.92</div><div class="fl">season-detail rebuild</div><div class="fc">12 measures, 57% of peers replaced</div></div>
+        <div><div class="fv a">0.88</div><div class="fl">career-history rebuild</div><div class="fc">10 measures, 47% of peers replaced</div></div>
+      </div>
+      <p>The career-history rebuild is reported as a test and is not published as a ranking.
+      Comparing a 21-year-old against players with the same career behind him works only
+      where such players exist, and at the edges of a career they do not.</p>
+      <p>These two figures are why this page shows tiers instead of positions. Correlations
+      of 0.92 and 0.88 mean the broad picture holds &mdash; the same players sit near the
+      top under any of the three definitions &mdash; while an individual position does not
+      survive the change. The gap between those two facts is exactly the width of a
+      tier.</p>
+      <div class="why">
+        <div><span class="lb w">What it means</span><span class="tx">The first objection to
+        any residual is that it reflects the comparison group rather than the player. Two
+        unrelated redefinitions landing at 0.92 and 0.88, while each discards about half the
+        comparison group, is the evidence against that &mdash; and the evidence for
+        reporting bands rather than ranks. It also disposes of the specific charge that the
+        index measures accumulated fame: controlling for career length, games played and
+        draft pedigree does not move it.</span></div>
+        <div><span class="lb f">Limits</span><span class="tx">Both rebuilds share the same
+        matching machinery. A different method entirely &mdash; propensity weighting, or a
+        synthetic control &mdash; would test more than a third list of measures.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="methods">
+  <div class="shead">
+    <p class="eyebrow">How it works</p>
+    <h2>Methods</h2>
+    <p class="lede">Everything here is public data, collected free, rate-limited and cached.
+    No paid sources, no private data, nothing behind a login.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="mcard">
+      <h4>Where attention comes from</h4>
+      <ul>
+        <li><strong>Wikipedia pageviews</strong> &mdash; English and other language
+        editions, counted separately. Closest thing to neutral curiosity: people looking a
+        player up.</li>
+        <li><strong>Reddit</strong> &mdash; submissions mentioning the player and the votes
+        those submissions received, across team and league subreddits. Fan conversation
+        rather than lookup.</li>
+        <li><strong>Google Trends</strong> &mdash; search interest, measured against a fixed
+        reference player so the numbers are comparable across people.</li>
+      </ul>
+      <p style="margin-top:11px">All four measured over one identical 365-day window ending
+      the last day of the regular season, so nobody gets credit for a playoff run their
+      peers never had a chance at.</p>
+    </div>
+
+    <div class="mcard">
+      <h4>Where skill comes from</h4>
+      <ul>
+        <li><strong>NHL public API</strong> &mdash; age, games, points per game, ice time.</li>
+        <li><strong>MoneyPuck</strong> &mdash; even-strength play-driving and deployment:
+        shot share, expected-goal share, where a player's shifts start, and the individual
+        rate stats used by vector A.</li>
+        <li><strong>CapWages</strong> &mdash; contract value and type, including whether a
+        deal is entry-level.</li>
+      </ul>
+    </div>
+
+    <div class="mcard">
+      <h4>Finding a player's peers</h4>
+      <p>For each player, the ten most similar players are selected from the same position
+      class &mdash; centres with centres, wingers with wingers, defencemen with defencemen.
+      A centre and a winger with identical statistics are not interchangeable, because role
+      drives coverage in a way the numbers do not capture.</p>
+      <p style="margin-top:11px">Attention is then compared against the average of those
+      ten. That difference is the Marchand Index. No adjustment is made for the size of
+      the market a player happens to play in &mdash; see the limits below for why not.</p>
+    </div>
+
+    <div class="mcard">
+      <h4>How the index is checked</h4>
+      <p>Each player's Instagram and X follower counts are collected separately and held
+      out of the index entirely. They are used only afterwards, to test whether a measure
+      built from Wikipedia, Reddit and search behaviour lines up with a public following
+      recorded somewhere else. It does.</p>
+      <p style="margin-top:11px">Follower totals are kept out of the index on purpose. A
+      follower count is a lifetime accumulation, while everything the index measures is one
+      season of activity, and mixing the two would let a long-retired reputation stand in
+      for current attention. Staying out is also what makes them a usable check rather than
+      a circular one.</p>
+    </div>
+
+    <div class="mcard">
+      <h4>Terms, in plain language</h4>
+      <dl class="terms">
+        <dt>Residual</dt>
+        <dd>What is left over after subtracting what you expected. Here: a player's actual
+        attention minus the attention his ten comparables generate.</dd>
+        <dt>Mahalanobis distance</dt>
+        <dd>A way of measuring &ldquo;how similar are these two players&rdquo; that accounts
+        for the fact that some statistics move together. Points and ice time rise together,
+        so a player who is high on both is less unusual than counting each separately would
+        suggest. This stops correlated statistics from being double-counted.</dd>
+        <dt>Bootstrap interval</dt>
+        <dd>The intervals here are built by re-running the whole calculation a thousand
+        times on resampled data and reading off the middle 95% of answers. Days are
+        resampled in week-long blocks, so a single news cycle cannot masquerade as a stable
+        signal.</dd>
+        <dt>Covariance shrinkage</dt>
+        <dd>With twelve statistics that overlap heavily, the similarity calculation becomes
+        unstable and small quirks in the data get amplified. Shrinkage pulls it gently
+        toward a simpler, steadier version.</dd>
+      </dl>
+    </div>
+
+    <div class="mcard" style="grid-column:1/-1">
+      <h4>What the published names map to in the code</h4>
+      <p style="margin-bottom:12px">The repository and the pre-registration use the original
+      internal names. This page renames two of them for readability. Nothing about the
+      computation changes.</p>
+      <div class="tw"><table class="map"><tbody>
+        <tr><td>Marchand Index</td><td class="mono">OAQ_observed</td>
+          <td>attention residual against skill-matched peers. No market adjustment is applied,
+          so this is the uncorrected residual</td></tr>
+        <tr><td>Marchand Index, salary adjusted</td><td class="mono">marchand_index_rawcap</td>
+          <td>the same residual divided by the player's cap hit</td></tr>
+      </tbody></table></div>
+      <p style="margin-top:12px">The column named <span class="mono">marchand_index</span> in
+      the data files is a third, retired variant kept only for audit. It is deliberately not
+      what is shown here.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="shead">
+    <p class="eyebrow">Limits</p>
+    <h2>What this does not claim</h2>
+  </div>
+  <div class="grid2">
+    <div class="mcard"><h4>Attention is a proxy, not revenue</h4>
+      <p>No figure on this page is a club's income. The link between public attention and
+      money is assumed, not measured.</p></div>
+    <div class="mcard"><h4>Nothing here is causal</h4>
+      <p>These are conditional associations in observational data. No player was assigned to
+      be famous.</p></div>
+    <div class="mcard"><h4>Only the tails mean anything</h4>
+      <p>Under a different but equally defensible peer definition, mid-table players move by
+      hundreds of positions while the metric itself holds at 0.96. Being in the top or bottom
+      handful is a claim. &ldquo;Ranked 340th&rdquo; is not, and should never be quoted.</p></div>
+    <div class="mcard"><h4>Goalies are excluded</h4>
+      <p>Peer matching breaks down for them &mdash; there are too few, and their statistics
+      do not compare to skaters'.</p></div>
+    <div class="mcard"><h4>Market size is real and is not corrected for</h4>
+      <p>A player in a large market almost certainly draws attention a player in a small one
+      does not. The correction that was meant to remove it has been dropped, because these
+      sources cannot measure it in a way worth trusting.</p>
+      <p style="margin-top:11px">Measured across 170 players who changed clubs, moving to a
+      market one standard deviation larger is worth <span class="mono">+4.4%</span> more
+      attention, with an interval of <span class="mono">[&minus;2.1%, +10.8%]</span> that
+      includes zero. The sources also disagree about the direction: Wikipedia says
+      <span class="mono">+15.8%</span> and Reddit mentions say <span class="mono">&minus;7.9%</span>,
+      each individually significant. A correction built on sources that disagree about the
+      sign would move every published number without being defensible, so none is applied.
+      The effect is left uncontrolled and declared rather than estimated badly.</p></div>
+    <div class="mcard"><h4>Absence is not obscurity</h4>
+      <p>Players who missed most of the season have attention floored by not playing while
+      their skill is estimated from too little evidence. They are held out of every published
+      table rather than shown as if the number meant something.</p></div>
+  </div>
+</section>
+
+<footer><div>
+  <p class="accepted">Accepted for <strong>CASSIS 2026</strong> &mdash; the Cascadia
+  Symposium on Statistics in Sports.</p>
+  <p id="footmeta" class="mono"></p>
+</div></footer>
+</div>
+
+<script>
+(function(){
+  // Vector A only. The career-history rebuild is computed and reported as a
+  // robustness test, but is not published as a ranking.
+  const VEC = "lensA";
+  const state = {metric:"mi", q:""};
+  let DATA = null, MUGS = {};
+
+  const esc = s => String(s).replace(/[&<>"]/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const initials = n => n.split(/\s+/).map(w => w[0]).slice(0,2).join("");
+
+  function mug(p, cls){
+    const src = MUGS[p.id];
+    return src
+      ? `<img class="${cls||""}" src="${src}" alt="" loading="lazy" width="30" height="30">`
+      : `<span class="ph ${cls||""}" aria-hidden="true">${esc(initials(p.name))}</span>`;
+  }
+
+  const byId = id => DATA.players.find(p => p.id === id);
+
+  function tierLabel(p){
+    const t = p.v[VEC].tier ? p.v[VEC].tier[state.metric] : null;
+    if (t === null || t === undefined) return null;
+    return DATA.meta.tiers[state.metric].tiers[t].label;
+  }
+
+  function renderTiers(){
+    const meta = DATA.meta.tiers[state.metric];
+    const max = Math.max(...meta.tiers.map(t => t.n));
+    document.querySelector("[data-tierwidth]").textContent =
+      `tier width ${meta.width} — set by how far players move under a different peer group`;
+
+    document.getElementById("tierwrap").innerHTML = meta.tiers.map((t, i) => {
+      const b = meta.bounds;
+      const range = i === 0 ? `above +${b[0]}`
+                  : i === 1 ? `+${b[1]} to +${b[0]}`
+                  : i === 2 ? `${b[2]} to ${b[1]}`
+                  : `below ${b[2]}`;
+      const faces = t.exampleIds.map(id => {
+        const p = byId(id);
+        if (!p) return "";
+        return `<span class="face">${mug(p)}<span class="n">${esc(p.name)}</span>` +
+               `<span class="t">${esc(p.team)}</span></span>`;
+      }).join("");
+      const e = meta.elc[i];
+      const elc = e && e.n
+        ? `<div class="elcline"><span class="lab">Entry-level</span>` +
+          `<span class="names">${e.n} player${e.n === 1 ? "" : "s"}` +
+          (e.examples.length ? ` &middot; ${e.examples.map(esc).join(", ")}` : "") +
+          `</span></div>`
+        : "";
+      return `<div class="tier t${i}">
+        <div class="tl">
+          <span class="tname">${esc(t.label)}</span>
+          <span class="trange">${range}</span>
+          <span class="tcount"><b>${t.n}</b>${t.share}% of the league
+            <span class="tbarw"><span class="tbar" style="width:${(t.n/max*100).toFixed(0)}%"></span></span>
+          </span>
+        </div>
+        <div>
+          ${faces ? `<div class="faces">${faces}</div>` : `<div class="empty2">No players in this tier.</div>`}
+          ${elc}
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  function renderSearch(){
+    const box = document.getElementById("searchres");
+    const q = state.q.trim().toLowerCase();
+    if (!q){ box.hidden = true; box.innerHTML = ""; return; }
+    const hits = DATA.players
+      .filter(p => p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q))
+      .sort((a,b) => (b.v[VEC][state.metric] ?? -1e9) - (a.v[VEC][state.metric] ?? -1e9))
+      .slice(0, 12);
+    if (!hits.length){
+      box.hidden = false;
+      box.innerHTML = `<h4>No player matches that search</h4>`;
+      return;
+    }
+    box.hidden = false;
+    box.innerHTML = `<h4>${hits.length} match${hits.length===1?"":"es"}</h4>` +
+      hits.map(p => {
+        const d = p.v[VEC], v = d[state.metric];
+        const t = d.tier ? d.tier[state.metric] : null;
+        const lab = t === null || t === undefined
+          ? (p.shown ? "not ranked" : "held out — missed most of the season")
+          : DATA.meta.tiers[state.metric].tiers[t].label;
+        const val = v === null || v === undefined ? "—"
+          : `${v.toFixed(2)} [${d[state.metric+"Lo"].toFixed(2)}, ${d[state.metric+"Hi"].toFixed(2)}]`;
+        return `<div class="sr">
+          <span class="who2">${mug(p)}<span><strong>${esc(p.name)}</strong>
+            <span class="t" style="color:var(--tx3);font-size:11.5px"> ${esc(p.pos)} · ${esc(p.team)}</span></span></span>
+          <span class="tierchip ${t===0?"t0":""}">${esc(lab)}</span>
+          <span class="val">${val}</span>
+        </div>`;
+      }).join("");
+  }
+
+  function render(){
+    renderTiers();
+    renderSearch();
+    const ex = DATA.meta.excluded;
+    document.querySelector('[data-note="A"]').innerHTML =
+      `${ex.published_non_elc} players on market contracts and ${ex.published_elc} on
+       entry-level deals are placed in tiers. Entry-level contracts are shown separately
+       inside each tier because a rookie's salary is set by the collective agreement, not
+       the market. ${ex.small_sample_or_absent} players are held out for missing most of
+       the season${ex.cap_quality_low ? `, and ${ex.cap_quality_low} more lack usable contract data` : ""}.
+       Search reaches all ${ex.pool}.`;
+  }
+
+  function boot(data){
+    DATA = data;
+    document.querySelectorAll("[data-metric]").forEach(seg => {
+      seg.addEventListener("click", e => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        [...seg.children].forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+        state.metric = b.dataset.v;
+        render();
+      });
+    });
+    document.querySelectorAll("[data-search]").forEach(inp => {
+      inp.addEventListener("input", () => { state.q = inp.value; render(); });
+    });
+    const mt = DATA.meta;
+    document.getElementById("footmeta").textContent =
+      `pool ${mt.pool} · K=${mt.k} · λ=${mt.lambda} · shrinkage ${mt.shrinkage} · `
+      + `${mt.draws} bootstrap draws · window ${mt.window}`;
+
+    // Validation figures are rendered from the build output, never typed into
+    // the copy, so the prose cannot drift away from the numbers.
+    const v = mt.validation || {};
+    const put = (key, text) => document.querySelectorAll(`[data-val="${key}"]`)
+      .forEach(el => { el.textContent = text; });
+    ["engagement_raw", "OAQ_observed"].forEach(k => {
+      if (v[k]) put(k, (v[k].rho >= 0 ? "+" : "") + v[k].rho.toFixed(3));
+    });
+    if (v.n) put("n", v.n);
+
+    // The two-lists comparison is derived from the same rows the tables show,
+    // so it can never disagree with them.
+    const vk = VEC;
+    const topBy = key => DATA.players
+      .filter(p => p.v[vk][key] !== null && p.v[vk][key] <= 10)
+      .sort((a,b) => a.v[vk][key] - b.v[vk][key]);
+    const med = a => {
+      const s = a.filter(x => x !== null && x !== undefined).sort((x,y) => x - y);
+      if (!s.length) return null;
+      const h = Math.floor(s.length / 2);
+      return s.length % 2 ? s[h] : (s[h-1] + s[h]) / 2;
+    };
+    const short = n => { const w = n.split(/\s+/); return w[0][0] + ". " + w.slice(1).join(" "); };
+    const tMi = topBy("miOpen"), tSa = topBy("saOpen");
+    if (tMi.length && tSa.length){
+      const mMi = med(tMi.map(p => p.cap)), mSa = med(tSa.map(p => p.cap));
+      put("capMi", mMi === null ? "—" : "$" + mMi.toFixed(2) + "M");
+      put("capSa", mSa === null ? "—" : "$" + mSa.toFixed(2) + "M");
+      put("namesMi", tMi.slice(0,4).map(p => short(p.name)).join(", "));
+      put("namesSa", tSa.slice(0,4).map(p => short(p.name)).join(", "));
+      const ids = new Set(tSa.map(p => p.id));
+      const both = tMi.filter(p => ids.has(p.id));
+      put("overlapN", both.length);
+      put("overlapNames", both.map(p => short(p.name)).join(", "));
+    }
+    render();
+  }
+
+  function start(data){
+    // Headshots are optional: a missing or unreadable file degrades to initials
+    // rather than blocking the tables.
+    const go = () => boot(data);
+    if (window.__MI_MUGS__){ MUGS = window.__MI_MUGS__; go(); return; }
+    fetch("./headshots.json").then(r => r.json())
+      .then(m => { MUGS = m; }).catch(() => {}).finally(go);
+  }
+
+  if (window.__MI_DATA__) start(window.__MI_DATA__);
+  else fetch("./data.json").then(r => r.json()).then(start).catch(() => {
+    document.getElementById("tierwrap").innerHTML =
+      `<div class="tier"><div class="empty2">Could not load data.json.</div></div>`;
+  });
+})();
+</script>

@@ -58,3 +58,6 @@ backup_*/
 "Pilot Files"/
 "Dashboard Inspo"/
 marchand_index/dashboard/
+
+# the published dashboard is a deliverable, not a scratch html file
+!docs/index.html
