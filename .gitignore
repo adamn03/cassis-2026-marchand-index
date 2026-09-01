@@ -61,3 +61,7 @@ marchand_index/dashboard/
 
 # the published dashboard is a deliverable, not a scratch html file
 !docs/index.html
+
+# agent context, kept locally, not part of the published project
+CLAUDE.md
+SESSION.md
